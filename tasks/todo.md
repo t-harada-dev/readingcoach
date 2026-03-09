@@ -95,6 +95,31 @@
 - [ ] GitHub 側でリポジトリを作成し、`origin` を追加する
 - [ ] `main` ブランチを `git push -u origin main` で初回 push する
 
+## 2026-03-10: SwiftData 移行（PersistenceBridge ネイティブ実装）
+
+- [x] 現状確認: `app/ios` 既存ブリッジの有無、Xcode ターゲット構成、既存 `PersistenceBridge.ts` との契約を再確認
+- [x] SwiftData Entity 実装: `BookEntity` / `ExecutionPlanEntity` / `SettingsEntity` / `SessionLogEntity` を `toDTO()` 付きで追加
+- [x] SwiftData ストア層実装: `ModelContainer` 初期化、初期シード投入（Book 0 件時）
+- [x] React Native Native Module 実装: `@objc(PersistenceBridge)` + Promise API で JS 契約メソッドを全実装
+- [x] Xcode プロジェクト配線: `.swift` / `.m` を target の Sources に追加
+- [x] 検証: `xcodebuild -list -project app.xcodeproj` で project 整合を確認（sandbox 由来で simulator build は不完全）
+- [x] セルフレビュー: DTO 互換性、日付フォーマット、thread safety（MainActor 利用）を確認
+- [x] Data Drift Check: `upsertPlan` / `findPlan` は `planId` 優先・`planDate` フォールバックで mock/native ID 混在を吸収
+- [x] Thread Policy: `PersistenceStore` を `@MainActor` で統一し `ModelContext` を単一 actor 上で操作
+
+## 2026-03-10: Git Ignore 見直し（iOS をソース管理）
+
+- [x] `app/.gitignore` から `/ios` 除外を削除
+- [x] `ios/build/` `ios/Pods/` `ios/*.xcworkspace` のみ除外に変更
+- [x] `git status` で `app/ios` が追跡対象になることを確認
+
+## 2026-03-10: iOS ローカルビルド復旧
+
+- [x] `app/ios` の `Pods` / `build` を再生成前にクリーン
+- [x] `pod install` を再実行して CocoaPods 同期（network 制限は昇格実行で解消）
+- [x] `xcodebuild -workspace app.xcworkspace -scheme app -configuration Debug -destination 'generic/platform=iOS Simulator' build` で `BUILD SUCCEEDED` を確認
+- [ ] `npx expo run:ios` で Simulator 起動まで確認（この環境ではログ取得上、ビルド確認まで）
+
 ## 技術スタック
 
 - Expo SDK 52 想定（現行安定版）

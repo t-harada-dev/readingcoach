@@ -13,3 +13,9 @@
 1. **二重処理の禁止**: 必ず Reconcile 完了後に ready() を呼ぶ。`runReconcileThenNotifyReady` で順序を保証する。古い状態に対して「開始」を出さない。
 2. **通知の消去**: レスポンス処理の最初の一手はネイティブ側で `cancelForPlan(planId)`。同一 plan の再通知などが通知センターに残らないようにする。
 3. **__DEFAULT__（通知体タップ）**: 「何しに来たんだっけ？」と選ばせない。DueActionSheet は開始ボタン最大化で、既定は 15 分開始。
+
+## SwiftData Bridge（PersistenceBridge）
+
+1. **日付の主語は `planDate` 文字列**: `yyyy-MM-dd` を永続化の正本にし、日付比較は文字列または `Calendar` 補助で扱う。ISO8601 `Date` への過剰変換は「今日判定」のズレを生む。
+2. **障害は `resolve(nil)` で隠蔽しない**: Fetch/Save/初期化失敗は Promise `reject` で JS 側へ伝播させる。`try!` の singleton 初期化は禁止。
+3. **NSDictionary の手作業マッピングを避ける**: `Decodable` 変換ユーティリティを共通化し、`saveBook` / `upsertPlan` の欠落・型ずれを防ぐ。
