@@ -3,6 +3,7 @@ import type { SessionMode } from '../useCases/StartSessionUseCase';
 export const copy = {
   focusCore: {
     headerMessage: 'さあ始めましょう。\n今日の15分が明日の知性になります。',
+    todaySessionLabel: '今日のセッション',
     coverFallbackTitle: 'Today',
     changeBookLink: '本を切り替える',
     openLibraryLink: 'ライブラリを開く',
