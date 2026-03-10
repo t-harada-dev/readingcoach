@@ -15,6 +15,7 @@
 		8A11D41A4304B53C4D9C6003 /* PersistenceBridgeParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A11D41A4304B53C4D9C5003 /* PersistenceBridgeParams.swift */; };
 		8A11D41A4304B53C4D9C6004 /* PersistenceBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A11D41A4304B53C4D9C5004 /* PersistenceBridge.swift */; };
 		8A11D41A4304B53C4D9C6005 /* PersistenceBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A11D41A4304B53C4D9C5005 /* PersistenceBridge.m */; };
+		8A11D41A4304B53C4D9C6006 /* NativeCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A11D41A4304B53C4D9C5006 /* NativeCopy.swift */; };
 		A33C112AA4ECCEB6A86160A4 /* libPods-app.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FF399B440B08AD44D13E487 /* libPods-app.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
@@ -32,6 +33,7 @@
 		8A11D41A4304B53C4D9C5003 /* PersistenceBridgeParams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersistenceBridgeParams.swift; path = app/Persistence/PersistenceBridgeParams.swift; sourceTree = "<group>"; };
 		8A11D41A4304B53C4D9C5004 /* PersistenceBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PersistenceBridge.swift; path = app/PersistenceBridge.swift; sourceTree = "<group>"; };
 		8A11D41A4304B53C4D9C5005 /* PersistenceBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = PersistenceBridge.m; path = app/PersistenceBridge.m; sourceTree = "<group>"; };
+		8A11D41A4304B53C4D9C5006 /* NativeCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NativeCopy.swift; path = app/Config/NativeCopy.swift; sourceTree = "<group>"; };
 		960A25AEFAF89642A6E4EEDB /* Pods-app.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-app.debug.xcconfig"; path = "Target Support Files/Pods-app/Pods-app.debug.xcconfig"; sourceTree = "<group>"; };
 		9FF399B440B08AD44D13E487 /* libPods-app.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-app.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = app/SplashScreen.storyboard; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 				8A11D41A4304B53C4D9C5004 /* PersistenceBridge.swift */,
 				8A11D41A4304B53C4D9C5005 /* PersistenceBridge.m */,
 				F11748442D0722820044C1D9 /* app-Bridging-Header.h */,
+				8A11D41A4304B53C4D9C7003 /* Config */,
 				8A11D41A4304B53C4D9C7001 /* Models */,
 				8A11D41A4304B53C4D9C7002 /* Persistence */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
@@ -144,6 +147,14 @@
 				8A11D41A4304B53C4D9C5003 /* PersistenceBridgeParams.swift */,
 			);
 			name = Persistence;
+			sourceTree = "<group>";
+		};
+		8A11D41A4304B53C4D9C7003 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				8A11D41A4304B53C4D9C5006 /* NativeCopy.swift */,
+			);
+			name = Config;
 			sourceTree = "<group>";
 		};
 		A8DACC77EF031C003D07389D /* app */ = {
@@ -363,6 +374,7 @@
 				8A11D41A4304B53C4D9C6002 /* PersistenceStore.swift in Sources */,
 				8A11D41A4304B53C4D9C6003 /* PersistenceBridgeParams.swift in Sources */,
 				8A11D41A4304B53C4D9C6004 /* PersistenceBridge.swift in Sources */,
+				8A11D41A4304B53C4D9C6006 /* NativeCopy.swift in Sources */,
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 				FF04D7823729DBFA102ACE69 /* ExpoModulesProvider.swift in Sources */,
 			);

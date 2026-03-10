@@ -19,3 +19,11 @@
 1. **日付の主語は `planDate` 文字列**: `yyyy-MM-dd` を永続化の正本にし、日付比較は文字列または `Calendar` 補助で扱う。ISO8601 `Date` への過剰変換は「今日判定」のズレを生む。
 2. **障害は `resolve(nil)` で隠蔽しない**: Fetch/Save/初期化失敗は Promise `reject` で JS 側へ伝播させる。`try!` の singleton 初期化は禁止。
 3. **NSDictionary の手作業マッピングを避ける**: `Decodable` 変換ユーティリティを共通化し、`saveBook` / `upsertPlan` の欠落・型ずれを防ぐ。
+
+## Vitest + React Native
+
+1. **`vitest` の `environment: node` で画面コンポーネントを直接読むと Flow 構文で失敗する**: `react-native` 本体の parse error（`Expected 'from', got 'typeOf'`）が出る。画面テストは runner を分離（jsdom + rn 対応設定 or jest）してから入れる。
+
+## 通知アクションの開始モード
+
+1. **`START` を固定で 15 分にしない**: 通知・Widget・App Intents の user-facing `開始` は状態依存で第一導線にマップする。少なくとも `continuousMissedDays >= 3` では `ignition_1m` に切り替える。

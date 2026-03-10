@@ -322,10 +322,10 @@ final class PersistenceStore {
 
     context.insert(
       BookEntity(
-        id: "native_book_1",
-        title: "積読コーチ (Native)",
-        author: "ReadingCoach",
-        pageCount: 220,
+        id: NativeCopy.PersistenceSeed.primaryBookId,
+        title: NativeCopy.PersistenceSeed.primaryBookTitle,
+        author: NativeCopy.PersistenceSeed.primaryBookAuthor,
+        pageCount: NativeCopy.PersistenceSeed.primaryBookPageCount,
         format: "paper",
         status: "active"
       )

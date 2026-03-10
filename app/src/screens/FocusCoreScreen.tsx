@@ -11,11 +11,13 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 
 import { persistenceBridge, type BookDTO, type DailyExecutionPlanDTO } from '../bridge/PersistenceBridge';
+import { copy, dailyPerformanceMentorQuote, sessionModeLabel } from '../config/copy';
 import { toLocalISODateString } from '../date';
 import { getManualFocusChangeCount } from '../manualFocusChange';
 import { useAppInit } from '../appInit';
 import { runReconcilePlansUseCase } from '../useCases/ReconcilePlansUseCase';
 import { runStartSessionUseCase, type SessionMode } from '../useCases/StartSessionUseCase';
+import { resolveHomeActionPlan } from '../domain/homeActionPolicy';
 
 const BG = '#FDFCF8';
 const AMBER = '#D48A3E';
@@ -55,7 +57,14 @@ export function FocusCoreScreen({
   const canManualChange = manualChangeCount < 1;
   const progressRatio = progressRatioForPlan(plan);
 
-  const shouldPromoteIgnition = continuousMissedDays >= 3;
+  const actionPlan = useMemo(
+    () =>
+      resolveHomeActionPlan({
+        continuousMissedDays,
+        heavyDaySignal: plan?.state === 'scheduled' && plan?.result === 'attempted',
+      }),
+    [continuousMissedDays, plan?.result, plan?.state]
+  );
 
   const refresh = useCallback(async () => {
     if (init.status !== 'ready') return;
@@ -113,22 +122,31 @@ export function FocusCoreScreen({
         mode,
         entryPoint: 'app',
       });
-      navigation.navigate('ActiveSession', { bookTitle: result.bookTitle, endTimeISO: result.endTimeISO });
+      navigation.navigate('ActiveSession', {
+        planId: result.planId,
+        sessionId: result.sessionId,
+        bookId: plan.bookId,
+        bookTitle: result.bookTitle,
+        mode,
+        startedAt: result.startedAt,
+        endTimeISO: result.endTimeISO,
+        durationSeconds: result.durationSeconds,
+      });
     } finally {
       setStarting(null);
     }
   };
 
-  const mainMode: SessionMode = shouldPromoteIgnition ? 'ignition_1m' : 'normal_15m';
-  const subMode: SessionMode = shouldPromoteIgnition ? 'normal_15m' : 'ignition_1m';
+  const mainMode: SessionMode = actionPlan.primaryMode;
+  const subMode: SessionMode | null = actionPlan.secondaryMode;
+  const rehabMode: SessionMode | null = actionPlan.rehabMode;
 
-  const subCopy = shouldPromoteIgnition
-    ? 'まずは1分。再点火だけで、流れは戻せます。'
-    : '今日の15分が、思考の筋力になります。';
+  const dailyQuote = useMemo(() => dailyPerformanceMentorQuote(planDate), [planDate]);
+  const subCopy = `「${dailyQuote.text}」\n— ${dailyQuote.author}`;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerMessage}>準備はいいですか。今日の15分が、あなたの知性を磨きます</Text>
+      <Text style={styles.headerMessage}>{copy.focusCore.headerMessage}</Text>
 
       <View style={styles.card}>
         <View style={styles.coverWrap}>
@@ -141,7 +159,7 @@ export function FocusCoreScreen({
           ) : (
             <View style={styles.coverPlaceholder}>
               <Text style={styles.coverPlaceholderText} numberOfLines={3}>
-                {book?.title ?? 'Today'}
+                {book?.title ?? copy.focusCore.coverFallbackTitle}
               </Text>
             </View>
           )}
@@ -166,9 +184,12 @@ export function FocusCoreScreen({
 
         {plan && canManualChange ? (
           <TouchableOpacity style={styles.ghostLink} onPress={onPressChangeBook}>
-            <Text style={styles.ghostLinkText}>本を切り替える</Text>
+            <Text style={styles.ghostLinkText}>{copy.focusCore.changeBookLink}</Text>
           </TouchableOpacity>
         ) : null}
+        <TouchableOpacity style={styles.ghostLink} onPress={() => navigation.navigate('Library')}>
+          <Text style={styles.ghostLinkText}>{copy.focusCore.openLibraryLink}</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.menu}>
@@ -179,30 +200,37 @@ export function FocusCoreScreen({
           onPress={() => startSession(mainMode)}
           disabled={starting !== null || loading || !plan}
         >
-          <Text style={styles.mainBtnText}>
-            {mainMode === 'ignition_1m' ? '1分、再点火 (Ignition)' : '15分、セッション開始'}
-          </Text>
+          <Text style={styles.mainBtnText}>{sessionModeLabel(mainMode)}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.subBtn, starting ? styles.btnDisabled : null]}
-          onPress={() => startSession(subMode)}
-          disabled={starting !== null || loading || !plan}
-        >
-          <Text style={styles.subBtnText}>
-            {subMode === 'ignition_1m' ? '1分、再点火 (Ignition)' : '15分、セッション開始'}
-          </Text>
-        </TouchableOpacity>
+        {subMode ? (
+          <TouchableOpacity
+            style={[styles.subBtn, starting ? styles.btnDisabled : null]}
+            onPress={() => startSession(subMode)}
+            disabled={starting !== null || loading || !plan}
+          >
+            <Text style={styles.subBtnText}>{sessionModeLabel(subMode)}</Text>
+          </TouchableOpacity>
+        ) : null}
+        {rehabMode ? (
+          <TouchableOpacity
+            style={[styles.subBtn, starting ? styles.btnDisabled : null]}
+            onPress={() => startSession(rehabMode)}
+            disabled={starting !== null || loading || !plan}
+          >
+            <Text style={styles.subBtnText}>{sessionModeLabel(rehabMode)}</Text>
+          </TouchableOpacity>
+        ) : null}
 
         {loading || init.status === 'booting' ? (
           <View style={styles.loadingRow}>
             <ActivityIndicator />
-            <Text style={styles.loadingText}>準備中…</Text>
+            <Text style={styles.loadingText}>{copy.focusCore.loading}</Text>
           </View>
         ) : null}
 
         {init.status === 'error' ? (
-          <Text style={styles.errorText}>初期化に失敗しました。再起動してください。</Text>
+          <Text style={styles.errorText}>{copy.focusCore.initError}</Text>
         ) : null}
       </View>
     </View>
@@ -224,6 +252,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginTop: 6,
     marginBottom: 14,
+    textAlign: 'center',
   },
   card: {
     borderRadius: 20,
@@ -272,7 +301,7 @@ const styles = StyleSheet.create({
   ghostLink: { marginTop: 12, paddingVertical: 6, paddingHorizontal: 10 },
   ghostLinkText: { color: '#6B7280', fontSize: 13, textDecorationLine: 'underline' },
   menu: { marginTop: 18 },
-  intentCopy: { color: TEXT, fontSize: 14, lineHeight: 20, marginBottom: 14 },
+  intentCopy: { color: TEXT, fontSize: 14, lineHeight: 22, marginBottom: 14 },
   mainBtn: {
     backgroundColor: AMBER,
     borderRadius: 20,
@@ -295,4 +324,3 @@ const styles = StyleSheet.create({
   loadingText: { color: '#6B7280', fontSize: 13 },
   errorText: { color: '#B91C1C', fontSize: 13, marginTop: 12 },
 });
-

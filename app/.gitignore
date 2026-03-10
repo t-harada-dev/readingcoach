@@ -37,5 +37,9 @@ yarn-error.*
 *.tsbuildinfo
 
 # generated native folders
-/ios
 /android
+
+# iOS (Keep the project files, ignore build artifacts)
+ios/build/
+ios/Pods/
+ios/*.xcworkspace

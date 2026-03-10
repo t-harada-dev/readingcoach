@@ -1,20 +1,31 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useApp } from '../context';
+import { copy } from '../config/copy';
+import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
 import { requestPermission, scheduleReadingReminder } from '../notifications';
+import { toLocalISODateString } from '../date';
 
-const PRESETS = [
-  { label: '7:00', h: 7, m: 0 },
-  { label: '12:00', h: 12, m: 0 },
-  { label: '21:00', h: 21, m: 0 },
-  { label: '22:00', h: 22, m: 0 },
-];
+const PRESETS = copy.reserve.presets;
 
 export function ReserveScreen({ navigation }: { navigation: { goBack: () => void } }) {
-  const { books, reservation, setReservation } = useApp();
-  const [bookId, setBookId] = useState<string | null>(reservation?.bookId ?? null);
-  const [hour, setHour] = useState(reservation ? new Date(reservation.scheduledAt).getHours() : 21);
-  const [minute, setMinute] = useState(reservation ? new Date(reservation.scheduledAt).getMinutes() : 0);
+  const [books, setBooks] = useState<BookDTO[]>([]);
+  const [bookId, setBookId] = useState<string | null>(null);
+  const [hour, setHour] = useState(21);
+  const [minute, setMinute] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const list = await persistenceBridge.getBooks();
+      if (!alive) return;
+      setBooks(list);
+      if (list[0]) setBookId(list[0].id);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const onConfirm = async () => {
     if (!bookId) return;
@@ -25,7 +36,13 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(hour, minute, 0, 0);
-    await setReservation(bookId, tomorrow);
+    await persistenceBridge.upsertPlan({
+      planDate: toLocalISODateString(tomorrow),
+      bookId,
+      scheduledAt: tomorrow.toISOString(),
+      state: 'scheduled',
+      result: 'attempted',
+    });
     const book = books.find((b) => b.id === bookId);
     if (book) await scheduleReadingReminder(tomorrow, book.title);
     navigation.goBack();
@@ -34,9 +51,9 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
   if (books.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.empty}>本を先に追加してください</Text>
+        <Text style={styles.empty}>{copy.reserve.emptyAddBookFirst}</Text>
         <TouchableOpacity style={styles.link} onPress={() => navigation.goBack()}>
-          <Text style={styles.linkText}>戻る</Text>
+          <Text style={styles.linkText}>{copy.reserve.back}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -44,7 +61,7 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      <Text style={styles.label}>明日読む1冊</Text>
+      <Text style={styles.label}>{copy.reserve.labelTomorrowBook}</Text>
       <View style={styles.bookList}>
         {books.map((b) => (
           <TouchableOpacity
@@ -58,7 +75,7 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
         ))}
       </View>
 
-      <Text style={styles.label}>時刻</Text>
+      <Text style={styles.label}>{copy.reserve.labelTime}</Text>
       <View style={styles.presets}>
         {PRESETS.map((p) => (
           <TouchableOpacity
@@ -73,14 +90,16 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
           </TouchableOpacity>
         ))}
       </View>
-      <Text style={styles.hint}>{hour}:{String(minute).padStart(2, '0')} に通知</Text>
+      <Text style={styles.hint}>
+        {hour}:{String(minute).padStart(2, '0')} {copy.reserve.notifyAtSuffix}
+      </Text>
 
       <TouchableOpacity
         style={[styles.cta, !bookId && styles.ctaDisabled]}
         onPress={onConfirm}
         disabled={!bookId}
       >
-        <Text style={styles.ctaText}>予約する</Text>
+        <Text style={styles.ctaText}>{copy.reserve.ctaReserve}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

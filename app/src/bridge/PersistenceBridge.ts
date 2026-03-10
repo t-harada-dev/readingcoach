@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeModules, Platform } from 'react-native';
+import { copy } from '../config/copy';
 
 const Native: any = (NativeModules as any)?.PersistenceBridge;
 
@@ -16,6 +17,8 @@ export interface UserSettingsDTO {
   defaultDuration: number;
   retryLimit: number;
   dayRolloverHour: number;
+  progressTrackingEnabled?: boolean;
+  progressPromptShown?: boolean;
 }
 
 export interface BookDTO {
@@ -25,6 +28,8 @@ export interface BookDTO {
   googleBooksId?: string;
   thumbnailUrl?: string;
   pageCount?: number;
+  currentPage?: number;
+  lastProgressUpdatedAt?: string;
   format: string;
   status: string;
   estimatedPriceAmount?: number;
@@ -77,6 +82,12 @@ type NativePersistenceBridgeAPI = {
     mode: 'normal_15m' | 'rescue_5m' | 'rescue_3m' | 'book_fetch_1m',
     entryPoint: 'notification' | 'widget' | 'app'
   ): Promise<{ sessionId: string; startedAt: string; bookTitle: string }>;
+  completeSession?(
+    planId: string,
+    sessionId: string,
+    result: 'hard_success' | 'soft_success' | 'prep_success',
+    endedAtISO: string
+  ): Promise<void>;
   getActiveSession(): Promise<{ plan: DailyExecutionPlanDTO; session: SessionLogDTO } | null>;
   reconcilePlans(referenceDateISO: string, triggerSource: TriggerSource): Promise<ReconcileResult>;
 };
@@ -134,26 +145,15 @@ async function ensureSeeded(): Promise<{ books: BookDTO[]; plans: DailyExecution
   let plans = await readJSON<DailyExecutionPlanDTO[]>(MOCK_KEYS.plans, []);
 
   if (books.length === 0) {
-    books = [
-      {
-        id: 'mock_book_1',
-        title: '積読コーチ (Mock)',
-        author: 'ReadingCoach',
-        format: 'paper',
-        status: 'active',
-        thumbnailUrl: undefined,
-        pageCount: 220,
-      },
-      {
-        id: 'mock_book_2',
-        title: 'たった1分の再点火 (Mock)',
-        author: 'ReadingCoach',
-        format: 'paper',
-        status: 'queued',
-        thumbnailUrl: undefined,
-        pageCount: 120,
-      },
-    ];
+    books = copy.persistence.mockSeedBooks.map((seed) => ({
+      id: seed.id,
+      title: seed.title,
+      author: seed.author,
+      format: seed.format,
+      status: seed.status,
+      thumbnailUrl: undefined,
+      pageCount: seed.pageCount,
+    }));
     await writeJSON(MOCK_KEYS.books, books);
   }
 
@@ -210,6 +210,8 @@ const mockBridge: NativePersistenceBridgeAPI = {
       googleBooksId: params.googleBooksId,
       thumbnailUrl: params.thumbnailUrl,
       pageCount: params.pageCount,
+      currentPage: params.currentPage,
+      lastProgressUpdatedAt: params.lastProgressUpdatedAt,
       format: params.format ?? 'paper',
       status: params.status ?? 'active',
       estimatedPriceAmount: params.estimatedPriceAmount,
@@ -311,6 +313,22 @@ const mockBridge: NativePersistenceBridgeAPI = {
     return { sessionId, startedAt, bookTitle };
   },
 
+  async completeSession(planId, sessionId, result, endedAtISO) {
+    const plans = await readJSON<DailyExecutionPlanDTO[]>(MOCK_KEYS.plans, []);
+    const sessions = await readJSON<SessionLogDTO[]>(MOCK_KEYS.sessions, []);
+
+    const nextPlans = plans.map((p) =>
+      p.planId === planId ? { ...p, state: 'finalized', result } : p
+    );
+    const nextSessions = sessions.map((s) =>
+      s.sessionId === sessionId ? { ...s, endedAt: endedAtISO, outcome: 'completed' } : s
+    );
+
+    await writeJSON(MOCK_KEYS.plans, nextPlans);
+    await writeJSON(MOCK_KEYS.sessions, nextSessions);
+    await AsyncStorage.removeItem(MOCK_KEYS.activeSessionId);
+  },
+
   async getActiveSession() {
     await ensureSeeded();
     const sessionId = await AsyncStorage.getItem(MOCK_KEYS.activeSessionId);
@@ -400,6 +418,23 @@ export const persistenceBridge = {
   ): Promise<{ sessionId: string; startedAt: string; bookTitle: string }> {
     const bridge = getBridge();
     return bridge.startSession(planId, mode, entryPoint);
+  },
+
+  completeSession(
+    planId: string,
+    sessionId: string,
+    result: 'hard_success' | 'soft_success' | 'prep_success',
+    endedAtISO: string
+  ): Promise<void> {
+    void planId;
+    void sessionId;
+    void result;
+    void endedAtISO;
+    const bridge = getBridge();
+    if (typeof bridge.completeSession === 'function') {
+      return bridge.completeSession(planId, sessionId, result, endedAtISO);
+    }
+    return Promise.resolve();
   },
 
   getActiveSession(): Promise<{ plan: DailyExecutionPlanDTO; session: SessionLogDTO } | null> {

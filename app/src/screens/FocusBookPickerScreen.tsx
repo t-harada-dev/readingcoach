@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
+import { copy } from '../config/copy';
 import { incrementManualFocusChangeCount } from '../manualFocusChange';
 
 const BG = '#FDFCF8';
@@ -62,8 +63,8 @@ export function FocusBookPickerScreen({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>本を切り替える</Text>
-      <Text style={styles.subtitle}>今日は「手元にある1冊」に寄せましょう</Text>
+      <Text style={styles.title}>{copy.focusBookPicker.title}</Text>
+      <Text style={styles.subtitle}>{copy.focusBookPicker.subtitle}</Text>
 
       {loading ? (
         <View style={styles.loading}>
@@ -93,7 +94,7 @@ export function FocusBookPickerScreen({
                     </Text>
                   ) : null}
                 </View>
-                {selected ? <Text style={styles.selectedMark}>選択中</Text> : null}
+                {selected ? <Text style={styles.selectedMark}>{copy.focusBookPicker.selectedMark}</Text> : null}
               </TouchableOpacity>
             );
           }}
@@ -130,4 +131,3 @@ const styles = StyleSheet.create({
   bookAuthor: { color: '#6B7280', fontSize: 13, marginTop: 2 },
   selectedMark: { color: AMBER, fontSize: 13, fontWeight: '700' },
 });
-

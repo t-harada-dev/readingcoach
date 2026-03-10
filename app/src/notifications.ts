@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import { copy } from './config/copy';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,7 +19,7 @@ export async function scheduleReadingReminder(scheduledAt: Date, bookTitle: stri
   await Notifications.cancelAllScheduledNotificationsAsync();
   const id = await Notifications.scheduleNotificationAsync({
     content: {
-      title: '今すぐ読む',
+      title: copy.notifications.readNowTitle,
       body: bookTitle,
       data: { screen: 'Execution' },
     },

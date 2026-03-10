@@ -15,7 +15,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSSupportsLiveActivities": true
-      }
+      },
+      "bundleIdentifier": "com.anonymous.app"
     },
     "android": {
       "adaptiveIcon": {

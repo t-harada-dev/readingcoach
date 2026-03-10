@@ -1,0 +1,102 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { SessionCTAButton } from '../components/SessionCTAButton';
+import { copy } from '../config/copy';
+import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
+import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
+
+type Params = {
+  planId: string;
+  defaultMode: 'normal_15m' | 'ignition_1m';
+};
+
+export function DueActionSheetScreen({ navigation, route }: any) {
+  const { planId, defaultMode } = (route.params ?? {}) as Params;
+  const [busy, setBusy] = useState(false);
+
+  const onStart = async (mode: 'normal_15m' | 'ignition_1m' | 'rescue_5m') => {
+    if (!planId || busy) return;
+    setBusy(true);
+    try {
+      const started = await runStartSessionUseCase({
+        planId,
+        mode,
+        entryPoint: 'app',
+      });
+      navigation.replace('ActiveSession', {
+        planId,
+        sessionId: started.sessionId,
+        bookTitle: started.bookTitle,
+        mode,
+        startedAt: started.startedAt,
+        endTimeISO: started.endTimeISO,
+        durationSeconds: started.durationSeconds,
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.sheet}>
+        <Text style={styles.title}>{copy.dueAction.title}</Text>
+        <Text style={styles.subtitle}>{copy.dueAction.subtitle}</Text>
+        <SessionCTAButton
+          tone="primary"
+          label={copy.dueAction.ctaStart}
+          onPress={() => onStart(defaultMode ?? 'normal_15m')}
+          disabled={busy}
+        />
+        <SessionCTAButton
+          tone="secondary"
+          label={copy.dueAction.cta5m}
+          onPress={() => onStart('rescue_5m')}
+          disabled={busy}
+        />
+        <SessionCTAButton
+          tone="ghost"
+          label={copy.dueAction.ctaSnooze}
+          onPress={async () => {
+            if (!planId || busy) return;
+            setBusy(true);
+            try {
+              await runSnoozePlanUseCase(planId, 30);
+              navigation.goBack();
+            } finally {
+              setBusy(false);
+            }
+          }}
+          disabled={busy}
+        />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.16)',
+  },
+  sheet: {
+    backgroundColor: '#FDFCF8',
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+  title: {
+    color: '#2C2C2C',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  subtitle: {
+    color: '#6B7280',
+    fontSize: 13,
+    marginTop: 6,
+    marginBottom: 8,
+  },
+});

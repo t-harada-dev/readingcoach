@@ -120,6 +120,130 @@
 - [x] `xcodebuild -workspace app.xcworkspace -scheme app -configuration Debug -destination 'generic/platform=iOS Simulator' build` で `BUILD SUCCEEDED` を確認
 - [ ] `npx expo run:ios` で Simulator 起動まで確認（この環境ではログ取得上、ビルド確認まで）
 
+## 2026-03-10: 文言設定ファイル化 + 軽量リファクタ（疎結合/共通化）
+
+- [x] 文言設定ファイルを新設（例: `app/src/config/copy.ts`）し、画面別に意味が明確なキーで定義
+- [x] `FocusCoreScreen` / `ActiveSessionScreen` / `FocusBookPickerScreen` / `AddBookScreen` / `ReserveScreen` の文言を設定ファイル参照へ置換
+- [x] 通知文言（`notifications.ts`）を設定ファイル参照へ置換
+- [x] 重複しやすい CTA 表示ロジックを最小限共通化（過剰抽象化はしない）
+- [x] 型チェックまたはビルドで構文整合を確認
+
+## 2026-03-10: FocusCore 文言調整（Performance Mentor）
+
+- [x] 「今日の1冊」系表現を「今日のセッション」へ統一
+- [x] ヘッダー文言とレイアウト（改行 + 中央揃え）を更新
+- [x] 日替わり格言（7 quotes）ロジックを追加して表示
+- [x] CTA 文言を「15分のセッション開始」「今日は1分だけにする」へ変更
+- [x] 型チェックで整合確認
+
+## 2026-03-10: 文言設定 横展開（App ナビゲーション）
+
+- [x] `App.tsx` の `Stack.Screen options.title` 直書き文言を `copy.ts` へ集約
+- [x] FocusCore のナビゲーションタイトルを「今日のセッション」に統一
+- [x] 型チェックで整合確認
+
+## 2026-03-10: 文言設定 横展開（プロジェクト全体）
+
+- [x] `app/src` 残存文言（Mock seed 含む）を `copy.ts` へ集約
+- [x] iOS Native seed 文言を Swift 側設定ファイルへ分離
+- [x] 参照置換後に TS 型チェックと iOS ビルド確認
+
+## 2026-03-10: iOS/Android 互換性レビュー（現状診断）
+
+- [x] `PersistenceBridge` / `NotificationBridge` / `LiveActivityBridge` のプラットフォーム依存を確認
+- [x] 画面層の iOS 固有挙動（`headerLargeTitle`, `KeyboardAvoidingView` など）が Android で致命傷にならないか確認
+- [x] iPhone/Android 両対応に向けた優先修正ポイントを整理
+
+## 2026-03-10: 仕様書改訂（正本一本化 / OS一等地 / 状態機械統合）
+
+- [x] 改訂方針を確定（企画書・論理仕様書・UIUX指針・現行アーキ整理の境界と優先度を明文化）
+- [x] `docs/積読コーチ_論理仕様書_v1.md` を最優先改訂（entitlement抽象化、EventLog必須化、移行規約、OS surface責務）
+- [x] `docs/積読コーチ企画書 v1.md` を改訂（北極星を当日達成へ、救済モード統一、OS一等地をMVP受入条件へ、収益方針の拡張可能表現）
+- [x] `docs/積読コーチ_UIUX統合指針_20260309.md` を改訂（目的文更新、OS surface別表示規約、copy管理規約）
+- [x] `docs/現行アーキテクチャ整理_20260310.md` を移行計画書として追記（cutover criteria / migration policy / DoD）
+- [x] 文書間整合レビュー（用語・mode名・MVP境界・優先順位の矛盾検査）
+
+## 2026-03-10: 現行アーキテクチャ整理メモ
+
+- [x] 画面遷移・責務・データフローを1枚の設計メモに整理
+- [x] 新実装と旧実装の境界を洗い出し、削除候補を特定
+
+## 2026-03-10: プログレスバー運用方針の仕様反映
+
+- [x] 論理仕様書へ「初回セッション前は非提示 / 初回完了後に任意有効化」の規約を追記
+- [x] ユーザーストーリー定義書へ「ソフト案内・任意利用・OFF復帰可能・毎回更新非必須」を反映
+- [x] 異常系・縮退運転定義書へ「未設定でも主導線非阻害」を追記
+- [x] 表記ゆれ（総ページ数/現在ページ/進捗バー）を統一
+
+## 2026-03-10: 4文書横断同期（モード/CTA/OS surface/progress tracking）
+
+- [x] 論理仕様書を正本として更新（mode命名統一、7日以上=1分主導線、通知/Widget/App Intents CTA、DueActionSheet明示、5分セッション追加、progress tracking event/usecase/受入基準）
+- [x] UI/UX統合指針を更新（CTA優先順位の厳密化、OS文言規約、7日以上未達の主導線、`今日は重い` variant、progress tracking正式化）
+- [x] 画面一覧文書を更新（SC-04/05/06/07/15/16/17/18/21、SF-01/02/03/04/08、SC-23/SC-24/SF-09とWF追加、遷移同期）
+- [x] 企画書を更新（4モードの説明整合、状態別導線説明、progress tracking正式追記、`今日は重い`思想反映）
+- [x] 4文書の語彙・CTA辞書を横断検証し、不一致表現を是正
+
+## 2026-03-10: SC-10 / SC-21 仕様拡張（手入力表紙・保存後編集）
+
+- [x] 画面定義書の SC-10 に「表紙画像を追加（任意）」を追加
+- [x] 画面定義書の SC-21 を「保存後編集の主戦場」へ更新（表紙差し替え、タイトル/著者/ページ数修正、進捗設定、Focus Book 化）
+- [x] 論理仕様書に Book 編集責務（表紙差し替え・書誌修正）の明示を追加
+- [x] ユーザーストーリー定義書に「保存後編集」導線を反映
+
+## 2026-03-10: 完了後フロー簡素化（自己進捗入力の縮小）
+
+- [x] 画面定義書の SC-15/状態別出し分け/遷移を「追加セッション主導・読了分岐のみ」に更新
+- [x] 論理仕様書の `progress_self_report` と `progress_self_reported` を `none|finished_book` 前提に縮小
+- [x] 論理仕様書の完了後フロー・資産化ビュー・代表シーケンス・受入基準を新方針へ同期
+- [x] ユーザーストーリーの US-09 を「前進感は入力不要」へ更新
+- [x] UI/UX 統合指針に完了後フロー簡素化方針と copy 規約を追加
+- [x] 異常系定義書の E-35/E-34 を読了保存失敗とフォールバック中心に更新
+- [x] 企画書の完了後価値説明と progress tracking 役割分担を更新
+
+## 2026-03-10: 金額換算廃止（完了後は前進フィードバックに統一）
+
+- [x] 論理仕様書の `14.5 資産化ビュー` を `14.5 完了後フィードバック` へ置換
+- [x] 論理仕様書から `DEFAULT_ASSET_VALUE_PER_PAGE_YEN` と金額推定ロジック記述を削除
+- [x] 論理仕様書の受入基準・画面責務・最終要約の資産化表現を削除/置換
+- [x] 画面定義 SC-15 に「金額換算を表示しない」備考を追記
+- [x] UI/UX 統合指針に「完了後は金額換算を表示しない」を追記
+- [x] 企画書の実行後方針に「金額換算なし」を追記
+
+## 2026-03-10: 画面モック準拠でのアプリ完成（TDD / 疎結合 / 共通部品）
+
+- [x] `docs/画面モック` と主要仕様書（論理仕様・画面定義・UI/UX）の差分を洗い出し、実装対象を確定
+- [ ] 画面遷移を新仕様へ統一（SC-04/05/06/07/12/13/14/15/16/17/18/19/21/23/24、SF系を含む）
+- [x] ドメイン層を整理（Start/Complete/EnableProgress/UpdateProgress/DueAction の use case 化、画面から business rule を分離）
+- [x] 共通UI部品を導入（Primary/Secondary CTA、SessionTimer、ProgressPanel、CompletionFeedbackCard など）
+- [x] 旧導線の依存除去（`context.tsx` / `storage.ts` / `ExecutionScreen` を移行専用に縮退または無効化）
+- [x] TDD基盤を追加（Vitest）し、先に failing test を作成
+- [x] ユースケース単体テストを実装（状態分岐、CTA優先順位、`prep_success` と進捗分離、読了分岐）
+- [ ] 主要画面のコンポーネントテストを実装（SC-04/06/07/15、DueActionSheet）
+- [x] 最低限の結合テストを実装（開始 -> セッション -> 完了 -> 追加セッション/読了）
+- [x] TypeScript チェックとテストを通し、未実装差分を todo に再整理
+
+### 進捗メモ（このターン）
+
+- [x] SC-15 相当: `ActiveSession -> CompleteSessionUseCase -> CompletionScreen` を接続
+- [x] SC-16/17 相当: `ProgressTrackingPromptScreen` / `ProgressTrackingSetupScreen` を追加し、完了後から遷移
+- [x] SC-23 相当: `DueActionSheetScreen` を追加
+- [x] SC-19 相当: `NextFocusNominationScreen` と `NominateNextFocusBookUseCase` を追加
+- [x] 通知応答ハンドラを実遷移へ接続（`NotificationResponseCoordinator`）
+- [x] `AddBookScreen` / `ReserveScreen` の保存経路を `PersistenceBridge` 側に寄せた
+- [x] ナビゲーションから `ExecutionScreen` を除外し、`AppProvider` 依存を外した
+- [x] Domain + UseCase/Flow テストを 9 ファイル / 28 ケースまで拡張し、`npm run test` + `tsc --noEmit` を通過
+
+### 進捗メモ（継続ターン）
+
+- [x] SC-20（ライブラリ）と SC-21（本詳細）を画面モック準拠で実装
+- [x] Focus Book 化（本詳細）を `SetFocusBookForTodayUseCase` で接続
+- [x] SC-04/15 から SC-20/21 への導線を追加
+- [ ] 主要画面コンポーネントテストを追加（`vitest(node)` では `react-native` Flow 構文で失敗するため、runner 分離が必要）
+- [x] `npm run test` と `tsc --noEmit` の再実行で回帰確認
+- [x] 通知 `開始` を状態依存モードへマップ（normal/ignition 切替）
+- [x] 通知/アプリ内 DueActionSheet の `30分延期` を実装（SnoozePlanUseCase）
+- [x] 通知起点ロジックの検索・モード解決・延期を use case 分離しテスト追加
+
 ## 技術スタック
 
 - Expo SDK 52 想定（現行安定版）

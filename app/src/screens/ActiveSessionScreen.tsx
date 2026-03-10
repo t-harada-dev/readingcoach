@@ -1,5 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { copy } from '../config/copy';
+import { runCompleteSessionUseCase } from '../useCases/CompleteSessionUseCase';
+import type { SessionMode } from '../useCases/StartSessionUseCase';
 
 const BG = '#FDFCF8';
 const TEXT = '#2C2C2C';
@@ -16,10 +19,30 @@ export function ActiveSessionScreen({
   navigation,
   route,
 }: any) {
-  const { bookTitle, endTimeISO } = (route.params ?? {}) as { bookTitle: string; endTimeISO: string };
+  const {
+    planId,
+    sessionId,
+    bookId,
+    bookTitle,
+    mode,
+    startedAt,
+    endTimeISO,
+    durationSeconds,
+  } = (route.params ?? {}) as {
+    planId?: string;
+    sessionId?: string;
+    bookId?: string;
+    bookTitle: string;
+    mode?: SessionMode;
+    startedAt?: string;
+    endTimeISO: string;
+    durationSeconds?: number;
+  };
 
   const endTime = useMemo(() => new Date(endTimeISO).getTime(), [endTimeISO]);
   const [now, setNow] = useState(() => Date.now());
+  const [completing, setCompleting] = useState(false);
+  const finalizedRef = useRef(false);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -29,14 +52,46 @@ export function ActiveSessionScreen({
   const remainingSeconds = Math.max(0, Math.ceil((endTime - now) / 1000));
   const done = remainingSeconds <= 0;
 
+  useEffect(() => {
+    if (!done || finalizedRef.current || completing) return;
+    if (!planId || !sessionId || !mode) return;
+    finalizedRef.current = true;
+    setCompleting(true);
+
+    (async () => {
+      try {
+        const completed = await runCompleteSessionUseCase({
+          planId,
+          sessionId,
+          mode,
+          bookTitle,
+          endedAtISO: new Date().toISOString(),
+        });
+        navigation.replace('Completion', {
+          planId,
+          bookId: bookId ?? '',
+          bookTitle,
+          result: completed.result,
+          elapsedSeconds:
+            durationSeconds ??
+            (startedAt ? Math.max(0, Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000)) : 0),
+        });
+      } finally {
+        setCompleting(false);
+      }
+    })();
+  }, [bookId, bookTitle, completing, done, durationSeconds, mode, navigation, planId, sessionId, startedAt]);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.caption}>集中の時間</Text>
+      <Text style={styles.caption}>{copy.activeSession.caption}</Text>
       <Text style={styles.title}>{bookTitle}</Text>
-      <Text style={styles.timer}>{done ? '完了' : formatRemaining(remainingSeconds)}</Text>
+      <Text style={styles.timer}>
+        {done ? (completing ? '完了処理中…' : copy.activeSession.completed) : formatRemaining(remainingSeconds)}
+      </Text>
 
       <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.goBack()}>
-        <Text style={styles.secondaryText}>ホームへ戻る</Text>
+        <Text style={styles.secondaryText}>{copy.activeSession.backToHome}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -83,4 +138,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
