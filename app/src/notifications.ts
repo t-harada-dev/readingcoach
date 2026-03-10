@@ -49,6 +49,14 @@ function plusMinutes(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
+function buildReminderContent(bookTitle: string, retry: boolean) {
+  return {
+    title: copy.notifications.readNowTitle,
+    body: bookTitle,
+    data: retry ? { screen: 'Execution', retry: true } : { screen: 'Execution' },
+  } as const;
+}
+
 export async function cancelScheduledForPlan(planId: string): Promise<void> {
   if (!planId) return;
   const map = await readPlanMap();
@@ -72,11 +80,7 @@ export async function scheduleReadingReminder(
   }
 
   const primaryId = await Notifications.scheduleNotificationAsync({
-    content: {
-      title: copy.notifications.readNowTitle,
-      body: bookTitle,
-      data: { screen: 'Execution' },
-    },
+    content: buildReminderContent(bookTitle, false),
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: scheduledAt,
@@ -84,11 +88,7 @@ export async function scheduleReadingReminder(
   });
 
   const retryId = await Notifications.scheduleNotificationAsync({
-    content: {
-      title: copy.notifications.readNowTitle,
-      body: bookTitle,
-      data: { screen: 'Execution', retry: true },
-    },
+    content: buildReminderContent(bookTitle, true),
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: plusMinutes(scheduledAt, UNRESPONSIVE_RETRY_DELAY_MINUTES),

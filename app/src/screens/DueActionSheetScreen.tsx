@@ -5,6 +5,8 @@ import { copy } from '../config/copy';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
 import { dueActionOrder } from './screenPolicy';
+import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import { appTheme } from '../theme/layout';
 
 type Params = {
   planId: string;
@@ -27,15 +29,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
         mode,
         entryPoint: entryPoint === 'notification' ? 'notification' : 'app',
       });
-      navigation.replace('ActiveSession', {
-        planId,
-        sessionId: started.sessionId,
-        bookTitle: started.bookTitle,
-        mode,
-        startedAt: started.startedAt,
-        endTimeISO: started.endTimeISO,
-        durationSeconds: started.durationSeconds,
-      });
+      navigation.replace('ActiveSession', buildActiveSessionRouteParams({ started, mode }));
     } finally {
       setBusy(false);
     }
@@ -100,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.16)',
   },
   sheet: {
-    backgroundColor: '#FDFCF8',
+    backgroundColor: appTheme.colors.screenBackground,
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
     paddingHorizontal: 18,

@@ -8,6 +8,8 @@ import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { shouldOfferProgressTracking } from '../domain/progressTrackingPolicy';
 import { completionCtaOrder } from './screenPolicy';
+import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import { appTheme } from '../theme/layout';
 
 type Params = {
   planId: string;
@@ -62,16 +64,10 @@ export function CompletionScreen({ navigation, route }: any) {
         mode,
         entryPoint: 'app',
       });
-      navigation.replace('ActiveSession', {
-        planId,
-        sessionId: started.sessionId,
-        bookId,
-        bookTitle: started.bookTitle,
-        mode,
-        startedAt: started.startedAt,
-        endTimeISO: started.endTimeISO,
-        durationSeconds: started.durationSeconds,
-      });
+      navigation.replace(
+        'ActiveSession',
+        buildActiveSessionRouteParams({ started, mode, bookId })
+      );
     } finally {
       setBusy(false);
     }
@@ -154,8 +150,8 @@ export function CompletionScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
+    backgroundColor: appTheme.colors.screenBackground,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 20,
     paddingBottom: 24,
   },

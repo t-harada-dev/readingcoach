@@ -18,8 +18,10 @@ import { useAppInit } from '../appInit';
 import { runReconcilePlansUseCase } from '../useCases/ReconcilePlansUseCase';
 import { runStartSessionUseCase, type SessionMode } from '../useCases/StartSessionUseCase';
 import { resolveFocusCoreScreenPolicy } from './screenPolicy';
+import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import { appTheme } from '../theme/layout';
 
-const BG = '#FDFCF8';
+const BG = appTheme.colors.screenBackground;
 const AMBER = '#D48A3E';
 const TEXT = '#2C2C2C';
 
@@ -123,16 +125,10 @@ export function FocusCoreScreen({
         mode,
         entryPoint: 'app',
       });
-      navigation.navigate('ActiveSession', {
-        planId: result.planId,
-        sessionId: result.sessionId,
-        bookId: plan.bookId,
-        bookTitle: result.bookTitle,
-        mode,
-        startedAt: result.startedAt,
-        endTimeISO: result.endTimeISO,
-        durationSeconds: result.durationSeconds,
-      });
+      navigation.navigate(
+        'ActiveSession',
+        buildActiveSessionRouteParams({ started: result, mode, bookId: plan.bookId })
+      );
     } finally {
       setStarting(null);
     }
@@ -256,7 +252,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: BG,
-    paddingHorizontal: 22,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 18,
     paddingBottom: 24,
   },

@@ -4,6 +4,7 @@ import { SessionCTAButton } from '../components/SessionCTAButton';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
 import { runUpdateDailyTargetTimeUseCase } from '../useCases/UpdateDailyTargetTimeUseCase';
+import { appTheme } from '../theme/layout';
 
 type Preset = { label: string; hour: number; minute: number };
 
@@ -83,8 +84,8 @@ export function TimeChangeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
+    backgroundColor: appTheme.colors.screenBackground,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 24,
     paddingBottom: 24,
   },

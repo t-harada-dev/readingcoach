@@ -7,6 +7,8 @@ import { toLocalISODateString } from '../date';
 import { runFindPlanByIdUseCase } from '../useCases/FindPlanUseCase';
 import { runReconcilePlansUseCase } from '../useCases/ReconcilePlansUseCase';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
+import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import { appTheme } from '../theme/layout';
 
 type Params = {
   planId?: string;
@@ -37,16 +39,10 @@ export function RestartRecoveryScreen({ navigation, route }: any) {
         entryPoint: 'app',
       });
 
-      navigation.replace('ActiveSession', {
-        planId: started.planId,
-        sessionId: started.sessionId,
-        bookId: plan.bookId,
-        bookTitle: started.bookTitle,
-        mode: 'ignition_1m',
-        startedAt: started.startedAt,
-        endTimeISO: started.endTimeISO,
-        durationSeconds: started.durationSeconds,
-      });
+      navigation.replace(
+        'ActiveSession',
+        buildActiveSessionRouteParams({ started, mode: 'ignition_1m', bookId: plan.bookId })
+      );
     } catch {
       setErrorText(copy.restartRecovery.startError);
     } finally {
@@ -96,8 +92,8 @@ export function RestartRecoveryScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
+    backgroundColor: appTheme.colors.screenBackground,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 44,
     paddingBottom: 24,
     justifyContent: 'space-between',

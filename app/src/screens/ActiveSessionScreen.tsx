@@ -3,8 +3,9 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { copy } from '../config/copy';
 import { runCompleteSessionUseCase } from '../useCases/CompleteSessionUseCase';
 import type { SessionMode } from '../useCases/StartSessionUseCase';
+import { appTheme } from '../theme/layout';
 
-const BG = '#FDFCF8';
+const BG = appTheme.colors.screenBackground;
 const TEXT = '#2C2C2C';
 const AMBER = '#D48A3E';
 
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: BG,
-    paddingHorizontal: 22,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 28,
     alignItems: 'center',
   },

@@ -11,6 +11,7 @@ import { runFindPlanByIdUseCase } from '../useCases/FindPlanUseCase';
 import { runResolveNotificationStartModeUseCase } from '../useCases/ResolveNotificationStartModeUseCase';
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
 import { resolveDueActionScreenId } from '../domain/entryRoutePolicy';
+import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
 
 type Props = {
   navigationRef: NavigationContainerRefWithCurrent<any>;
@@ -57,16 +58,10 @@ export function NotificationResponseCoordinator({ navigationRef }: Props) {
       const plan = await runFindPlanByIdUseCase(planId);
       if (!navigationRef.isReady()) return;
 
-      navigationRef.navigate('ActiveSession', {
-        planId: started.planId,
-        sessionId: started.sessionId,
-        bookId: plan?.bookId ?? '',
-        bookTitle: started.bookTitle,
-        mode,
-        startedAt: started.startedAt,
-        endTimeISO: started.endTimeISO,
-        durationSeconds: started.durationSeconds,
-      });
+      navigationRef.navigate(
+        'ActiveSession',
+        buildActiveSessionRouteParams({ started, mode, bookId: plan?.bookId })
+      );
     });
 
     return () => {
