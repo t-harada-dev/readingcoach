@@ -1,0 +1,23 @@
+name: app-check
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - ".github/workflows/app-check.yml"
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/app-check.yml"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run app check
+        working-directory: app
+        run: ./scripts/check-sandbox.sh

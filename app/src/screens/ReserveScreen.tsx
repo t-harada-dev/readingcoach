@@ -36,15 +36,19 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(hour, minute, 0, 0);
+    const planDate = toLocalISODateString(tomorrow);
     await persistenceBridge.upsertPlan({
-      planDate: toLocalISODateString(tomorrow),
+      planDate,
       bookId,
       scheduledAt: tomorrow.toISOString(),
       state: 'scheduled',
       result: 'attempted',
     });
     const book = books.find((b) => b.id === bookId);
-    if (book) await scheduleReadingReminder(tomorrow, book.title);
+    const savedPlan = await persistenceBridge.getPlanForDate(planDate);
+    if (book) {
+      await scheduleReadingReminder(tomorrow, book.title, { planId: savedPlan?.planId });
+    }
     navigation.goBack();
   };
 

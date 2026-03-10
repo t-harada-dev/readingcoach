@@ -1,9 +1,10 @@
 import type { SessionMode } from './StartSessionUseCase';
-import { resolveHomeActionPlan } from '../domain/homeActionPolicy';
 import { runFindPlanByIdUseCase } from './FindPlanUseCase';
+import { resolvePrimaryActiveSessionScreenId } from '../domain/entryRoutePolicy';
 
 export function resolvePrimaryStartModeByMissedDays(continuousMissedDays: number): SessionMode {
-  return resolveHomeActionPlan({ continuousMissedDays }).primaryMode;
+  const target = resolvePrimaryActiveSessionScreenId(continuousMissedDays);
+  return target === 'SC-14' ? 'ignition_1m' : 'normal_15m';
 }
 
 export async function runResolveNotificationStartModeUseCase(planId: string): Promise<SessionMode> {

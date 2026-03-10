@@ -19,3 +19,14 @@ npm start
 - **本を追加**: タイトル必須・著者任意のみ
 
 データは AsyncStorage。通知タップでアプリ起動 → 執行画面がそのまま表示される（導線短縮）。
+
+## テスト実行（サンドボックス向け）
+
+グローバルに `node` / `npm` が無い環境では、ローカル同梱 Node を使って実行する。
+
+```bash
+cd app
+./scripts/check-sandbox.sh
+```
+
+初回は `scripts/bootstrap-node.sh` が `.tools/` に Node を展開し、その後 `npm ci` と `npm run check`（test + typecheck）を実行する。

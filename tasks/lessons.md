@@ -27,3 +27,8 @@
 ## 通知アクションの開始モード
 
 1. **`START` を固定で 15 分にしない**: 通知・Widget・App Intents の user-facing `開始` は状態依存で第一導線にマップする。少なくとも `continuousMissedDays >= 3` では `ignition_1m` に切り替える。
+
+## ローカル同梱 Node（サンドボックス実行）
+
+1. **`npm` を絶対パスで叩く時も `PATH` に node を入れる**: `npm` の shebang は `#!/usr/bin/env node`。`node` を PATH に通さないと `env: node: No such file or directory` で失敗する。
+2. **React Native の最低 Node 要件を満たすバージョンを既定にする**: `20.19.4` 未満だと `EBADENGINE` 警告が大量に出る。`.nvmrc` / bootstrap 既定値 / `engines.node` を揃える。

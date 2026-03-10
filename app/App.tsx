@@ -17,6 +17,8 @@ import { NotificationResponseCoordinator } from './src/app/NotificationResponseC
 import { NextFocusNominationScreen } from './src/screens/NextFocusNominationScreen';
 import { LibraryScreen } from './src/screens/LibraryScreen';
 import { BookDetailScreen } from './src/screens/BookDetailScreen';
+import { RestartRecoveryScreen } from './src/screens/RestartRecoveryScreen';
+import { TimeChangeScreen } from './src/screens/TimeChangeScreen';
 
 const Stack = createNativeStackNavigator();
 const navigationRef = createNavigationContainerRef();
@@ -72,6 +74,16 @@ export default function App() {
                 name="DueActionSheet"
                 component={DueActionSheetScreen}
                 options={{ title: copy.navigation.dueActionTitle, presentation: 'modal' }}
+              />
+              <Stack.Screen
+                name="RestartRecovery"
+                component={RestartRecoveryScreen}
+                options={{ title: copy.navigation.restartRecoveryTitle }}
+              />
+              <Stack.Screen
+                name="TimeChange"
+                component={TimeChangeScreen}
+                options={{ title: copy.navigation.timeChangeTitle }}
               />
               <Stack.Screen
                 name="ProgressTrackingPrompt"

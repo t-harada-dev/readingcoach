@@ -7,6 +7,7 @@ import { buildCompletionFeedback } from '../domain/completionFeedback';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { shouldOfferProgressTracking } from '../domain/progressTrackingPolicy';
+import { completionCtaOrder } from './screenPolicy';
 
 type Params = {
   planId: string;
@@ -25,6 +26,7 @@ export function CompletionScreen({ navigation, route }: any) {
   const { planId, bookId, bookTitle, result, elapsedSeconds } = (route.params ?? {}) as Params;
   const [busy, setBusy] = useState(false);
   const [promptChecked, setPromptChecked] = useState(false);
+  const ctaOrder = completionCtaOrder();
 
   const feedback = useMemo(
     () =>
@@ -101,30 +103,50 @@ export function CompletionScreen({ navigation, route }: any) {
         progressRatio={feedback.progressRatio}
       />
 
-      <SessionCTAButton
-        tone="primary"
-        label={copy.completion.ctaExtra5m}
-        onPress={() => startExtra('rescue_5m')}
-        disabled={busy}
-      />
-      <SessionCTAButton
-        tone="secondary"
-        label={copy.completion.ctaExtra15m}
-        onPress={() => startExtra('normal_15m')}
-        disabled={busy}
-      />
-      <SessionCTAButton
-        tone="ghost"
-        label={copy.completion.ctaFinishedBook}
-        onPress={markFinished}
-        disabled={busy}
-      />
-      <SessionCTAButton
-        tone="ghost"
-        label={copy.completion.ctaClose}
-        onPress={() => navigation.navigate('FocusCore')}
-        disabled={busy}
-      />
+      {ctaOrder.map((cta) => {
+        if (cta === 'extra_5m') {
+          return (
+            <SessionCTAButton
+              key={cta}
+              tone="primary"
+              label={copy.completion.ctaExtra5m}
+              onPress={() => startExtra('rescue_5m')}
+              disabled={busy}
+            />
+          );
+        }
+        if (cta === 'extra_15m') {
+          return (
+            <SessionCTAButton
+              key={cta}
+              tone="secondary"
+              label={copy.completion.ctaExtra15m}
+              onPress={() => startExtra('normal_15m')}
+              disabled={busy}
+            />
+          );
+        }
+        if (cta === 'finished_book') {
+          return (
+            <SessionCTAButton
+              key={cta}
+              tone="ghost"
+              label={copy.completion.ctaFinishedBook}
+              onPress={markFinished}
+              disabled={busy}
+            />
+          );
+        }
+        return (
+          <SessionCTAButton
+            key={cta}
+            tone="ghost"
+            label={copy.completion.ctaClose}
+            onPress={() => navigation.navigate('FocusCore')}
+            disabled={busy}
+          />
+        );
+      })}
     </View>
   );
 }

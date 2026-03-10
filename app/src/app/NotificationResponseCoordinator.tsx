@@ -10,6 +10,7 @@ import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { runFindPlanByIdUseCase } from '../useCases/FindPlanUseCase';
 import { runResolveNotificationStartModeUseCase } from '../useCases/ResolveNotificationStartModeUseCase';
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
+import { resolveDueActionScreenId } from '../domain/entryRoutePolicy';
 
 type Props = {
   navigationRef: NavigationContainerRefWithCurrent<any>;
@@ -29,9 +30,12 @@ export function NotificationResponseCoordinator({ navigationRef }: Props) {
       if (action === 'default') {
         const defaultMode = await runResolveNotificationStartModeUseCase(planId);
         if (navigationRef.isReady()) {
+          const dueActionScreenId = resolveDueActionScreenId();
           navigationRef.navigate('DueActionSheet', {
             planId,
             defaultMode,
+            entryPoint: 'notification',
+            dueActionScreenId,
           });
         }
         return;

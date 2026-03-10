@@ -4,15 +4,19 @@ import { SessionCTAButton } from '../components/SessionCTAButton';
 import { copy } from '../config/copy';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
+import { dueActionOrder } from './screenPolicy';
 
 type Params = {
   planId: string;
   defaultMode: 'normal_15m' | 'ignition_1m';
+  entryPoint?: 'notification' | 'app';
+  dueActionScreenId?: 'SC-23';
 };
 
 export function DueActionSheetScreen({ navigation, route }: any) {
-  const { planId, defaultMode } = (route.params ?? {}) as Params;
+  const { planId, defaultMode, entryPoint } = (route.params ?? {}) as Params;
   const [busy, setBusy] = useState(false);
+  const actions = dueActionOrder();
 
   const onStart = async (mode: 'normal_15m' | 'ignition_1m' | 'rescue_5m') => {
     if (!planId || busy) return;
@@ -21,7 +25,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
       const started = await runStartSessionUseCase({
         planId,
         mode,
-        entryPoint: 'app',
+        entryPoint: entryPoint === 'notification' ? 'notification' : 'app',
       });
       navigation.replace('ActiveSession', {
         planId,
@@ -42,33 +46,48 @@ export function DueActionSheetScreen({ navigation, route }: any) {
       <View style={styles.sheet}>
         <Text style={styles.title}>{copy.dueAction.title}</Text>
         <Text style={styles.subtitle}>{copy.dueAction.subtitle}</Text>
-        <SessionCTAButton
-          tone="primary"
-          label={copy.dueAction.ctaStart}
-          onPress={() => onStart(defaultMode ?? 'normal_15m')}
-          disabled={busy}
-        />
-        <SessionCTAButton
-          tone="secondary"
-          label={copy.dueAction.cta5m}
-          onPress={() => onStart('rescue_5m')}
-          disabled={busy}
-        />
-        <SessionCTAButton
-          tone="ghost"
-          label={copy.dueAction.ctaSnooze}
-          onPress={async () => {
-            if (!planId || busy) return;
-            setBusy(true);
-            try {
-              await runSnoozePlanUseCase(planId, 30);
-              navigation.goBack();
-            } finally {
-              setBusy(false);
-            }
-          }}
-          disabled={busy}
-        />
+        {actions.map((action) => {
+          if (action === 'start') {
+            return (
+              <SessionCTAButton
+                key={action}
+                tone="primary"
+                label={copy.dueAction.ctaStart}
+                onPress={() => onStart(defaultMode ?? 'normal_15m')}
+                disabled={busy}
+              />
+            );
+          }
+          if (action === 'rescue_5m') {
+            return (
+              <SessionCTAButton
+                key={action}
+                tone="secondary"
+                label={copy.dueAction.cta5m}
+                onPress={() => onStart('rescue_5m')}
+                disabled={busy}
+              />
+            );
+          }
+          return (
+            <SessionCTAButton
+              key={action}
+              tone="ghost"
+              label={copy.dueAction.ctaSnooze}
+              onPress={async () => {
+                if (!planId || busy) return;
+                setBusy(true);
+                try {
+                  await runSnoozePlanUseCase(planId, 30);
+                  navigation.goBack();
+                } finally {
+                  setBusy(false);
+                }
+              }}
+              disabled={busy}
+            />
+          );
+        })}
       </View>
     </View>
   );

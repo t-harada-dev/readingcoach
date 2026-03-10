@@ -1,5 +1,6 @@
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { liveActivityBridge } from '../bridge/LiveActivityBridge';
+import { cancelScheduledForPlan } from '../notifications';
 
 /** JS 側の執行モード。ネイティブの文字列とは必要に応じてマッピングする。 */
 export type SessionMode = 'normal_15m' | 'rescue_5m' | 'rehab_3m' | 'ignition_1m';
@@ -44,6 +45,9 @@ export async function runStartSessionUseCase(
 ): Promise<StartSessionResult> {
   const { planId, mode, entryPoint } = params;
   const durationSeconds = DURATION_SECONDS[mode];
+
+  // Expo 通知経路で予約されている当該 plan の通知を先に消す（開始後の誤通知防止）。
+  await cancelScheduledForPlan(planId).catch(() => {});
 
   const { sessionId, startedAt, bookTitle } = await persistenceBridge.startSession(
     planId,

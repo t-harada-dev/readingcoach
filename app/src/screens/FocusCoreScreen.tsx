@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -17,7 +17,7 @@ import { getManualFocusChangeCount } from '../manualFocusChange';
 import { useAppInit } from '../appInit';
 import { runReconcilePlansUseCase } from '../useCases/ReconcilePlansUseCase';
 import { runStartSessionUseCase, type SessionMode } from '../useCases/StartSessionUseCase';
-import { resolveHomeActionPlan } from '../domain/homeActionPolicy';
+import { resolveFocusCoreScreenPolicy } from './screenPolicy';
 
 const BG = '#FDFCF8';
 const AMBER = '#D48A3E';
@@ -43,6 +43,7 @@ function progressRatioForPlan(plan: DailyExecutionPlanDTO | null): number {
 
 export function FocusCoreScreen({
   navigation,
+  route,
 }: any) {
   const init = useAppInit();
 
@@ -57,9 +58,9 @@ export function FocusCoreScreen({
   const canManualChange = manualChangeCount < 1;
   const progressRatio = progressRatioForPlan(plan);
 
-  const actionPlan = useMemo(
+  const policy = useMemo(
     () =>
-      resolveHomeActionPlan({
+      resolveFocusCoreScreenPolicy({
         continuousMissedDays,
         heavyDaySignal: plan?.state === 'scheduled' && plan?.result === 'attempted',
       }),
@@ -137,9 +138,23 @@ export function FocusCoreScreen({
     }
   };
 
-  const mainMode: SessionMode = actionPlan.primaryMode;
-  const subMode: SessionMode | null = actionPlan.secondaryMode;
-  const rehabMode: SessionMode | null = actionPlan.rehabMode;
+  const mainMode: SessionMode = policy.primaryMode;
+  const subMode: SessionMode | null = policy.secondaryMode;
+  const rehabMode: SessionMode | null = policy.rehabMode;
+  const skipRestartOnce = Boolean(route?.params?.skipRestartOnce);
+
+  useEffect(() => {
+    if (!skipRestartOnce) return;
+    navigation.setParams({ skipRestartOnce: false });
+  }, [navigation, skipRestartOnce]);
+
+  useEffect(() => {
+    if (loading || init.status !== 'ready') return;
+    if (!plan) return;
+    if (skipRestartOnce) return;
+    if (policy.screenId !== 'SC-07') return;
+    navigation.navigate('RestartRecovery', { planId: plan.planId, planDate: plan.planDate });
+  }, [policy.screenId, init.status, loading, navigation, plan, skipRestartOnce]);
 
   const dailyQuote = useMemo(() => dailyPerformanceMentorQuote(planDate), [planDate]);
   const subCopy = `「${dailyQuote.text}」\n— ${dailyQuote.author}`;
