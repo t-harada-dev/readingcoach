@@ -1,55 +1,45 @@
 const { device, expect, element, by, waitFor } = require('detox');
-
-async function launchRehabFast() {
-  await device.launchApp({
-    newInstance: true,
-    delete: true,
-    launchArgs: { e2e_state: 'rehab3', e2e_session_seconds: '2' },
-  });
-  await device.disableSynchronization();
-}
-
-async function reachCompletion() {
-  await waitFor(element(by.id('focus-core-primary-cta'))).toBeVisible().withTimeout(15000);
-  await element(by.id('focus-core-primary-cta')).tap();
-  await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
-  const deadline = Date.now() + 130000;
-  while (Date.now() < deadline) {
-    try {
-      await expect(element(by.id('completion-screen'))).toBeVisible();
-      return;
-    } catch {
-      // no-op
-    }
-    try {
-      await expect(element(by.id('progress-prompt-screen'))).toBeVisible();
-      await element(by.id('progress-prompt-later')).tap();
-      await waitFor(element(by.id('completion-screen'))).toBeVisible().withTimeout(10000);
-      return;
-    } catch {
-      // no-op
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-  throw new Error('Timed out waiting for completion-screen');
-}
+const {
+  launchRehabFast,
+  reachCompletion,
+  ensureCompletionActionVisible,
+} = require('./helpers/completionFlow');
 
 describe('Next Focus Visible', () => {
   afterEach(async () => {
     await device.enableSynchronization();
   });
 
-  // TC-CMP-10E (minimal E2E): SC-19 で次本選択の確定操作が可能
+  // TC-CMP-10E: SC-19 確定後にホーム表示 + FocusCore 次本反映
   it('shows nominated next book on FocusCore after confirm', async () => {
-    await launchRehabFast();
-    await reachCompletion();
+    await launchRehabFast({ state: 'normal' });
+    await reachCompletion({ dismissProgressPrompt: true });
+    await ensureCompletionActionVisible('completion-finished-book');
 
     await waitFor(element(by.id('completion-finished-book'))).toBeVisible().withTimeout(10000);
     await element(by.id('completion-finished-book')).tap();
 
     await waitFor(element(by.id('next-focus-screen'))).toBeVisible().withTimeout(10000);
     await waitFor(element(by.id('next-focus-selection-ready'))).toExist().withTimeout(10000);
+    try {
+      await waitFor(element(by.id('next-focus-book-row-native_book_2-button')))
+        .toBeVisible()
+        .withTimeout(3000);
+      await element(by.id('next-focus-book-row-native_book_2-button')).tap();
+    } catch {
+      await waitFor(element(by.id('next-focus-book-row-native_book_1-button')))
+        .toBeVisible()
+        .withTimeout(10000);
+      await element(by.id('next-focus-book-row-native_book_1-button')).tap();
+    }
+    await waitFor(element(by.id('next-focus-confirm'))).toBeVisible().withTimeout(10000);
     await element(by.id('next-focus-confirm')).tap();
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    await waitFor(element(by.id('next-focus-screen'))).not.toBeVisible().withTimeout(60000);
+    await device.enableSynchronization();
+    await waitFor(element(by.id('focus-core-open-library'))).toBeVisible().withTimeout(30000);
+    await waitFor(element(by.id('focus-core-book-title')))
+      .toHaveText('再点火トレーニング (Native)')
+      .withTimeout(30000);
   });
 });

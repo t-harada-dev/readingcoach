@@ -57,6 +57,7 @@ export const copy = {
     ctaExtra15m: 'もう 15 分やる',
     ctaFinishedBook: '読了した',
     ctaClose: '閉じる / ホームへ戻る',
+    finishedBookSaveError: '読了の保存に失敗しました。もう一度お試しください。',
   },
   dueAction: {
     title: '今、どう始めますか',

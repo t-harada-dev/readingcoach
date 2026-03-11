@@ -39,6 +39,13 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
     [books, selectedBookId]
   );
 
+  const resetToHome = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'FocusCore', params: { skipRestartOnce: true } }],
+    });
+  };
+
   const onConfirm = async () => {
     if (!selected || saving) return;
     setSaving(true);
@@ -48,7 +55,7 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
       // E-36: nomination save failure should not block returning to home.
     } finally {
       setSaving(false);
-      navigation.navigate('FocusCore');
+      resetToHome();
     }
   };
 
@@ -92,7 +99,7 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
       <SessionCTAButton
         label="あとで"
         tone="ghost"
-        onPress={() => navigation.navigate('FocusCore')}
+        onPress={resetToHome}
         disabled={saving}
       />
     </View>

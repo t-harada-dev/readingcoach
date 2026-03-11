@@ -1,36 +1,5 @@
 const { device, expect, element, by, waitFor } = require('detox');
-
-async function launchRehabFast() {
-  await device.launchApp({
-    newInstance: true,
-    delete: true,
-    launchArgs: { e2e_state: 'rehab3', e2e_session_seconds: '2' },
-  });
-  await device.disableSynchronization();
-}
-
-async function reachCompletion() {
-  await waitFor(element(by.id('focus-core-primary-cta'))).toBeVisible().withTimeout(15000);
-  await element(by.id('focus-core-primary-cta')).tap();
-  await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
-  const deadline = Date.now() + 130000;
-  while (Date.now() < deadline) {
-    try {
-      await expect(element(by.id('completion-screen'))).toBeVisible();
-      return;
-    } catch {
-      // no-op
-    }
-    try {
-      await expect(element(by.id('progress-prompt-screen'))).toBeVisible();
-      return;
-    } catch {
-      // no-op
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-  throw new Error('Timed out waiting for completion or progress prompt');
-}
+const { sleep, launchRehabFast, reachCompletion } = require('./helpers/completionFlow');
 
 describe('Progress Opt-in Flow', () => {
   afterEach(async () => {
@@ -77,6 +46,6 @@ describe('Progress Opt-in Flow', () => {
     const saveButton = element(by.id('progress-setup-save'));
     await waitFor(saveButton).toExist().withTimeout(10000);
     await saveButton.tap();
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await sleep(500);
   });
 });

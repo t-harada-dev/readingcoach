@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { CompletionFeedbackCard } from '../components/CompletionFeedbackCard';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { copy } from '../config/copy';
@@ -28,6 +28,7 @@ export function CompletionScreen({ navigation, route }: any) {
   const { planId, bookId, bookTitle, result, elapsedSeconds } = (route.params ?? {}) as Params;
   const [busy, setBusy] = useState(false);
   const [promptChecked, setPromptChecked] = useState(false);
+  const [finishedBookError, setFinishedBookError] = useState<string | null>(null);
   const ctaOrder = completionCtaOrder();
 
   const feedback = useMemo(
@@ -76,6 +77,7 @@ export function CompletionScreen({ navigation, route }: any) {
   const markFinished = async () => {
     if (busy) return;
     setBusy(true);
+    setFinishedBookError(null);
     try {
       await persistenceBridge.saveBook({
         id: bookId,
@@ -85,6 +87,8 @@ export function CompletionScreen({ navigation, route }: any) {
       navigation.navigate('NextFocusNomination', {
         completedBookId: bookId,
       });
+    } catch {
+      setFinishedBookError(copy.completion.finishedBookSaveError);
     } finally {
       setBusy(false);
     }
@@ -154,6 +158,11 @@ export function CompletionScreen({ navigation, route }: any) {
         );
       })}
       </View>
+      {finishedBookError ? (
+        <Text testID="completion-finished-error" style={styles.errorText}>
+          {finishedBookError}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -165,5 +174,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 20,
     paddingBottom: 24,
+  },
+  errorText: {
+    marginTop: 12,
+    color: '#B91C1C',
+    fontSize: 13,
+    textAlign: 'center',
   },
 });

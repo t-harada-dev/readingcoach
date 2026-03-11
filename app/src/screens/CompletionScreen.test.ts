@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const ctaCalls: Array<{ label: string; onPress: () => void | Promise<void> }> = [];
+const saveBookMock = vi.hoisted(() => vi.fn(async () => {}));
+const getSettingsMock = vi.hoisted(() => vi.fn(async () => null));
 
 vi.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
@@ -22,8 +24,8 @@ vi.mock('../components/SessionCTAButton', () => ({
 
 vi.mock('../bridge/PersistenceBridge', () => ({
   persistenceBridge: {
-    getSettings: vi.fn(async () => null),
-    saveBook: vi.fn(async () => {}),
+    getSettings: getSettingsMock,
+    saveBook: saveBookMock,
   },
 }));
 
@@ -42,6 +44,8 @@ describe('CompletionScreen', () => {
   beforeEach(() => {
     ctaCalls.length = 0;
     vi.clearAllMocks();
+    getSettingsMock.mockResolvedValue(null);
+    saveBookMock.mockResolvedValue(undefined);
     startMock.mockResolvedValue({
       sessionId: 's1',
       startedAt: '2026-03-10T10:00:00.000Z',
@@ -94,5 +98,39 @@ describe('CompletionScreen', () => {
       entryPoint: 'app',
     });
     expect(replace).toHaveBeenCalled();
+  });
+
+  it('読了保存失敗後に再試行でき、成功時に NextFocus へ遷移する', async () => {
+    const navigate = vi.fn();
+    saveBookMock
+      .mockRejectedValueOnce(new Error('injected save failure'))
+      .mockResolvedValueOnce(undefined);
+
+    renderToStaticMarkup(
+      React.createElement(CompletionScreen, {
+        navigation: { replace: vi.fn(), navigate },
+        route: {
+          params: {
+            planId: 'p1',
+            bookId: 'b1',
+            bookTitle: 'Book',
+            result: 'soft_success',
+            elapsedSeconds: 300,
+          },
+        },
+      })
+    );
+
+    const finished = ctaCalls.find((c) => c.label === '読了した');
+    expect(finished).toBeTruthy();
+
+    await finished?.onPress();
+    expect(navigate).not.toHaveBeenCalledWith('NextFocusNomination', expect.anything());
+
+    await finished?.onPress();
+    expect(navigate).toHaveBeenCalledWith('NextFocusNomination', {
+      completedBookId: 'b1',
+    });
+    expect(saveBookMock).toHaveBeenCalledTimes(2);
   });
 });

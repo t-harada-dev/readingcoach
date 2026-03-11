@@ -65,6 +65,7 @@ final class PersistenceStore {
   private let context: ModelContext
   private let isoFormatter: ISO8601DateFormatter
   private var e2eStartFailureConsumed = false
+  private var e2eSaveBookFailureConsumed = false
 
   private init() throws {
     let schema = Schema([
@@ -121,6 +122,10 @@ final class PersistenceStore {
   }
 
   func saveBook(_ params: SaveBookParams) throws {
+    if e2eFailSaveBookOnceFromLaunchArgs() {
+      throw PersistenceError.unsupported("E2E injected saveBook failure")
+    }
+
     let bookId = params.id
     let descriptor = FetchDescriptor<BookEntity>(predicate: #Predicate { $0.id == bookId })
     if let existing = try context.fetch(descriptor).first {
@@ -397,6 +402,21 @@ final class PersistenceStore {
       return nil
     }
     return Int(args[idx + 1])
+  }
+
+  private func e2eFailSaveBookOnceFromLaunchArgs() -> Bool {
+    if e2eSaveBookFailureConsumed {
+      return false
+    }
+    let args = ProcessInfo.processInfo.arguments
+    guard let idx = args.firstIndex(of: "-e2e_fail_save_book_once"), idx + 1 < args.count else {
+      return false
+    }
+    let enabled = args[idx + 1] == "1"
+    if enabled {
+      e2eSaveBookFailureConsumed = true
+    }
+    return enabled
   }
 
   private func ensureSeededIfNeeded() throws {

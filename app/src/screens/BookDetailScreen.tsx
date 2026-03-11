@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
 import { enableProgressTracking, updateBookProgress } from '../useCases/ProgressTrackingUseCases';
+import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { runSetFocusBookForTodayUseCase } from '../useCases/SetFocusBookForTodayUseCase';
 
 type Params = {
@@ -53,12 +54,7 @@ export function BookDetailScreen({ route, navigation }: any) {
 
   const onToggleProgress = async () => {
     if (progressEnabled) {
-      const current = await persistenceBridge.getSettings();
-      await persistenceBridge.saveSettings({
-        dailyTargetTime: current?.dailyTargetTime ?? 21 * 60,
-        defaultDuration: current?.defaultDuration ?? 15,
-        retryLimit: current?.retryLimit ?? 1,
-        dayRolloverHour: current?.dayRolloverHour ?? 4,
+      await saveSettingsWithDefaults({
         progressTrackingEnabled: false,
         progressPromptShown: true,
       });

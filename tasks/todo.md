@@ -14,12 +14,28 @@
 - [x] `docs/testing/completion-final-gap-notes.md` を追加し、今回の自動化範囲と残ギャップを記録
 - [x] `npm run e2e:build:ios` / `npm run e2e:test:ios` / `npm test` を実行して結果を確定
 
+## 2026-03-11: Batch 8 残件クローズ（CMP）
+
+- [x] TC-CMP-10E を「SC-19確定後にホーム表示 + FocusCore次本反映」まで E2E で安定化
+- [x] 読了保存失敗時の UI リカバリ導線（メッセージ可視化または再試行導線）の自動化を追加
+- [x] `docs/testing/completion-final-gap-notes.md` を更新し、残ギャップを再判定
+- [x] `npm run e2e:build:ios` / `npm run e2e:test:ios` / `npm test` で回帰確認
+
 ## 2026-03-11: DRYリファクタリング（俯瞰改善）
 
-- [ ] 重複棚卸し結果に基づき、リファクタ対象を 2 系統に限定（Completion系E2E helper / settings保存デフォルト埋め）
-- [ ] `app/e2e/helpers` に Completion 共通 helper を新設し、重複している E2E（completion/progress/finished/next-focus）を置換
-- [ ] settings 保存の共通化 helper を導入し、`ProgressTrackingUseCases` / `UpdateDailyTargetTimeUseCase` / `OnboardingTimeScreen` / `BookDetailScreen` の重複ロジックを置換
-- [ ] 影響範囲テストを実行して回帰確認（`npm run e2e:test:ios -- e2e/completion-flow.e2e.js e2e/finished-book.e2e.js e2e/progress-optin.e2e.js e2e/next-focus-visible.e2e.js` / `npm test`）
+- [x] 重複棚卸し結果に基づき、リファクタ対象を 2 系統に限定（Completion系E2E helper / settings保存デフォルト埋め）
+- [x] `app/e2e/helpers` に Completion 共通 helper を新設し、重複している E2E（completion/progress/finished/next-focus）を置換
+- [x] settings 保存の共通化 helper を導入し、`ProgressTrackingUseCases` / `UpdateDailyTargetTimeUseCase` / `OnboardingTimeScreen` / `BookDetailScreen` の重複ロジックを置換
+- [x] 影響範囲テストを実行して回帰確認（`npm run e2e:test:ios -- e2e/completion-flow.e2e.js e2e/finished-book.e2e.js e2e/progress-optin.e2e.js e2e/next-focus-visible.e2e.js` / `npm test`）
+
+## 2026-03-11: Batch 9 Native Acceptance / Release Readiness 整理
+
+- [x] 既存 gap note（SUR/ABN/ONB/BOOK）との対応表を作成し、TC-SUR/ABN/ONB/BOOK-NA を checklist へ統合
+- [x] `docs/testing/native-acceptance-checklist.md` を追加（前提/手順/期待結果/blocker判定/証跡/triage）
+- [x] `docs/testing/release-readiness-matrix.md` を追加（レイヤ・実装状態・blocker・代替確認・owner）
+- [x] `docs/testing/native-acceptance-gap-notes.md` を追加（自動化境界と最終受入の線引き）
+- [x] 可能な最小 XCUITest 雛形を追加（`app/ios/appUITests/AcceptanceSmokeUITests.swift` / `app/ios/appUITests/InterruptionHandling.swift`）
+- [x] production コード非変更を確認し、作成物の実施順序・blocker一覧を報告
 
 ## 2026-03-11: Batch 5 SUR-01〜10 実装（Surface / Widget / Notification / App Intents）
 

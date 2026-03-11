@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { persistenceBridge } from '../bridge/PersistenceBridge';
+import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 
 const PRESETS = [
   { label: '07:00', h: 7, m: 0 },
@@ -17,14 +17,8 @@ export function OnboardingTimeScreen({ navigation }: any) {
     if (saving) return;
     setSaving(true);
     try {
-      const current = await persistenceBridge.getSettings();
-      await persistenceBridge.saveSettings({
+      await saveSettingsWithDefaults({
         dailyTargetTime: hour * 60 + minute,
-        defaultDuration: current?.defaultDuration ?? 15,
-        retryLimit: current?.retryLimit ?? 1,
-        dayRolloverHour: current?.dayRolloverHour ?? 4,
-        progressTrackingEnabled: current?.progressTrackingEnabled ?? false,
-        progressPromptShown: current?.progressPromptShown ?? false,
       });
       navigation.replace('OnboardingNotification');
     } finally {
