@@ -1,5 +1,26 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-11: E2E終了時のSimulator自動停止
+
+- [x] 現行 `e2e:test:ios` 実行経路を確認し、終了時クリーンアップ方針を確定
+- [x] Detox 標準 `--cleanup` オプション採用へ方針変更（ラッパー不要）
+- [x] `app/package.json` の `e2e:test:ios` を `detox test -c ios.sim.debug --cleanup` に切り替え
+- [x] `npm run e2e:test:ios -- --help` でオプション経由の実行確認
+
+## 2026-03-11: Batch 8 Completion 残ギャップ対応と完走確認
+
+- [x] 既存 Completion 系 E2E / integration 実装を確認し、TC-CMP-01N/01R/07I/09F/10E の未充足差分を確定
+- [x] 必要最小限のテスト実装・安定化修正（E2E: 01N/01R/10E、integration: 07I/09F）を追加
+- [x] `docs/testing/completion-final-gap-notes.md` を追加し、今回の自動化範囲と残ギャップを記録
+- [x] `npm run e2e:build:ios` / `npm run e2e:test:ios` / `npm test` を実行して結果を確定
+
+## 2026-03-11: DRYリファクタリング（俯瞰改善）
+
+- [ ] 重複棚卸し結果に基づき、リファクタ対象を 2 系統に限定（Completion系E2E helper / settings保存デフォルト埋め）
+- [ ] `app/e2e/helpers` に Completion 共通 helper を新設し、重複している E2E（completion/progress/finished/next-focus）を置換
+- [ ] settings 保存の共通化 helper を導入し、`ProgressTrackingUseCases` / `UpdateDailyTargetTimeUseCase` / `OnboardingTimeScreen` / `BookDetailScreen` の重複ロジックを置換
+- [ ] 影響範囲テストを実行して回帰確認（`npm run e2e:test:ios -- e2e/completion-flow.e2e.js e2e/finished-book.e2e.js e2e/progress-optin.e2e.js e2e/next-focus-visible.e2e.js` / `npm test`）
+
 ## 2026-03-11: Batch 5 SUR-01〜10 実装（Surface / Widget / Notification / App Intents）
 
 - [x] 既存実装調査（launchArgs / e2e_state / reconcile / notification response）を完了し、最小変更方針を確定

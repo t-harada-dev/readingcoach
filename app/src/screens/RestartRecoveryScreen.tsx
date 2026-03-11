@@ -51,7 +51,7 @@ export function RestartRecoveryScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="restart-recovery-screen" style={styles.container}>
       <View style={styles.copyWrap}>
         <Text style={styles.title}>{copy.restartRecovery.title}</Text>
         <Text style={styles.subtitle}>{copy.restartRecovery.subtitle}</Text>
@@ -59,6 +59,7 @@ export function RestartRecoveryScreen({ navigation, route }: any) {
 
       <View style={styles.actions}>
         <SessionCTAButton
+          testID="restart-start-ignition"
           tone="primary"
           label={copy.restartRecovery.ctaStartIgnition}
           onPress={startIgnition}
@@ -77,6 +78,7 @@ export function RestartRecoveryScreen({ navigation, route }: any) {
           disabled={busy}
         />
         <SessionCTAButton
+          testID="restart-close"
           tone="ghost"
           label={copy.restartRecovery.ctaClose}
           onPress={() => navigation.navigate('FocusCore', { skipRestartOnce: true })}
