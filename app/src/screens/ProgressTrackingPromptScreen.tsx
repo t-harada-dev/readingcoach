@@ -18,12 +18,13 @@ export function ProgressTrackingPromptScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="progress-prompt-screen" style={styles.container}>
       <Text style={styles.title}>進捗バーを使いますか？</Text>
       <Text style={styles.subtitle}>
         任意機能です。使わなくても、開始・継続・完了の体験は変わりません。
       </Text>
       <SessionCTAButton
+        testID="progress-prompt-enable"
         tone="primary"
         label="設定する"
         onPress={() =>
@@ -34,8 +35,8 @@ export function ProgressTrackingPromptScreen({ navigation, route }: any) {
         }
         disabled={busy}
       />
-      <SessionCTAButton tone="secondary" label="あとで" onPress={onSkip} disabled={busy} />
-      <SessionCTAButton tone="ghost" label="使わない" onPress={onSkip} disabled={busy} />
+      <SessionCTAButton testID="progress-prompt-later" tone="secondary" label="あとで" onPress={onSkip} disabled={busy} />
+      <SessionCTAButton testID="progress-prompt-disable" tone="ghost" label="使わない" onPress={onSkip} disabled={busy} />
     </View>
   );
 }
@@ -60,4 +61,3 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 });
-

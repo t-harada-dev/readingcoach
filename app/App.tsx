@@ -14,11 +14,16 @@ import { ReserveScreen } from './src/screens/ReserveScreen';
 import { AddBookScreen } from './src/screens/AddBookScreen';
 import { copy } from './src/config/copy';
 import { NotificationResponseCoordinator } from './src/app/NotificationResponseCoordinator';
+import { SurfaceTriggerCoordinator } from './src/app/SurfaceTriggerCoordinator';
+import { OnboardingCoordinator } from './src/app/OnboardingCoordinator';
 import { NextFocusNominationScreen } from './src/screens/NextFocusNominationScreen';
 import { LibraryScreen } from './src/screens/LibraryScreen';
 import { BookDetailScreen } from './src/screens/BookDetailScreen';
 import { RestartRecoveryScreen } from './src/screens/RestartRecoveryScreen';
 import { TimeChangeScreen } from './src/screens/TimeChangeScreen';
+import { OnboardingTimeScreen } from './src/screens/OnboardingTimeScreen';
+import { OnboardingNotificationScreen } from './src/screens/OnboardingNotificationScreen';
+import { View } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const navigationRef = createNavigationContainerRef();
@@ -37,10 +42,13 @@ const theme = {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <AppInitProvider>
+    <View testID="app-root" style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AppInitProvider>
           <NavigationContainer theme={theme} ref={navigationRef}>
             <NotificationResponseCoordinator navigationRef={navigationRef} />
+            <SurfaceTriggerCoordinator navigationRef={navigationRef} />
+            <OnboardingCoordinator navigationRef={navigationRef} />
             <Stack.Navigator
               initialRouteName="FocusCore"
               screenOptions={{
@@ -100,18 +108,47 @@ export default function App() {
                 component={NextFocusNominationScreen}
                 options={{ title: copy.navigation.nextFocusNominationTitle }}
               />
-              <Stack.Screen name="Library" component={LibraryScreen} options={{ title: copy.navigation.libraryTitle }} />
+              <Stack.Screen
+                name="Library"
+                component={LibraryScreen}
+                options={{ title: copy.navigation.libraryTitle }}
+              />
               <Stack.Screen
                 name="BookDetail"
                 component={BookDetailScreen}
                 options={{ title: copy.navigation.bookDetailTitle }}
               />
-              <Stack.Screen name="Reserve" component={ReserveScreen} options={{ title: copy.navigation.reserveTitle }} />
-              <Stack.Screen name="AddBook" component={AddBookScreen} options={{ title: copy.navigation.addBookTitle }} />
+              <Stack.Screen
+                name="Reserve"
+                component={ReserveScreen}
+                options={{ title: copy.navigation.reserveTitle }}
+              />
+              <Stack.Screen
+                name="AddBook"
+                component={AddBookScreen}
+                options={{ title: copy.navigation.addBookTitle }}
+              />
+              <Stack.Screen
+                name="OnboardingAddBook"
+                component={AddBookScreen}
+                options={{ title: copy.navigation.addBookTitle, headerBackVisible: false }}
+                initialParams={{ onboarding: true }}
+              />
+              <Stack.Screen
+                name="OnboardingTime"
+                component={OnboardingTimeScreen}
+                options={{ title: '時刻設定', headerBackVisible: false }}
+              />
+              <Stack.Screen
+                name="OnboardingNotification"
+                component={OnboardingNotificationScreen}
+                options={{ title: '通知案内', headerBackVisible: false }}
+              />
             </Stack.Navigator>
           </NavigationContainer>
           <StatusBar style="dark" />
         </AppInitProvider>
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </View>
   );
 }

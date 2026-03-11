@@ -32,3 +32,9 @@
 
 1. **`npm` を絶対パスで叩く時も `PATH` に node を入れる**: `npm` の shebang は `#!/usr/bin/env node`。`node` を PATH に通さないと `env: node: No such file or directory` で失敗する。
 2. **React Native の最低 Node 要件を満たすバージョンを既定にする**: `20.19.4` 未満だと `EBADENGINE` 警告が大量に出る。`.nvmrc` / bootstrap 既定値 / `engines.node` を揃える。
+
+## テスト結果報告の整合性
+
+1. **PASS 報告の条件を固定する**: 「exit code 0」かつ「失敗スイート/失敗ケース 0」を確認できない限り、PASS と断定しない。
+2. **ログが最優先**: 手元実行ログと報告が食い違う場合は、ログ側を正として即時訂正する。
+3. **不確実性を明示する**: 実行出力が欠落・省略されている場合は「未確認」として扱い、成功扱いにしない。

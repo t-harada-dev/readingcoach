@@ -1,5 +1,86 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-11: Batch 5 SUR-01〜10 実装（Surface / Widget / Notification / App Intents）
+
+- [x] 既存実装調査（launchArgs / e2e_state / reconcile / notification response）を完了し、最小変更方針を確定
+- [x] iOS launchArgs 取得を bridge 経由に追加（`PersistenceStore` 直接変更ではなく `PersistenceBridge.getLaunchArg` で対応）
+- [x] TS bridge に surface trigger 取得APIを追加（test-only）
+- [x] `SurfaceTriggerCoordinator` を追加し、起動時に surface trigger を app 内で再現
+- [x] Detox 追加: `app/e2e/surface-notification.e2e.js`（SUR-01/02/03/04）
+- [x] Detox 追加: `app/e2e/surface-widget.e2e.js`（SUR-05/06/07）
+- [x] Detox 追加: `app/e2e/surface-app-intent.e2e.js`（SUR-08/09/10）
+- [x] integration 追加: `app/src/useCases/__tests__/SurfaceSnapshot.integration.test.ts`（stale/latest 整合）
+- [x] gap note 追加: `docs/testing/surface-gap-notes.md`（自動化範囲と native acceptance 分担）
+- [ ] `npm run e2e:build:ios` / `npm run e2e:test:ios` / `npm test` 実行と結果確認（`npm run e2e:test:ios` は既存 `progress-optin` 1件FAIL）
+
+## 2026-03-11: progress-optin 可視性待機修正と全体E2E緑化
+
+- [x] `e2e/progress-optin.e2e.js` の可視性待機に起因する失敗を最小修正
+- [x] `npx detox test -c ios.sim.debug e2e/progress-optin.e2e.js` を再実行して単体PASS確認
+- [x] `npm run e2e:test:ios` を再実行して全体PASS確認
+
+## 2026-03-11: テスト件数/カバレッジ確認と gap-note 更新
+
+- [x] E2E 件数（suite/test）と変更前後の差分を整理
+- [x] `docs/testing/surface-gap-notes.md` に今回の安定化変更と残ギャップを追記
+
+## 2026-03-11: Batch 6 ABN-02〜12 実装計画
+
+- [x] ABN-02/03 integration: 通知再整合（欠落再構築・重複抑制）を probe ベースで追加
+- [x] ABN-04/09/10 integration: stale plan 防止 / plan欠損補完 / 04:00 catch-up を usecase テストで追加
+- [x] ABN-05/06/08 E2E: stale widget / widget開始失敗の再試行導線 / book欠損フォールバックを harness で追加
+- [x] ABN-07/11/12 を native acceptance 領域として `docs/testing/abnormal-gap-notes.md` に明文化
+- [x] `npm run e2e:build:ios` `npm run e2e:test:ios` `npm test` 実行で結果確定
+
+## 2026-03-11: Batch 7 ONB-01〜06 / BOOK-01〜09 実装計画
+
+- [x] Onboarding 導線（SC-01/02/03）用 screen/testID を最小追加し、launchArgs で deterministic 起動導線を追加
+- [x] AddBook 検索モック（success/0件/timeout/429/5xx/offline）と手入力縮退導線を追加
+- [x] BookDetail / Library の testID を補強し、Focus化後ホーム復帰を実装
+- [x] Detox 追加: `onboarding-flow.e2e.js` `add-book-flow.e2e.js` `library-detail.e2e.js`
+- [x] gap note 追加: `docs/testing/onboarding-book-gap-notes.md`
+- [x] `npm run e2e:build:ios` `npm run e2e:test:ios` `npm test` 実行で結果確定
+
+## 2026-03-11: Batch 4 CMP-01〜10 実装（Completion / Progress / Finished Book）
+
+- [x] SC-15/16/17/19 に必要 testID を最小追加（既存UI構造は維持）
+- [x] Detox 追加: `e2e/completion-flow.e2e.js`（CMP-01/02/03）
+- [x] Detox 追加: `e2e/progress-optin.e2e.js`（CMP-04/05/06/07）
+- [x] Detox 追加: `e2e/finished-book.e2e.js`（CMP-09）
+- [x] integration 追加: `src/useCases/__tests__/DailyResultRecomputed.integration.test.ts`（CMP-08, result upgrade only）
+- [x] integration 追加: `src/useCases/__tests__/CompletionFlow.integration.test.ts`（CMP-10補完: finished_book 失敗時の扱い含む）
+- [x] `docs/testing/completion-flow-gap-notes.md` を追加（自動化範囲/残ギャップ/レイヤ分担）
+- [x] `npm test` と `npm run e2e:test:ios` を実行して結果報告（全26 test files PASS / E2E 9 suites PASS）
+
+## 2026-03-11: Batch 3 ACT-07〜09 integration 実装
+
+- [x] 現行 usecase/persistence 実装を確認し、ACT-07/08/09 の最小 test seam を確定
+- [x] `StartSessionUseCase.integration.test.ts` を追加し、同一 plan の多重開始冪等を検証（TC-ACT-07）
+- [x] `ReconcilePlansUseCase.integration.test.ts` を追加し、active restore 前提（persisted active + reconcile 後復元）を検証（TC-ACT-08）
+- [x] `CompleteSessionUseCase.integration.test.ts` を追加し、fault injection + retry 後の単一完了を検証（TC-ACT-09）
+- [x] 必要最小限の実装補強（idempotent guard / fault injection seam）を usecase/repository 境界に追加
+- [x] `docs/testing/act-integration-gap-notes.md` を追加し、自動化範囲と残ギャップを整理
+- [x] `npm test` で回帰確認し、差分要約と保留点を報告
+
+## 2026-03-11: Detox E2E再実施と失敗評価
+
+- [x] `npm run e2e:test:ios` を再実行して最新失敗一覧を取得
+- [x] 失敗テストを「テストコード不備 / state injection不整合 / UI可視性 / 同期問題」で分類
+- [x] 改修優先度と最小修正方針を報告
+
+## 2026-03-11: Detox失敗9件の一括修正
+
+- [x] `home.rehab.e2e.js` の不正チェーン（`scroll(...).withTimeout`）を修正
+- [x] `due-action-sheet.e2e.js` のアンカーを `due-action-sheet` から CTA testID へ切替
+- [x] `due-retry.e2e.js` のアンカーを非安定 root View から操作可能要素へ切替
+- [x] `npm run e2e:test:ios` 再実行で全件 PASS を確認
+
+## 2026-03-11: テスト結果報告ルールの明文化
+
+- [x] `AGENTS.md` に「未パスをパス報告しない」ルールを追加
+- [x] `PASS` 報告条件（exit code 0 かつ fail 0）を明文化
+- [x] `tasks/lessons.md` に今回の教訓（報告整合性）を追記
+
 ## 2026-03-10: 仕様書・画面モック突合せでの継続実装（SC-07/SC-22）
 
 - [x] 仕様書・画面モック（WF-SC-07, WF-SC-22）を参照し、不足導線を特定
@@ -297,3 +378,87 @@
 ## MVPでやらないこと（企画書準拠）
 
 - AI提案、複数カテゴリ、SNS、長文メモ、広告、高度な蔵書管理、複雑サブスク
+
+## 2026-03-10: Detox smoke アンカー修正（FocusCore openLibrary）
+
+- [x] `FocusCoreScreen` の常時表示 `openLibrary` 導線に `testID="focus-core-open-library"` を追加
+- [x] `e2e/smoke.e2e.js` の assertion を `focus-core-open-library` へ変更
+- [x] 差分を確認し、実行コマンド（`npm run e2e:build:ios` / `npm run e2e:test:ios`）を共有
+
+## 2026-03-10: Detox smoke 安定化（accessibility + waitFor）
+
+- [x] `focus-core-open-library` ボタンに accessibility 属性（`accessible`, `accessibilityRole`, `accessibilityLabel`）を追加
+- [x] `e2e/smoke.e2e.js` を `waitFor(...).toBeVisible().withTimeout(...)` へ変更
+- [x] `npm run e2e:test:ios` を再実行し結果確認
+
+## 2026-03-10: Detox idle 待機詰まり回避（Smoke）
+
+- [x] `e2e/smoke.e2e.js` で `device.disableSynchronization()` を使い初期可視確認を実施
+- [x] `npm run e2e:test:ios` を再実行し結果確認
+
+## 2026-03-11: E2E Batch 1 テスト設計書作成
+
+- [x] `docs/testing/e2e_batch1_home.md` を新規作成し、指定された TC 一覧・testID・実装順・ギャップメモを記述
+
+## 2026-03-11: E2E Batch 1 実装（HOME主要導線）
+
+- [x] FocusCoreScreen に必要 testID を最小追加（primary/secondary/rehab/change-book/loading/init-error）
+- [x] LibraryScreen に必要 testID を最小追加（screen/add-book/row/empty-state）
+- [x] ActiveSessionScreen に mode 識別 testID を最小追加（screen/mode-15/5/3/1）
+- [x] Detox テスト追加: `e2e/home.navigation.e2e.js`（TC-HOME-04）
+- [x] Detox テスト追加: `e2e/home.session-start.e2e.js`（TC-HOME-01/02）
+- [x] state injection 未整備の保留事項を `docs/testing/home-e2e-gap-notes.md` に記録（TC-HOME-06/07）
+- [x] `npm run e2e:test:ios` で追加テストの実行結果を確認
+
+## 2026-03-11: launchArgs state injection 実装（rehab）
+
+- [x] iOS `reconcilePlans` に `launchArgs.e2e_state`（`rehab3`/`rehab7`）の強制適用を追加
+- [x] Detox テスト追加: `e2e/home.rehab.e2e.js`（TC-HOME-06/07）
+- [x] gap notes を更新（TC-HOME-06/07 の保留解除）
+- [x] `npm run e2e:build:ios` と `npm run e2e:test:ios` を実行して確認
+
+## 2026-03-11: E2E Batch 2 実装（Due Action Sheet / DUE-02〜08）
+
+- [x] DueActionSheetScreen に testID 追加（sheet/start/5m/snooze）
+- [x] test-only launchArgs bridge を追加し、app 内で SC-23 を deterministic に開ける導線を実装
+- [x] due seed/state injection（normal/rehab3/restart7）を launchArgs で固定可能にする
+- [x] Detox 追加: `e2e/due-action-sheet.e2e.js`（DUE-02/03/04/05/06/07 の実装可能分）
+- [x] Detox 追加: `e2e/due-retry.e2e.js`（DUE-08 の実装可能分、難所は TODO 明記）
+- [x] `docs/testing/due-e2e-gap-notes.md` を追加/更新（OS surface・clock・native harness 不足を整理）
+- [x] `npm run e2e:build:ios` / `npm run e2e:test:ios` で確認
+
+## 2026-03-11: FocusCore rehab CTA 可視性修正（ScrollView化）
+
+- [x] `FocusCoreScreen` をスクロール可能に変更し、`focus-core-rehab-cta` に到達可能にする
+- [x] `focus-core-screen` / 既存 CTA testID を維持し、必要最小限で `focus-core-scroll` を追加
+- [x] 必要時のみ `home.rehab.e2e.js` に最小スクロール補助を追加
+- [x] `npm run e2e:test:ios` で確認
+
+## 2026-03-11: Detox 端末サイズ差分チェック
+
+- [ ] 小さい iPhone シミュレータ（例: iPhone 16e）向け Detox configuration を追加
+- [ ] 大きい iPhone（現行: iPhone 17 Pro Max）と小さい iPhone（例: iPhone 16e）の2構成を Detox 公式実行マトリクスとして定義
+- [ ] 全 Detox テスト（`e2e/**/*.e2e.js`）を大きい iPhone 構成で実行
+- [ ] 全 Detox テスト（`e2e/**/*.e2e.js`）を小さい iPhone 構成で実行
+- [ ] 端末サイズごとの失敗差分を比較し、レイアウト依存の不安定テストを修正
+- [ ] 端末サイズ依存で崩れる要素があれば `docs/testing/*-gap-notes.md` に追記
+
+## 2026-03-11: DUE-08 基盤導入（Clock control / Scheduler probe）
+
+- [x] `src/services/time/Clock.ts` を追加（`Clock` interface / `SystemClock` / `FakeClock`）
+- [x] `src/services/notifications/NotificationSchedulerProbe.ts` を追加（pending schedule 参照用 interface/type）
+- [x] `src/testHarness/runtimeOverrides.ts` を追加し、Clock と Scheduler の test override 導線を実装
+- [x] 通知 scheduling 境界を service 化し、probe 対応の pending mirror state を追加（production 影響最小）
+- [x] due/retry の時間依存評価ロジックを use case 層へ最小導入（response_timeout / retry_timer_fired / retry上限）
+- [x] integration test 追加: `src/useCases/tests/DueRetryFlow.integration.test.ts`（最低3ケース）
+- [x] `docs/testing/clock-and-scheduler-harness.md` を追加（使い方/対象範囲/残ギャップ）
+- [x] `docs/testing/due-e2e-gap-notes.md` を更新（新基盤で解消した点と未解消点）
+- [x] テスト実行（`npm run test`）で回帰確認
+
+## 2026-03-11: gap-notes 全件解消（横断）
+
+- [ ] `docs/testing/*-gap-notes.md` を棚卸しし、未解消項目を一覧化（E2E / integration / native acceptance に分類）
+- [ ] app 内で解消可能な gap を優先実装（state injection / layout安定化 / testID不足 / clock/probe 接続）
+- [ ] Detox 側で解消可能な gap を実装（launchArgs・複数端末マトリクス・scroll/visibility安定化）
+- [ ] native acceptance 領域の gap を XCUITest 等の実施計画へ切り出し、境界を明文化
+- [ ] 全 gap-notes を更新し、各項目を `resolved / in_progress / blocked` でステータス管理

@@ -36,7 +36,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="due-action-sheet" style={styles.container}>
       <View style={styles.sheet}>
         <Text style={styles.title}>{copy.dueAction.title}</Text>
         <Text style={styles.subtitle}>{copy.dueAction.subtitle}</Text>
@@ -45,6 +45,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
             return (
               <SessionCTAButton
                 key={action}
+                testID="due-action-start"
                 tone="primary"
                 label={copy.dueAction.ctaStart}
                 onPress={() => onStart(defaultMode ?? 'normal_15m')}
@@ -56,6 +57,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
             return (
               <SessionCTAButton
                 key={action}
+                testID="due-action-start-5m"
                 tone="secondary"
                 label={copy.dueAction.cta5m}
                 onPress={() => onStart('rescue_5m')}
@@ -66,6 +68,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
           return (
             <SessionCTAButton
               key={action}
+              testID="due-action-snooze-30m"
               tone="ghost"
               label={copy.dueAction.ctaSnooze}
               onPress={async () => {

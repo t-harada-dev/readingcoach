@@ -37,11 +37,11 @@ export function LibraryScreen({ navigation }: any) {
   );
 
   return (
-    <View style={styles.container}>
+    <View testID="library-screen" style={styles.container}>
       <Text style={styles.title}>{copy.library.title}</Text>
       <Text style={styles.subtitle}>{copy.library.subtitle}</Text>
 
-      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddBook')}>
+      <TouchableOpacity testID="library-add-book" style={styles.addButton} onPress={() => navigation.navigate('AddBook')}>
         <Text style={styles.addButtonText}>{copy.library.ctaAddBook}</Text>
       </TouchableOpacity>
 
@@ -49,9 +49,10 @@ export function LibraryScreen({ navigation }: any) {
         data={books}
         keyExtractor={(item) => item.id}
         contentContainerStyle={books.length === 0 ? styles.emptyContainer : styles.list}
-        ListEmptyComponent={<Text style={styles.empty}>{copy.library.empty}</Text>}
+        ListEmptyComponent={<Text testID="library-empty-state" style={styles.empty}>{copy.library.empty}</Text>}
         renderItem={({ item }) => (
           <TouchableOpacity
+            testID={`library-book-row-${item.id}`}
             style={styles.row}
             onPress={() =>
               navigation.navigate('BookDetail', {

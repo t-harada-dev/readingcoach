@@ -8,11 +8,13 @@ type Props = {
   onPress: () => void;
   disabled?: boolean;
   tone?: Tone;
+  testID?: string;
 };
 
-export function SessionCTAButton({ label, onPress, disabled = false, tone = 'primary' }: Props) {
+export function SessionCTAButton({ label, onPress, disabled = false, tone = 'primary', testID }: Props) {
   return (
     <TouchableOpacity
+      testID={testID}
       style={[styles.base, tone === 'primary' ? styles.primary : tone === 'secondary' ? styles.secondary : styles.ghost, disabled ? styles.disabled : null]}
       onPress={onPress}
       disabled={disabled}
@@ -57,4 +59,3 @@ const styles = StyleSheet.create({
     color: '#2C2C2C',
   },
 });
-

@@ -1,0 +1,107 @@
+const { device, expect, element, by, waitFor } = require('detox');
+
+async function launchToLibrary() {
+  await device.launchApp({ newInstance: true, delete: true });
+  await device.disableSynchronization();
+  await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(15000);
+  await element(by.id('focus-core-open-library')).tap();
+  await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
+}
+
+async function openBookDetail(rowId) {
+  for (let i = 0; i < 3; i += 1) {
+    await element(by.id(rowId)).tap();
+    try {
+      await waitFor(element(by.id('book-detail-title'))).toExist().withTimeout(2000);
+      return;
+    } catch {
+      // Retry because simulator tap can be flaky under unsynced mode.
+    }
+  }
+  await waitFor(element(by.id('book-detail-title'))).toExist().withTimeout(10000);
+}
+
+async function focusFromDetail() {
+  for (let i = 0; i < 2; i += 1) {
+    await element(by.id('book-detail-focus')).tap();
+    try {
+      await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(3000);
+      return;
+    } catch {
+      // retry
+    }
+  }
+  await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(15000);
+}
+
+async function ensureProgressEnabled() {
+  try {
+    await waitFor(element(by.id('book-detail-current-page'))).toExist().withTimeout(1500);
+    return;
+  } catch {
+    // Current page input is hidden until progress gets enabled.
+  }
+
+  for (let i = 0; i < 2; i += 1) {
+    await waitFor(element(by.id('book-detail-enable-progress'))).toExist().withTimeout(10000);
+    await element(by.id('book-detail-progress-toggle')).tap();
+    try {
+      await waitFor(element(by.id('book-detail-current-page'))).toExist().withTimeout(6000);
+      return;
+    } catch {
+      // Retry one more toggle tap.
+    }
+  }
+
+  await waitFor(element(by.id('book-detail-current-page'))).toExist().withTimeout(15000);
+}
+
+describe('Library and Book Detail', () => {
+  afterEach(async () => {
+    await device.enableSynchronization();
+  });
+
+  // TC-BOOK-06
+  it('BOOK-06: opens book detail from library list', async () => {
+    await launchToLibrary();
+    await waitFor(element(by.id('library-book-row-native_book_1'))).toExist().withTimeout(10000);
+    await openBookDetail('library-book-row-native_book_1');
+  });
+
+  // TC-BOOK-07
+  it('BOOK-07: sets focus book and returns home', async () => {
+    await launchToLibrary();
+    await openBookDetail('library-book-row-native_book_2');
+    await waitFor(element(by.id('book-detail-focus'))).toExist().withTimeout(10000);
+    await focusFromDetail();
+  });
+
+  // TC-BOOK-08
+  it('BOOK-08: updates current page and keeps value on detail', async () => {
+    await launchToLibrary();
+    await openBookDetail('library-book-row-native_book_1');
+    await ensureProgressEnabled();
+    await element(by.id('book-detail-current-page')).clearText();
+    await element(by.id('book-detail-current-page')).typeText('45');
+    await element(by.id('book-detail-current-page')).tapReturnKey();
+    await element(by.id('book-detail-save')).tap();
+    await expect(element(by.id('book-detail-current-page'))).toHaveText('45');
+  });
+
+  // TC-BOOK-09
+  it('BOOK-09: updates title/author/pageCount and reflects on detail', async () => {
+    await launchToLibrary();
+    await openBookDetail('library-book-row-native_book_1');
+    await waitFor(element(by.id('book-detail-title'))).toExist().withTimeout(10000);
+    await element(by.id('book-detail-title')).clearText();
+    await element(by.id('book-detail-title')).typeText('UpdatedTitle');
+    await element(by.id('book-detail-author')).clearText();
+    await element(by.id('book-detail-author')).typeText('UpdatedAuthor');
+    await element(by.id('book-detail-page-count')).clearText();
+    await element(by.id('book-detail-page-count')).typeText('333');
+    await element(by.id('book-detail-page-count')).tapReturnKey();
+    await element(by.id('book-detail-save')).tap();
+    await expect(element(by.id('book-detail-title'))).toHaveText('UpdatedTitle');
+    await expect(element(by.id('book-detail-page-count'))).toHaveText('333');
+  });
+});

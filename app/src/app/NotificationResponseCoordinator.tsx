@@ -12,6 +12,7 @@ import { runResolveNotificationStartModeUseCase } from '../useCases/ResolveNotif
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
 import { resolveDueActionScreenId } from '../domain/entryRoutePolicy';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import { runResolveSurfaceStartPlanUseCase } from '../useCases/StaleSurfaceStartUseCase';
 
 type Props = {
   navigationRef: NavigationContainerRefWithCurrent<any>;
@@ -29,11 +30,16 @@ export function NotificationResponseCoordinator({ navigationRef }: Props) {
       if (!planId) return;
 
       if (action === 'default') {
-        const defaultMode = await runResolveNotificationStartModeUseCase(planId);
+        const resolvedPlan = await runResolveSurfaceStartPlanUseCase({
+          requestedPlanId: planId,
+          triggerSource: 'notification_response',
+        });
+        if (!resolvedPlan) return;
+        const defaultMode = await runResolveNotificationStartModeUseCase(resolvedPlan.planId);
         if (navigationRef.isReady()) {
           const dueActionScreenId = resolveDueActionScreenId();
           navigationRef.navigate('DueActionSheet', {
-            planId,
+            planId: resolvedPlan.planId,
             defaultMode,
             entryPoint: 'notification',
             dueActionScreenId,
@@ -43,19 +49,30 @@ export function NotificationResponseCoordinator({ navigationRef }: Props) {
       }
 
       if (action === 'snooze') {
-        await runSnoozePlanUseCase(planId, 30);
+        const resolvedPlan = await runResolveSurfaceStartPlanUseCase({
+          requestedPlanId: planId,
+          triggerSource: 'notification_response',
+        });
+        if (!resolvedPlan) return;
+        await runSnoozePlanUseCase(resolvedPlan.planId, 30);
         return;
       }
 
+      const resolvedPlan = await runResolveSurfaceStartPlanUseCase({
+        requestedPlanId: planId,
+        triggerSource: 'notification_response',
+      });
+      if (!resolvedPlan) return;
+
       const mode: SessionMode =
-        action === 'rescue_5m' ? 'rescue_5m' : await runResolveNotificationStartModeUseCase(planId);
+        action === 'rescue_5m' ? 'rescue_5m' : await runResolveNotificationStartModeUseCase(resolvedPlan.planId);
       const started = await runStartSessionUseCase({
-        planId,
+        planId: resolvedPlan.planId,
         mode,
         entryPoint: 'notification',
       });
 
-      const plan = await runFindPlanByIdUseCase(planId);
+      const plan = await runFindPlanByIdUseCase(resolvedPlan.planId);
       if (!navigationRef.isReady()) return;
 
       navigationRef.navigate(

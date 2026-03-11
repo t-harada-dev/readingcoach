@@ -53,15 +53,25 @@ class AppDelegate: ExpoAppDelegate {
 
 class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
   // Extension point for config-plugins
+  private var isDetoxE2E: Bool {
+    ProcessInfo.processInfo.arguments.contains("-detoxE2E")
+  }
 
   override func sourceURL(for bridge: RCTBridge) -> URL? {
-    // needed to return the correct URL for expo-dev-client.
-    bridge.bundleURL ?? bundleURL()
+    // Detox E2E は埋め込みbundleを優先し、通常Debugは Metro を優先する。
+    if isDetoxE2E {
+      return bundleURL() ?? bridge.bundleURL
+    }
+    return bridge.bundleURL ?? bundleURL()
   }
 
   override func bundleURL() -> URL? {
 #if DEBUG
-    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")
+    let metroURL = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")
+    if isDetoxE2E {
+      return Bundle.main.url(forResource: "main", withExtension: "jsbundle") ?? metroURL
+    }
+    return metroURL
 #else
     return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif

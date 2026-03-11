@@ -16,6 +16,14 @@ function formatRemaining(totalSeconds: number): string {
   return `${mm}:${ss}`;
 }
 
+function modeTestId(mode?: SessionMode): string | undefined {
+  if (mode === 'normal_15m') return 'active-session-mode-15';
+  if (mode === 'rescue_5m') return 'active-session-mode-5';
+  if (mode === 'rehab_3m') return 'active-session-mode-3';
+  if (mode === 'ignition_1m') return 'active-session-mode-1';
+  return undefined;
+}
+
 export function ActiveSessionScreen({
   navigation,
   route,
@@ -84,8 +92,8 @@ export function ActiveSessionScreen({
   }, [bookId, bookTitle, completing, done, durationSeconds, mode, navigation, planId, sessionId, startedAt]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.caption}>{copy.activeSession.caption}</Text>
+    <View testID="active-session-screen" style={styles.container}>
+      <Text testID={modeTestId(mode)} style={styles.caption}>{copy.activeSession.caption}</Text>
       <Text style={styles.title}>{bookTitle}</Text>
       <Text style={styles.timer}>
         {done ? (completing ? '完了処理中…' : copy.activeSession.completed) : formatRemaining(remainingSeconds)}

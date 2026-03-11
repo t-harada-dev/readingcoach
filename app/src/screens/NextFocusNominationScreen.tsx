@@ -44,14 +44,16 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
     setSaving(true);
     try {
       await runNominateNextFocusBookUseCase(selected.id);
-      navigation.navigate('FocusCore');
+    } catch {
+      // E-36: nomination save failure should not block returning to home.
     } finally {
       setSaving(false);
+      navigation.navigate('FocusCore');
     }
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="next-focus-screen" style={styles.container}>
       <Text style={styles.title}>次に読む本を決めましょう</Text>
       <Text style={styles.subtitle}>読了おめでとうございます。明日の Focus Book を1冊だけ選びます。</Text>
       {loading ? (
@@ -64,12 +66,15 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <SessionCTAButton
-              label={item.author ? `${item.title} / ${item.author}` : item.title}
-              tone={item.id === selectedBookId ? 'primary' : 'secondary'}
-              onPress={() => setSelectedBookId(item.id)}
-              disabled={saving}
-            />
+            <View testID={`next-focus-book-row-${item.id}`}>
+              <SessionCTAButton
+                testID={`next-focus-book-row-${item.id}-button`}
+                label={item.author ? `${item.title} / ${item.author}` : item.title}
+                tone={item.id === selectedBookId ? 'primary' : 'secondary'}
+                onPress={() => setSelectedBookId(item.id)}
+                disabled={saving}
+              />
+            </View>
           )}
           ListEmptyComponent={
             <Text style={styles.empty}>候補がありません。後でライブラリから設定できます。</Text>
@@ -77,6 +82,7 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
         />
       )}
       <SessionCTAButton
+        testID="next-focus-confirm"
         label="次の本を確定"
         tone="primary"
         onPress={onConfirm}
@@ -125,4 +131,3 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 });
-

@@ -30,6 +30,21 @@ final class PersistenceBridge: NSObject {
     true
   }
 
+  @objc(getLaunchArg:resolver:rejecter:)
+  func getLaunchArg(
+    _ key: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let args = ProcessInfo.processInfo.arguments
+    let flag = "-\(key)"
+    guard let idx = args.firstIndex(of: flag), idx + 1 < args.count else {
+      resolve(nil)
+      return
+    }
+    resolve(args[idx + 1])
+  }
+
   @objc(getSettings:rejecter:)
   func getSettings(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     withStore(resolve, reject) {

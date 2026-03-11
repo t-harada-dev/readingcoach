@@ -10,7 +10,7 @@ type Params = {
   bookId: string;
 };
 
-export function BookDetailScreen({ route }: any) {
+export function BookDetailScreen({ route, navigation }: any) {
   const { bookId } = (route.params ?? {}) as Params;
 
   const [title, setTitle] = useState('');
@@ -116,14 +116,14 @@ export function BookDetailScreen({ route }: any) {
     setSaving(true);
     try {
       await runSetFocusBookForTodayUseCase(bookId);
-      Alert.alert('今日の Focus Book を更新しました');
+      navigation.navigate('FocusCore');
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView testID="book-detail-screen" contentContainerStyle={styles.container}>
       <Text style={styles.subtitle}>{copy.bookDetail.subtitle}</Text>
 
       {thumbnailUrl.trim().length > 0 ? (
@@ -131,13 +131,14 @@ export function BookDetailScreen({ route }: any) {
       ) : null}
 
       <Text style={styles.label}>{copy.bookDetail.labelTitle}</Text>
-      <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="本のタイトル" />
+      <TextInput testID="book-detail-title" style={styles.input} value={title} onChangeText={setTitle} placeholder="本のタイトル" />
 
       <Text style={styles.label}>{copy.bookDetail.labelAuthor}</Text>
-      <TextInput style={styles.input} value={author} onChangeText={setAuthor} placeholder="著者名" />
+      <TextInput testID="book-detail-author" style={styles.input} value={author} onChangeText={setAuthor} placeholder="著者名" />
 
       <Text style={styles.label}>{copy.bookDetail.labelPageCount}</Text>
       <TextInput
+        testID="book-detail-page-count"
         style={styles.input}
         value={pageCount}
         onChangeText={setPageCount}
@@ -155,8 +156,16 @@ export function BookDetailScreen({ route }: any) {
       />
 
       <View style={styles.progressSection}>
-        <TouchableOpacity style={styles.secondaryButton} onPress={onToggleProgress} disabled={saving}>
-          <Text style={styles.secondaryButtonText}>
+        <TouchableOpacity
+          testID="book-detail-progress-toggle"
+          style={styles.secondaryButton}
+          onPress={onToggleProgress}
+          disabled={saving}
+        >
+          <Text
+            testID={progressEnabled ? 'book-detail-disable-progress' : 'book-detail-enable-progress'}
+            style={styles.secondaryButtonText}
+          >
             {progressEnabled ? copy.bookDetail.ctaDisableProgress : copy.bookDetail.ctaEnableProgress}
           </Text>
         </TouchableOpacity>
@@ -164,6 +173,7 @@ export function BookDetailScreen({ route }: any) {
           <>
             <Text style={styles.label}>{copy.bookDetail.labelCurrentPage}</Text>
             <TextInput
+              testID="book-detail-current-page"
               style={styles.input}
               value={currentPage}
               onChangeText={setCurrentPage}
@@ -176,10 +186,11 @@ export function BookDetailScreen({ route }: any) {
         )}
       </View>
 
-      <TouchableOpacity style={[styles.primaryButton, !canSave && styles.disabled]} onPress={onSave} disabled={!canSave}>
+      <TouchableOpacity testID="book-detail-save" style={[styles.primaryButton, !canSave && styles.disabled]} onPress={onSave} disabled={!canSave}>
         <Text style={styles.primaryButtonText}>{copy.bookDetail.ctaSave}</Text>
       </TouchableOpacity>
       <TouchableOpacity
+        testID="book-detail-focus"
         style={[styles.secondaryButton, saving && styles.disabled]}
         onPress={onSetFocusBook}
         disabled={saving}

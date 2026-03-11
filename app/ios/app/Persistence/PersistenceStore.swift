@@ -40,6 +40,14 @@ struct ReconcileResultDTO {
 }
 
 @available(iOS 17.0, *)
+private struct E2EInjectedPlanState {
+  let missedDays: Int?
+  let state: String?
+  let retryCount: Int?
+  let overrideBookId: String?
+}
+
+@available(iOS 17.0, *)
 @MainActor
 final class PersistenceStore {
   private static var cachedInstance: PersistenceStore?
@@ -56,6 +64,7 @@ final class PersistenceStore {
   private let container: ModelContainer
   private let context: ModelContext
   private let isoFormatter: ISO8601DateFormatter
+  private var e2eStartFailureConsumed = false
 
   private init() throws {
     let schema = Schema([
@@ -208,6 +217,10 @@ final class PersistenceStore {
   func startSession(planId: String, mode: String, entryPoint: String) throws -> [String: Any] {
     _ = entryPoint
 
+    if e2eFailStartOnceFromLaunchArgs() {
+      throw PersistenceError.unsupported("E2E injected start failure")
+    }
+
     guard let plan = try findPlan(planId: planId, planDate: nil) else {
       throw PersistenceError.notFound("Plan not found: \(planId)")
     }
@@ -232,11 +245,15 @@ final class PersistenceStore {
     try context.save()
 
     let bookTitle = try getBook(bookId: plan.bookId)?.title ?? "Reading Session"
-    return [
+    var response: [String: Any] = [
       "sessionId": sessionId,
       "startedAt": startedAt,
       "bookTitle": bookTitle,
     ]
+    if let seconds = e2eSessionSecondsFromLaunchArgs() {
+      response["e2eSessionSeconds"] = seconds
+    }
+    return response
   }
 
   func getActiveSession() throws -> [String: Any]? {
@@ -299,8 +316,23 @@ final class PersistenceStore {
       createdToday = true
     }
 
-    let missedStreak = try calculateMissedStreak(untilDateExclusive: today)
+    let computedMissedStreak = try calculateMissedStreak(untilDateExclusive: today)
+    let injected = injectedPlanStateFromLaunchArgs()
+    let missedStreak = injected?.missedDays ?? computedMissedStreak
     todayPlan?.continuousMissedDaysSnapshot = missedStreak
+    if let state = injected?.state {
+      todayPlan?.state = state
+      if state == "due" || state == "deferred" {
+        todayPlan?.result = "attempted"
+        todayPlan?.startedAt = nil
+      }
+    }
+    if let overrideBookId = injected?.overrideBookId {
+      todayPlan?.bookId = overrideBookId
+    }
+    if let retryCount = injected?.retryCount {
+      todayPlan?.retryCount = retryCount
+    }
 
     if context.hasChanges {
       try context.save()
@@ -315,22 +347,93 @@ final class PersistenceStore {
     )
   }
 
+  private func injectedPlanStateFromLaunchArgs() -> E2EInjectedPlanState? {
+    let args = ProcessInfo.processInfo.arguments
+    guard let idx = args.firstIndex(of: "-e2e_state"), idx + 1 < args.count else {
+      return nil
+    }
+
+    let state = args[idx + 1].lowercased()
+    switch state {
+    case "rehab3":
+      return E2EInjectedPlanState(missedDays: 3, state: nil, retryCount: nil, overrideBookId: nil)
+    case "rehab7":
+      return E2EInjectedPlanState(missedDays: 7, state: nil, retryCount: nil, overrideBookId: nil)
+    case "due_normal":
+      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 0, overrideBookId: nil)
+    case "due_rehab3":
+      return E2EInjectedPlanState(missedDays: 3, state: "due", retryCount: 0, overrideBookId: nil)
+    case "due_restart7":
+      return E2EInjectedPlanState(missedDays: 7, state: "due", retryCount: 0, overrideBookId: nil)
+    case "deferred_retry_pending":
+      return E2EInjectedPlanState(missedDays: 0, state: "deferred", retryCount: 0, overrideBookId: nil)
+    case "retry_fired_once":
+      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 1, overrideBookId: nil)
+    case "book_missing":
+      return E2EInjectedPlanState(missedDays: 0, state: nil, retryCount: nil, overrideBookId: "__MISSING_BOOK__")
+    default:
+      return nil
+    }
+  }
+
+  private func e2eFailStartOnceFromLaunchArgs() -> Bool {
+    if e2eStartFailureConsumed {
+      return false
+    }
+    let args = ProcessInfo.processInfo.arguments
+    guard let idx = args.firstIndex(of: "-e2e_fail_start_once"), idx + 1 < args.count else {
+      return false
+    }
+    let enabled = args[idx + 1] == "1"
+    if enabled {
+      e2eStartFailureConsumed = true
+    }
+    return enabled
+  }
+
+  private func e2eSessionSecondsFromLaunchArgs() -> Int? {
+    let args = ProcessInfo.processInfo.arguments
+    guard let idx = args.firstIndex(of: "-e2e_session_seconds"), idx + 1 < args.count else {
+      return nil
+    }
+    return Int(args[idx + 1])
+  }
+
   private func ensureSeededIfNeeded() throws {
     let descriptor = FetchDescriptor<BookEntity>()
-    let count = try context.fetchCount(descriptor)
-    guard count == 0 else { return }
+    let books = try context.fetch(descriptor)
+    let hasPrimary = books.contains(where: { $0.id == NativeCopy.PersistenceSeed.primaryBookId })
+    let hasSecondary = books.contains(where: { $0.id == NativeCopy.PersistenceSeed.secondaryBookId })
 
-    context.insert(
-      BookEntity(
-        id: NativeCopy.PersistenceSeed.primaryBookId,
-        title: NativeCopy.PersistenceSeed.primaryBookTitle,
-        author: NativeCopy.PersistenceSeed.primaryBookAuthor,
-        pageCount: NativeCopy.PersistenceSeed.primaryBookPageCount,
-        format: "paper",
-        status: "active"
+    if !hasPrimary {
+      context.insert(
+        BookEntity(
+          id: NativeCopy.PersistenceSeed.primaryBookId,
+          title: NativeCopy.PersistenceSeed.primaryBookTitle,
+          author: NativeCopy.PersistenceSeed.primaryBookAuthor,
+          pageCount: NativeCopy.PersistenceSeed.primaryBookPageCount,
+          format: "paper",
+          status: "active"
+        )
       )
-    )
-    try context.save()
+    }
+
+    if !hasSecondary {
+      context.insert(
+        BookEntity(
+          id: NativeCopy.PersistenceSeed.secondaryBookId,
+          title: NativeCopy.PersistenceSeed.secondaryBookTitle,
+          author: NativeCopy.PersistenceSeed.secondaryBookAuthor,
+          pageCount: NativeCopy.PersistenceSeed.secondaryBookPageCount,
+          format: "paper",
+          status: "queued"
+        )
+      )
+    }
+
+    if context.hasChanges {
+      try context.save()
+    }
   }
 
   private func selectTodayBookId() throws -> String {

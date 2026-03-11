@@ -91,41 +91,50 @@ export function CompletionScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="completion-screen" style={styles.container}>
       <CompletionFeedbackCard
         title={feedback.title}
         message={feedback.message}
         elapsedLabel={toElapsedLabel(elapsedSeconds)}
         progressRatio={feedback.progressRatio}
+        messageTestID="completion-message"
+        elapsedTestID="completion-duration"
+        progressTestID="completion-progress"
       />
 
+      <View testID="extra-session-screen">
       {ctaOrder.map((cta) => {
         if (cta === 'extra_5m') {
           return (
-            <SessionCTAButton
-              key={cta}
-              tone="primary"
-              label={copy.completion.ctaExtra5m}
-              onPress={() => startExtra('rescue_5m')}
-              disabled={busy}
-            />
+            <View key={cta} testID="extra-session-5m">
+              <SessionCTAButton
+                testID="completion-extra-5m"
+                tone="primary"
+                label={copy.completion.ctaExtra5m}
+                onPress={() => startExtra('rescue_5m')}
+                disabled={busy}
+              />
+            </View>
           );
         }
         if (cta === 'extra_15m') {
           return (
-            <SessionCTAButton
-              key={cta}
-              tone="secondary"
-              label={copy.completion.ctaExtra15m}
-              onPress={() => startExtra('normal_15m')}
-              disabled={busy}
-            />
+            <View key={cta} testID="extra-session-15m">
+              <SessionCTAButton
+                testID="completion-extra-15m"
+                tone="secondary"
+                label={copy.completion.ctaExtra15m}
+                onPress={() => startExtra('normal_15m')}
+                disabled={busy}
+              />
+            </View>
           );
         }
         if (cta === 'finished_book') {
           return (
             <SessionCTAButton
               key={cta}
+              testID="completion-finished-book"
               tone="ghost"
               label={copy.completion.ctaFinishedBook}
               onPress={markFinished}
@@ -136,6 +145,7 @@ export function CompletionScreen({ navigation, route }: any) {
         return (
           <SessionCTAButton
             key={cta}
+            testID="completion-close"
             tone="ghost"
             label={copy.completion.ctaClose}
             onPress={() => navigation.navigate('FocusCore')}
@@ -143,6 +153,7 @@ export function CompletionScreen({ navigation, route }: any) {
           />
         );
       })}
+      </View>
     </View>
   );
 }

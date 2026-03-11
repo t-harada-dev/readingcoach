@@ -38,10 +38,11 @@ export function ProgressTrackingSetupScreen({ navigation, route }: any) {
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="progress-setup-screen" style={styles.container}>
       <Text style={styles.title}>進捗の初期設定</Text>
       <Text style={styles.label}>総ページ数（任意）</Text>
       <TextInput
+        testID="progress-setup-page-count"
         style={styles.input}
         value={pageCount}
         keyboardType="number-pad"
@@ -50,13 +51,14 @@ export function ProgressTrackingSetupScreen({ navigation, route }: any) {
       />
       <Text style={styles.label}>現在ページ（任意）</Text>
       <TextInput
+        testID="progress-setup-current-page"
         style={styles.input}
         value={currentPage}
         keyboardType="number-pad"
         onChangeText={setCurrentPage}
         placeholder="例: 120"
       />
-      <SessionCTAButton tone="primary" label="保存する" onPress={onSave} disabled={busy} />
+      <SessionCTAButton testID="progress-setup-save" tone="primary" label="保存する" onPress={onSave} disabled={busy} />
     </View>
   );
 }
@@ -90,4 +92,3 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-

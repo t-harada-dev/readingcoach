@@ -6,16 +6,27 @@ type Props = {
   message: string;
   elapsedLabel: string;
   progressRatio: number | null;
+  messageTestID?: string;
+  elapsedTestID?: string;
+  progressTestID?: string;
 };
 
-export function CompletionFeedbackCard({ title, message, elapsedLabel, progressRatio }: Props) {
+export function CompletionFeedbackCard({
+  title,
+  message,
+  elapsedLabel,
+  progressRatio,
+  messageTestID,
+  elapsedTestID,
+  progressTestID,
+}: Props) {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
-      <Text style={styles.elapsed}>{elapsedLabel}</Text>
+      <Text testID={messageTestID} style={styles.message}>{message}</Text>
+      <Text testID={elapsedTestID} style={styles.elapsed}>{elapsedLabel}</Text>
       {progressRatio !== null ? (
-        <View style={styles.progressTrack}>
+        <View testID={progressTestID} style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${Math.round(progressRatio * 100)}%` }]} />
         </View>
       ) : null}
@@ -61,4 +72,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#D48A3E',
   },
 });
-

@@ -1,0 +1,327 @@
+** BUILD SUCCEEDED **
+
+
+> app@1.0.0 e2e:test:ios
+> detox test -c ios.sim.debug
+
+00:43:14.016 detox[6925] B jest --config e2e/jest.config.js
+00:43:14.017 detox[6925] i (node:6925) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+00:43:17.932 detox[6926] i home.rehab.e2e.js is assigned to DD14907B-DBEC-410E-A590-61EC676080E8 (iPhone 17 Pro Max)
+00:43:17.934 detox[6926] i Home Rehab State: uses ignition 1m as primary CTA in rehab state
+00:43:19.790 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:43:24.577 detox[6926] i Home Rehab State: uses ignition 1m as primary CTA in rehab state [OK]
+00:43:24.579 detox[6926] i Home Rehab State: shows rehab 3m CTA and starts 3m session
+00:43:25.382 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:43:28.389 detox[6926] i Home Rehab State: shows rehab 3m CTA and starts 3m session [FAIL]
+
+00:43:28.410 detox[6926] i The app has not responded to the network requests below:
+  (id = 12) invoke: {"type":"action","action":"scroll","params":[200,"down",null,null],"predicate":{"type":"id","value":"focus-core-scroll","isRegex":false},"while":{"type":"expectation","predicate":{"type":"id","value":"focus-core-rehab-cta","isRegex":false},"expectation":"toBeVisible"}}
+  (id = 13) setSyncSettings: {"enabled":true}
+
+Unresponded network requests might result in timeout errors in Detox tests.
+
+ FAIL  e2e/home.rehab.e2e.js (13.875 s)
+  Home Rehab State
+    ✓ uses ignition 1m as primary CTA in rehab state (6640 ms)
+    ✕ shows rehab 3m CTA and starts 3m session (3809 ms)
+
+  ● Home Rehab State › shows rehab 3m CTA and starts 3m session
+
+    TypeError: waitFor(...).toBeVisible(...).whileElement(...).scroll(...).withTimeout is not a function
+
+      41 |       .whileElement(by.id('focus-core-scroll'))
+      42 |       .scroll(200, 'down')
+    > 43 |       .withTimeout(15000);
+         |        ^
+      44 |
+      45 |     await element(by.id('focus-core-rehab-cta')).tap();
+      46 |
+
+      at Object.withTimeout (e2e/home.rehab.e2e.js:43:8)
+
+  ● Home Rehab State › shows rehab 3m CTA and starts 3m session
+
+    The pending request #13 ("setSyncSettings") has been rejected due to the following error:
+
+    Detox has detected multiple interactions taking place simultaneously. Have you forgotten to apply an await over one of the Detox actions in your test code?
+
+      12 |
+      13 |   afterEach(async () => {
+    > 14 |     await device.enableSynchronization();
+         |                  ^
+      15 |   });
+      16 |
+      17 |   // TC-HOME-06: SC-06 主CTA(1分) -> SC-14
+
+      at Object.enableSynchronization (e2e/home.rehab.e2e.js:14:18)
+
+00:43:30.238 detox[6926] i 
+  error: Unexpected error on an attempt to handle the response received over the web socket.
+  
+  HINT: Examine the inner error:
+  
+  Unexpected message received over the web socket: setSyncSettingsDone
+  
+  The payload was:
+  
+  {"type":"setSyncSettingsDone","messageId":13,"params":{}}
+   
+00:43:30.238 detox[6926] i 
+  error: Unexpected error on an attempt to handle the response received over the web socket.
+  
+  HINT: Examine the inner error:
+  
+  Unexpected message received over the web socket: invokeResult
+  
+  The payload was:
+  
+  {"type":"invokeResult","messageId":12,"params":{}}
+   
+00:43:33.002 detox[6926] i due-action-sheet.e2e.js is assigned to DD14907B-DBEC-410E-A590-61EC676080E8 (iPhone 17 Pro Max)
+00:43:33.003 detox[6926] i Due Action Sheet: maps start to 15m in normal due state
+00:43:34.853 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:43:47.933 detox[6926] i The app is busy with the following tasks:
+• Run loop "Main Run Loop" is awake.
+• There are 3 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".
+00:43:53.106 detox[6926] i Due Action Sheet: maps start to 15m in normal due state [FAIL]
+00:43:53.107 detox[6926] i Due Action Sheet: starts 5m session from due sheet
+00:43:53.987 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:44:07.091 detox[6926] i The app is busy with the following tasks:
+• There are 2 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".
+• Run loop "Main Run Loop" is awake.
+00:44:12.604 detox[6926] i Due Action Sheet: starts 5m session from due sheet [FAIL]
+00:44:12.605 detox[6926] i Due Action Sheet: snoozes 30m without starting a session
+00:44:13.480 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:44:26.485 detox[6926] i The app is busy with the following tasks:
+• There are 2 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".
+• Run loop "Main Run Loop" is awake.
+00:44:31.755 detox[6926] i Due Action Sheet: snoozes 30m without starting a session [FAIL]
+00:44:31.756 detox[6926] i Due Action Sheet: maps start to 1m in rehab due state
+00:44:32.615 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:44:45.589 detox[6926] i The app is busy with the following tasks:
+• Run loop "Main Run Loop" is awake.
+• There are 3 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".
+00:44:51.018 detox[6926] i Due Action Sheet: maps start to 1m in rehab due state [FAIL]
+00:44:51.019 detox[6926] i Due Action Sheet: maps start to 1m in restart due state
+00:44:51.848 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:45:04.811 detox[6926] i The app is busy with the following tasks:
+• There are 3 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".
+• Run loop "Main Run Loop" is awake.
+00:45:10.324 detox[6926] i Due Action Sheet: maps start to 1m in restart due state [FAIL]
+00:45:10.325 detox[6926] i Due Action Sheet: shows only allowed CTA group in due sheet
+00:45:11.278 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:45:24.230 detox[6926] i The app is busy with the following tasks:
+• Run loop "Main Run Loop" is awake.
+• There are 3 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".
+00:45:29.602 detox[6926] i Due Action Sheet: shows only allowed CTA group in due sheet [FAIL]
+
+ FAIL  e2e/due-action-sheet.e2e.js (119.647 s)
+  Due Action Sheet
+    ✕ maps start to 15m in normal due state (20103 ms)
+    ✕ starts 5m session from due sheet (19497 ms)
+    ✕ snoozes 30m without starting a session (19149 ms)
+    ✕ maps start to 1m in rehab due state (19263 ms)
+    ✕ maps start to 1m in restart due state (19305 ms)
+    ✕ shows only allowed CTA group in due sheet (19277 ms)
+
+  ● Due Action Sheet › maps start to 15m in normal due state
+
+    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “due-action-sheet”) TIMEOUT(15s)
+
+    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+
+      19 |     await launchDue('due_normal');
+      20 |
+    > 21 |     await waitFor(element(by.id('due-action-sheet'))).toBeVisible().withTimeout(15000);
+         |                                                                     ^
+      22 |     await element(by.id('due-action-start')).tap();
+      23 |
+      24 |     await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
+
+      at Object.withTimeout (e2e/due-action-sheet.e2e.js:21:69)
+
+  ● Due Action Sheet › starts 5m session from due sheet
+
+    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “due-action-sheet”) TIMEOUT(15s)
+
+    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+
+      30 |     await launchDue('due_normal');
+      31 |
+    > 32 |     await waitFor(element(by.id('due-action-sheet'))).toBeVisible().withTimeout(15000);
+         |                                                                     ^
+      33 |     await element(by.id('due-action-start-5m')).tap();
+      34 |
+      35 |     await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
+
+      at Object.withTimeout (e2e/due-action-sheet.e2e.js:32:69)
+
+  ● Due Action Sheet › snoozes 30m without starting a session
+
+    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “due-action-sheet”) TIMEOUT(15s)
+
+    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+
+      41 |     await launchDue('due_normal');
+      42 |
+    > 43 |     await waitFor(element(by.id('due-action-sheet'))).toBeVisible().withTimeout(15000);
+         |                                                                     ^
+      44 |     await element(by.id('due-action-snooze-30m')).tap();
+      45 |
+      46 |     await waitFor(element(by.id('focus-core-screen'))).toBeVisible().withTimeout(10000);
+
+      at Object.withTimeout (e2e/due-action-sheet.e2e.js:43:69)
+
+  ● Due Action Sheet › maps start to 1m in rehab due state
+
+    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “due-action-sheet”) TIMEOUT(15s)
+
+    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+
+      52 |     await launchDue('due_rehab3');
+      53 |
+    > 54 |     await waitFor(element(by.id('due-action-sheet'))).toBeVisible().withTimeout(15000);
+         |                                                                     ^
+      55 |     await element(by.id('due-action-start')).tap();
+      56 |
+      57 |     await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
+
+      at Object.withTimeout (e2e/due-action-sheet.e2e.js:54:69)
+
+  ● Due Action Sheet › maps start to 1m in restart due state
+
+    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “due-action-sheet”) TIMEOUT(15s)
+
+    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+
+      63 |     await launchDue('due_restart7');
+      64 |
+    > 65 |     await waitFor(element(by.id('due-action-sheet'))).toBeVisible().withTimeout(15000);
+         |                                                                     ^
+      66 |     await element(by.id('due-action-start')).tap();
+      67 |
+      68 |     await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
+
+      at Object.withTimeout (e2e/due-action-sheet.e2e.js:65:69)
+
+  ● Due Action Sheet › shows only allowed CTA group in due sheet
+
+    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “due-action-sheet”) TIMEOUT(15s)
+
+    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+
+      74 |     await launchDue('due_normal');
+      75 |
+    > 76 |     await waitFor(element(by.id('due-action-sheet'))).toBeVisible().withTimeout(15000);
+         |                                                                     ^
+      77 |     await expect(element(by.id('due-action-start'))).toBeVisible();
+      78 |     await expect(element(by.id('due-action-start-5m'))).toBeVisible();
+      79 |     await expect(element(by.id('due-action-snooze-30m'))).toBeVisible();
+
+      at Object.withTimeout (e2e/due-action-sheet.e2e.js:76:69)
+
+00:45:32.652 detox[6926] i due-retry.e2e.js is assigned to DD14907B-DBEC-410E-A590-61EC676080E8 (iPhone 17 Pro Max)
+00:45:32.652 detox[6926] i Due Retry Flow: does not open due sheet while deferred retry is pending
+00:45:34.502 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:45:47.333 detox[6926] i The app is busy with the following tasks:
+• There are 2 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".
+• Run loop "Main Run Loop" is awake.
+00:45:52.646 detox[6926] i Due Retry Flow: does not open due sheet while deferred retry is pending [FAIL]
+00:45:52.647 detox[6926] i Due Retry Flow: opens due sheet when retry-fired-once state is injected
+00:45:53.457 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:46:06.550 detox[6926] i The app is busy with the following tasks:
+• There are 3 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".
+• Run loop "Main Run Loop" is awake.
+00:46:11.887 detox[6926] i Due Retry Flow: opens due sheet when retry-fired-once state is injected [FAIL]
+
+ FAIL  e2e/due-retry.e2e.js (42.273 s)
+  Due Retry Flow
+    ✕ does not open due sheet while deferred retry is pending (19993 ms)
+    ✕ opens due sheet when retry-fired-once state is injected (19240 ms)
+
+  ● Due Retry Flow › does not open due sheet while deferred retry is pending
+
+    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “focus-core-screen”) TIMEOUT(15s)
+
+    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+
+      16 |     await device.disableSynchronization();
+      17 |
+    > 18 |     await waitFor(element(by.id('focus-core-screen'))).toBeVisible().withTimeout(15000);
+         |                                                                      ^
+      19 |     await expect(element(by.id('due-action-sheet'))).not.toBeVisible();
+      20 |   });
+      21 |
+
+      at Object.withTimeout (e2e/due-retry.e2e.js:18:70)
+
+  ● Due Retry Flow › opens due sheet when retry-fired-once state is injected
+
+    Test Failed: Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == “due-action-sheet”) TIMEOUT(15s)
+
+    HINT: To print view hierarchy on failed actions/matches, use log-level verbose or higher.
+
+      30 |     await device.disableSynchronization();
+      31 |
+    > 32 |     await waitFor(element(by.id('due-action-sheet'))).toBeVisible().withTimeout(15000);
+         |                                                                     ^
+      33 |     await expect(element(by.id('due-action-start'))).toBeVisible();
+      34 |   });
+      35 | });
+
+      at Object.withTimeout (e2e/due-retry.e2e.js:32:69)
+
+00:46:14.984 detox[6926] i home.session-start.e2e.js is assigned to DD14907B-DBEC-410E-A590-61EC676080E8 (iPhone 17 Pro Max)
+00:46:14.985 detox[6926] i Home Session Start: starts 15m session from primary CTA
+00:46:16.473 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:46:21.138 detox[6926] i Home Session Start: starts 15m session from primary CTA [OK]
+00:46:21.139 detox[6926] i Home Session Start: starts 5m session from secondary CTA
+00:46:21.537 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:46:26.038 detox[6926] i Home Session Start: starts 5m session from secondary CTA [OK]
+
+ PASS  e2e/home.session-start.e2e.js (14.129 s)
+  Home Session Start
+    ✓ starts 15m session from primary CTA (6152 ms)
+    ✓ starts 5m session from secondary CTA (4898 ms)
+
+00:46:29.012 detox[6926] i home.navigation.e2e.js is assigned to DD14907B-DBEC-410E-A590-61EC676080E8 (iPhone 17 Pro Max)
+00:46:29.012 detox[6926] i Home Navigation: opens Library from FocusCore
+00:46:30.511 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:46:35.224 detox[6926] i Home Navigation: opens Library from FocusCore [OK]
+
+ PASS  e2e/home.navigation.e2e.js (9.175 s)
+  Home Navigation
+    ✓ opens Library from FocusCore (6211 ms)
+
+00:46:38.302 detox[6926] i smoke.e2e.js is assigned to DD14907B-DBEC-410E-A590-61EC676080E8 (iPhone 17 Pro Max)
+00:46:39.797 detox[6926] i com.anonymous.app launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn DD14907B-DBEC-410E-A590-61EC676080E8 log stream --level debug --style compact --predicate 'process == "app"'
+00:46:42.597 detox[6926] i Smoke: launches app
+00:46:42.742 detox[6926] i Smoke: launches app [OK]
+
+ PASS  e2e/smoke.e2e.js (7.499 s)
+  Smoke
+    ✓ launches app (145 ms)
+
+Test Suites: 3 failed, 3 passed, 6 total
+Tests:       9 failed, 5 passed, 14 total
+Snapshots:   0 total
+Time:        208.288 s
+Ran all test suites.
+00:46:42.786 detox[6925] E Command failed with exit code = 1:
+jest --config e2e/jest.config.js
+haradatakashi@haradatakashinoMac-mini app % 

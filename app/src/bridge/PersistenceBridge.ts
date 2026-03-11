@@ -68,6 +68,7 @@ export interface ReconcileResult {
 }
 
 type NativePersistenceBridgeAPI = {
+  getLaunchArg?(key: string): Promise<string | null>;
   getSettings(): Promise<UserSettingsDTO | null>;
   saveSettings(params: UserSettingsDTO): Promise<void>;
   getBooks(): Promise<BookDTO[]>;
@@ -81,7 +82,7 @@ type NativePersistenceBridgeAPI = {
     planId: string,
     mode: 'normal_15m' | 'rescue_5m' | 'rescue_3m' | 'book_fetch_1m',
     entryPoint: 'notification' | 'widget' | 'app'
-  ): Promise<{ sessionId: string; startedAt: string; bookTitle: string }>;
+  ): Promise<{ sessionId: string; startedAt: string; bookTitle: string; e2eSessionSeconds?: number }>;
   completeSession?(
     planId: string,
     sessionId: string,
@@ -181,6 +182,10 @@ async function ensureSeeded(): Promise<{ books: BookDTO[]; plans: DailyExecution
 }
 
 const mockBridge: NativePersistenceBridgeAPI = {
+  async getLaunchArg() {
+    return null;
+  },
+
   async getSettings() {
     await ensureSeeded();
     return readJSON<UserSettingsDTO | null>(MOCK_KEYS.settings, null);
@@ -365,6 +370,12 @@ function getBridge(): NativePersistenceBridgeAPI {
 }
 
 export const persistenceBridge = {
+  async getLaunchArg(key: string): Promise<string | null> {
+    const bridge = getBridge();
+    if (typeof bridge.getLaunchArg !== 'function') return null;
+    return bridge.getLaunchArg(key);
+  },
+
   getSettings(): Promise<UserSettingsDTO | null> {
     const bridge = getBridge();
     return bridge.getSettings().then((v: UserSettingsDTO | null) => v ?? null);
@@ -415,7 +426,7 @@ export const persistenceBridge = {
     planId: string,
     mode: 'normal_15m' | 'rescue_5m' | 'rescue_3m' | 'book_fetch_1m',
     entryPoint: 'notification' | 'widget' | 'app'
-  ): Promise<{ sessionId: string; startedAt: string; bookTitle: string }> {
+  ): Promise<{ sessionId: string; startedAt: string; bookTitle: string; e2eSessionSeconds?: number }> {
     const bridge = getBridge();
     return bridge.startSession(planId, mode, entryPoint);
   },

@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -17,6 +18,7 @@ import { getManualFocusChangeCount } from '../manualFocusChange';
 import { useAppInit } from '../appInit';
 import { runReconcilePlansUseCase } from '../useCases/ReconcilePlansUseCase';
 import { runStartSessionUseCase, type SessionMode } from '../useCases/StartSessionUseCase';
+import { resolvePrimaryStartModeByMissedDays } from '../useCases/ResolveNotificationStartModeUseCase';
 import { resolveFocusCoreScreenPolicy } from './screenPolicy';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
 import { appTheme } from '../theme/layout';
@@ -55,6 +57,7 @@ export function FocusCoreScreen({
   const [continuousMissedDays, setContinuousMissedDays] = useState(0);
   const [manualChangeCount, setManualChangeCount] = useState(0);
   const [starting, setStarting] = useState<SessionMode | null>(null);
+  const dueRoutedPlanIdRef = useRef<string | null>(null);
 
   const planDate = useMemo(() => (plan?.planDate ? plan.planDate : toLocalISODateString(new Date())), [plan]);
   const canManualChange = manualChangeCount < 1;
@@ -147,6 +150,26 @@ export function FocusCoreScreen({
   useEffect(() => {
     if (loading || init.status !== 'ready') return;
     if (!plan) return;
+    if (plan.state !== 'due') {
+      dueRoutedPlanIdRef.current = null;
+      return;
+    }
+    if (dueRoutedPlanIdRef.current === plan.planId) return;
+
+    const missedDays = continuousMissedDays || plan.continuousMissedDaysSnapshot || 0;
+    dueRoutedPlanIdRef.current = plan.planId;
+    navigation.navigate('DueActionSheet', {
+      planId: plan.planId,
+      defaultMode: resolvePrimaryStartModeByMissedDays(missedDays),
+      entryPoint: 'app',
+      dueActionScreenId: 'SC-23',
+    });
+  }, [continuousMissedDays, init.status, loading, navigation, plan]);
+
+  useEffect(() => {
+    if (loading || init.status !== 'ready') return;
+    if (!plan) return;
+    if (plan.state === 'due') return;
     if (skipRestartOnce) return;
     if (policy.screenId !== 'SC-07') return;
     navigation.navigate('RestartRecovery', { planId: plan.planId, planDate: plan.planDate });
@@ -156,7 +179,13 @@ export function FocusCoreScreen({
   const subCopy = `「${dailyQuote.text}」\n— ${dailyQuote.author}`;
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      testID="focus-core-scroll"
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View testID="focus-core-screen">
       <Text style={styles.headerMessage}>{copy.focusCore.headerMessage}</Text>
 
       <View style={styles.card}>
@@ -182,7 +211,7 @@ export function FocusCoreScreen({
 
         {book?.title ? (
           <>
-            <Text style={styles.bookTitle} numberOfLines={2}>
+            <Text testID="focus-core-book-title" style={styles.bookTitle} numberOfLines={2}>
               {book.title}
             </Text>
             {book.author ? (
@@ -194,11 +223,18 @@ export function FocusCoreScreen({
         ) : null}
 
         {plan && canManualChange ? (
-          <TouchableOpacity style={styles.ghostLink} onPress={onPressChangeBook}>
+          <TouchableOpacity testID="focus-core-change-book" style={styles.ghostLink} onPress={onPressChangeBook}>
             <Text style={styles.ghostLinkText}>{copy.focusCore.changeBookLink}</Text>
           </TouchableOpacity>
         ) : null}
-        <TouchableOpacity style={styles.ghostLink} onPress={() => navigation.navigate('Library')}>
+        <TouchableOpacity
+          testID="focus-core-open-library"
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="focus-core-open-library"
+          style={styles.ghostLink}
+          onPress={() => navigation.navigate('Library')}
+        >
           <Text style={styles.ghostLinkText}>{copy.focusCore.openLibraryLink}</Text>
         </TouchableOpacity>
       </View>
@@ -207,6 +243,7 @@ export function FocusCoreScreen({
         <Text style={styles.intentCopy}>{subCopy}</Text>
 
         <TouchableOpacity
+          testID="focus-core-primary-cta"
           style={[styles.mainBtn, starting ? styles.btnDisabled : null]}
           onPress={() => startSession(mainMode)}
           disabled={starting !== null || loading || !plan}
@@ -216,6 +253,7 @@ export function FocusCoreScreen({
 
         {subMode ? (
           <TouchableOpacity
+            testID="focus-core-secondary-cta"
             style={[styles.subBtn, starting ? styles.btnDisabled : null]}
             onPress={() => startSession(subMode)}
             disabled={starting !== null || loading || !plan}
@@ -225,6 +263,7 @@ export function FocusCoreScreen({
         ) : null}
         {rehabMode ? (
           <TouchableOpacity
+            testID="focus-core-rehab-cta"
             style={[styles.subBtn, starting ? styles.btnDisabled : null]}
             onPress={() => startSession(rehabMode)}
             disabled={starting !== null || loading || !plan}
@@ -234,24 +273,28 @@ export function FocusCoreScreen({
         ) : null}
 
         {loading || init.status === 'booting' ? (
-          <View style={styles.loadingRow}>
+          <View testID="focus-core-loading" style={styles.loadingRow}>
             <ActivityIndicator />
             <Text style={styles.loadingText}>{copy.focusCore.loading}</Text>
           </View>
         ) : null}
 
         {init.status === 'error' ? (
-          <Text style={styles.errorText}>{copy.focusCore.initError}</Text>
+          <Text testID="focus-core-init-error" style={styles.errorText}>{copy.focusCore.initError}</Text>
         ) : null}
       </View>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
     backgroundColor: BG,
+  },
+  container: {
+    flexGrow: 1,
     paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 18,
     paddingBottom: 24,

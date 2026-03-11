@@ -2,6 +2,10 @@
 
 @interface RCT_EXTERN_MODULE(PersistenceBridge, NSObject)
 
+RCT_EXTERN_METHOD(getLaunchArg:(NSString *)key
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(getSettings:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
