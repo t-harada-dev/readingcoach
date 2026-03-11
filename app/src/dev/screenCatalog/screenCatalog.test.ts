@@ -1,0 +1,62 @@
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+vi.mock('react-native', () => ({
+    ActivityIndicator: () => React.createElement('div', null, 'loading'),
+    FlatList: ({ data, renderItem }: { data: unknown[]; renderItem: ({ item }: { item: any }) => React.ReactNode }) =>
+        React.createElement('div', null, ...(data ?? []).map((item, index) => React.createElement('div', { key: index }, renderItem({ item })))),
+    Image: () => React.createElement('img'),
+    Platform: { select: (options: Record<string, unknown>) => options.default ?? options.ios ?? options.android ?? {} },
+    Pressable: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) =>
+        React.createElement('button', { onClick: onPress }, children),
+    ScrollView: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
+    StyleSheet: { create: (styles: unknown) => styles, absoluteFillObject: {} },
+    Text: ({ children }: { children: React.ReactNode }) => React.createElement('span', null, children),
+    TextInput: ({ value }: { value?: string }) => React.createElement('input', { value }),
+    TouchableOpacity: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) =>
+        React.createElement('button', { onClick: onPress }, children),
+    View: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
+}));
+
+import { ScreenCatalogScreen } from './ScreenCatalogScreen';
+import { screenRegistry } from './screenRegistry';
+
+describe('screen catalog', () => {
+    it('registers the requested screens', () => {
+        expect(screenRegistry.map((item) => item.screenId)).toEqual([
+            'SC-04',
+            'SC-05',
+            'SC-06',
+            'SC-07',
+            'SC-12',
+            'SC-14',
+            'SC-15',
+            'SC-20',
+            'SC-21',
+            'SC-23',
+        ]);
+    });
+
+    it('renders the catalog list with screen ids and titles', () => {
+        const markup = renderToStaticMarkup(
+            React.createElement(ScreenCatalogScreen, {
+                navigation: { navigate: vi.fn() },
+            })
+        );
+
+        expect(markup).toContain('SC-04');
+        expect(markup).toContain('Normal Home');
+        expect(markup).toContain('SC-20');
+        expect(markup).toContain('Library');
+        expect(markup).toContain('SC-23');
+        expect(markup).toContain('Due Action Sheet');
+    });
+
+    it('renders each screen entry with its default scenario', () => {
+        for (const item of screenRegistry) {
+            const markup = renderToStaticMarkup(item.render(item.defaultScenario));
+            expect(markup.length).toBeGreaterThan(0);
+        }
+    });
+});

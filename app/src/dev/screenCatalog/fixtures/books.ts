@@ -1,0 +1,51 @@
+import type { BookDTO } from '../../../bridge/PersistenceBridge';
+
+export const fixtureBooks = {
+    standardBook: {
+        id: 'fixture-book-standard',
+        title: '深く考える技術',
+        author: '中村 健',
+        pageCount: 286,
+        currentPage: 92,
+        format: 'paper',
+        status: 'active',
+        thumbnailUrl: 'https://example.com/cover-standard.png',
+    } satisfies BookDTO,
+    lightweightBook: {
+        id: 'fixture-book-light',
+        title: '1分で戻る読書習慣',
+        author: '佐藤 彩',
+        pageCount: 142,
+        currentPage: 18,
+        format: 'paper',
+        status: 'active',
+        thumbnailUrl: 'https://example.com/cover-light.png',
+    } satisfies BookDTO,
+    unknownPageCountBook: {
+        id: 'fixture-book-unknown-pages',
+        title: '思考の余白メモ',
+        author: '高橋 真由',
+        format: 'ebook',
+        status: 'active',
+        currentPage: 12,
+    } satisfies BookDTO,
+    missingCoverBook: {
+        id: 'fixture-book-missing-cover',
+        title: '締切前の集中読書',
+        author: '井上 圭',
+        pageCount: 204,
+        currentPage: 21,
+        format: 'paper',
+        status: 'active',
+    } satisfies BookDTO,
+    recentlyAddedBook: {
+        id: 'fixture-book-recent',
+        title: '週末に読みたい本',
+        author: '山田 理央',
+        pageCount: 210,
+        currentPage: 0,
+        format: 'paper',
+        status: 'queued',
+        lastProgressUpdatedAt: '2026-03-10T10:00:00.000Z',
+    } satisfies BookDTO,
+};

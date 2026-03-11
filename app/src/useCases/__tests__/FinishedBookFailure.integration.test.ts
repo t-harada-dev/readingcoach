@@ -14,7 +14,7 @@ const bridgeMock = vi.hoisted(() => ({
     state.completionFinalized = true;
     state.completionWriteCount += 1;
   }),
-  saveBook: vi.fn(async () => {
+  saveBook: vi.fn(async (_params: { id: string; title: string; status: string }) => {
     state.finishedBookSaveAttempts += 1;
     if (state.finishedBookFailOnce) {
       state.finishedBookFailOnce = false;

@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
 import { enableProgressTracking, updateBookProgress } from '../useCases/ProgressTrackingUseCases';
 import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { runSetFocusBookForTodayUseCase } from '../useCases/SetFocusBookForTodayUseCase';
+import { BookDetailView } from './BookDetailView';
 
 type Params = {
   bookId: string;
@@ -119,154 +120,29 @@ export function BookDetailScreen({ route, navigation }: any) {
   };
 
   return (
-    <ScrollView testID="book-detail-screen" contentContainerStyle={styles.container}>
-      <Text style={styles.subtitle}>{copy.bookDetail.subtitle}</Text>
-
-      {thumbnailUrl.trim().length > 0 ? (
-        <Image source={{ uri: thumbnailUrl }} style={styles.cover} resizeMode="cover" />
-      ) : null}
-
-      <Text style={styles.label}>{copy.bookDetail.labelTitle}</Text>
-      <TextInput testID="book-detail-title" style={styles.input} value={title} onChangeText={setTitle} placeholder="本のタイトル" />
-
-      <Text style={styles.label}>{copy.bookDetail.labelAuthor}</Text>
-      <TextInput testID="book-detail-author" style={styles.input} value={author} onChangeText={setAuthor} placeholder="著者名" />
-
-      <Text style={styles.label}>{copy.bookDetail.labelPageCount}</Text>
-      <TextInput
-        testID="book-detail-page-count"
-        style={styles.input}
-        value={pageCount}
-        onChangeText={setPageCount}
-        keyboardType="numeric"
-        placeholder="例: 320"
-      />
-
-      <Text style={styles.label}>{copy.bookDetail.labelCoverUrl}</Text>
-      <TextInput
-        style={styles.input}
-        value={thumbnailUrl}
-        onChangeText={setThumbnailUrl}
-        placeholder="https://..."
-        autoCapitalize="none"
-      />
-
-      <View style={styles.progressSection}>
-        <TouchableOpacity
-          testID="book-detail-progress-toggle"
-          style={styles.secondaryButton}
-          onPress={onToggleProgress}
-          disabled={saving}
-        >
-          <Text
-            testID={progressEnabled ? 'book-detail-disable-progress' : 'book-detail-enable-progress'}
-            style={styles.secondaryButtonText}
-          >
-            {progressEnabled ? copy.bookDetail.ctaDisableProgress : copy.bookDetail.ctaEnableProgress}
-          </Text>
-        </TouchableOpacity>
-        {progressEnabled ? (
-          <>
-            <Text style={styles.label}>{copy.bookDetail.labelCurrentPage}</Text>
-            <TextInput
-              testID="book-detail-current-page"
-              style={styles.input}
-              value={currentPage}
-              onChangeText={setCurrentPage}
-              keyboardType="numeric"
-              placeholder="例: 120"
-            />
-          </>
-        ) : (
-          <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text>
-        )}
-      </View>
-
-      <TouchableOpacity testID="book-detail-save" style={[styles.primaryButton, !canSave && styles.disabled]} onPress={onSave} disabled={!canSave}>
-        <Text style={styles.primaryButtonText}>{copy.bookDetail.ctaSave}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        testID="book-detail-focus"
-        style={[styles.secondaryButton, saving && styles.disabled]}
-        onPress={onSetFocusBook}
-        disabled={saving}
-      >
-        <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaSetFocusBook}</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    <BookDetailView
+      title={title}
+      author={author}
+      pageCount={pageCount}
+      currentPage={currentPage}
+      thumbnailUrl={thumbnailUrl}
+      progressEnabled={progressEnabled}
+      saving={saving}
+      canSave={canSave}
+      onChangeTitle={setTitle}
+      onChangeAuthor={setAuthor}
+      onChangePageCount={setPageCount}
+      onChangeCurrentPage={setCurrentPage}
+      onChangeThumbnailUrl={setThumbnailUrl}
+      onPressToggleProgress={() => {
+        void onToggleProgress();
+      }}
+      onPressSave={() => {
+        void onSave();
+      }}
+      onPressSetFocusBook={() => {
+        void onSetFocusBook();
+      }}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
-    paddingTop: 16,
-    paddingBottom: 28,
-  },
-  subtitle: {
-    color: '#6B7280',
-    fontSize: 13,
-    marginBottom: 12,
-  },
-  cover: {
-    width: 140,
-    height: 190,
-    borderRadius: 12,
-    marginBottom: 12,
-    backgroundColor: '#E5E7EB',
-  },
-  label: {
-    color: '#4B5563',
-    fontSize: 13,
-    marginBottom: 6,
-    marginTop: 6,
-  },
-  input: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#2C2C2C',
-    fontSize: 15,
-  },
-  progressSection: {
-    marginTop: 10,
-  },
-  helpText: {
-    color: '#6B7280',
-    fontSize: 12,
-    marginTop: 8,
-  },
-  primaryButton: {
-    marginTop: 16,
-    borderRadius: 16,
-    backgroundColor: '#D48A3E',
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    marginTop: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 138, 62, 0.45)',
-    paddingVertical: 12,
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  secondaryButtonText: {
-    color: '#D48A3E',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  disabled: {
-    opacity: 0.55,
-  },
-});

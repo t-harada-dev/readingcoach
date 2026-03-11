@@ -1,5 +1,59 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-12: Screen Catalog 追加画面実装（SC-05/12/14/15/20/21）
+
+- [x] 既存 Screen/View 実装を調査し、再利用可能な View を確定（SC-14/15 は CompletionView 共通利用）
+- [x] fixture を拡張（books/scenarios + 必要最小の session/library fixture）
+- [x] adapter を追加（SC-05/12/14/15/20/21）
+- [x] types/screenRegistry/scenarioRegistry を拡張し、6画面を Catalog に登録
+- [x] `npm run typecheck` と `npm test -- src/dev/screenCatalog/screenCatalog.test.ts` を実行
+
+## 2026-03-11: Screen Catalog 視認性改善（最小差分）
+
+- [x] Playground header を compact デフォルト + 詳細トグルへ変更
+- [x] Playground 表示時にフローティング CATALOG ボタンを非表示化
+- [x] SC-04 fixture の現実化（書名/著者/補助文）
+- [x] SC-06 rehab / due の視覚差強化（fixture + adapter）
+- [x] SC-07 の圧迫感軽減（タイポ/余白）
+- [x] `npm run typecheck` と `npm test -- src/dev/screenCatalog/screenCatalog.test.ts` を実行
+
+## 2026-03-11: Screen Catalog 差分監査と最小修正
+
+- [x] 既存 `src/dev/screenCatalog`（registry/scenario/catalog/playground）を要件差分監査
+- [x] 要件未達箇所のみ最小変更で修正（本番ルート非破壊を優先）
+- [x] `npm run typecheck` と `npm test -- src/dev/screenCatalog/screenCatalog.test.ts` で検証
+- [x] 監査結果・変更点・完了判定を報告
+- [x] 既存基盤が存在するため、まず差分監査を行い、要件未達が確認できた箇所のみを最小変更で修正すること。不要な新規ディレクトリ作成や重複実装は禁止。
+
+## 2026-03-11: リグレッションテスト実施
+
+- [x] `npm run check`（`npm test` + `npm run typecheck`）を実行
+- [x] 実行ログと exit code を確認して結果を報告
+
+## 2026-03-11: 既存 typecheck エラー2件修正（テストモック型）
+
+- [x] `FinishedBookFailure.integration.test.ts` の `saveBook` モックを引数付き呼び出しと整合させる
+- [x] `StartSessionUseCase.integration.test.ts` の `resolveStart` 呼び出しを型安全に修正
+- [x] `npm run typecheck` を再実行し、exit code 0 を確認
+
+## 2026-03-11: BookSearchUseCase 型不整合修正（レビュー指摘対応）
+
+- [x] `mapGoogleBooksItems` の map/filter を型整合する実装へ修正
+- [x] `npm test -- src/useCases/BookSearchUseCase.test.ts` と `npm run typecheck` を実行して結果確認（当時は既存の別ファイル2件で失敗、後続タスクで解消）
+
+## 2026-03-11: AddBookScreen 小規模リファクタ
+
+- [x] 手入力保存 / 候補保存の重複している保存ハンドリング（saving制御・error表示・遷移）を共通化
+- [x] レイアウト崩れを伴う手入力セクションのインデントを整理し、`npm test` で回帰確認
+
+## 2026-03-11: Google Books API 連携（AddBook検索）
+
+- [x] 既存 `runBookSearchUseCase` のモック分岐を維持しつつ、通常時は Google Books API を呼ぶ実装へ切替
+- [x] Google Books レスポンスを `BookSearchCandidate` へ正規化（title/author/pageCount/thumbnail/google id）
+- [x] 失敗ケース（timeout/429/5xx/offline）を既存エラーコードにマップして導線互換を維持
+- [x] ユースケーステストを追加し、モック分岐・実API分岐・エラーマッピングを検証
+- [x] `npm test` で回帰確認
+
 ## 2026-03-11: E2E終了時のSimulator自動停止
 
 - [x] 現行 `e2e:test:ios` 実行経路を確認し、終了時クリーンアップ方針を確定
