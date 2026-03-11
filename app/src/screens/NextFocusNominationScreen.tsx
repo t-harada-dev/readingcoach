@@ -81,6 +81,7 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
           }
         />
       )}
+      {!loading && selectedBookId ? <View testID="next-focus-selection-ready" /> : null}
       <SessionCTAButton
         testID="next-focus-confirm"
         label="次の本を確定"

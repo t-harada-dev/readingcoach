@@ -45,6 +45,12 @@ function progressRatioForPlan(plan: DailyExecutionPlanDTO | null): number {
   }
 }
 
+function tomorrowDateISO(base: Date): string {
+  const d = new Date(base);
+  d.setDate(d.getDate() + 1);
+  return toLocalISODateString(d);
+}
+
 export function FocusCoreScreen({
   navigation,
   route,
@@ -78,7 +84,14 @@ export function FocusCoreScreen({
     try {
       const reconcile = await runReconcilePlansUseCase('foreground');
       const date = reconcile.todayPlan?.planDate ?? toLocalISODateString(new Date());
-      const p = (await persistenceBridge.getPlanForDate(date)) ?? reconcile.todayPlan ?? null;
+      const todayPlan = (await persistenceBridge.getPlanForDate(date)) ?? reconcile.todayPlan ?? null;
+      let p = todayPlan;
+      if (todayPlan?.state === 'finalized') {
+        const nextPlan = await persistenceBridge.getPlanForDate(tomorrowDateISO(new Date()));
+        if (nextPlan && nextPlan.state !== 'finalized') {
+          p = nextPlan;
+        }
+      }
       setPlan(p);
       setContinuousMissedDays(reconcile.continuousMissedDays ?? p?.continuousMissedDaysSnapshot ?? 0);
 
