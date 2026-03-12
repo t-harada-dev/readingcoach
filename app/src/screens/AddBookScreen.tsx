@@ -214,8 +214,13 @@ export function AddBookScreen({ navigation, route }: any) {
               style={[styles.bookRow, selectedCandidate?.stableId === candidate.stableId && styles.bookRowSelected]}
               onPress={() => setSelectedCandidate(candidate)}
             >
-              <Text style={styles.bookTitle}>{candidate.title}</Text>
-              {candidate.author ? <Text style={styles.bookAuthor}>{candidate.author}</Text> : null}
+              <View style={styles.bookRowMain}>
+                <Text style={styles.bookTitle}>{candidate.title}</Text>
+                {candidate.author ? <Text style={styles.bookAuthor}>{candidate.author}</Text> : null}
+              </View>
+              {selectedCandidate?.stableId === candidate.stableId ? (
+                <Text style={styles.bookSelectedBadge}>この本を読んでいます</Text>
+              ) : null}
             </TouchableOpacity>
           ))}
           <TouchableOpacity
@@ -367,11 +372,22 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
     backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   bookRowSelected: {
     borderColor: '#D48A3E',
     backgroundColor: 'rgba(212,138,62,0.10)',
   },
+  bookRowMain: {
+    flex: 1,
+    paddingRight: 8,
+  },
   bookTitle: { color: '#2C2C2C', fontSize: 15, fontWeight: '700' },
   bookAuthor: { color: '#6B7280', fontSize: 13, marginTop: 4 },
+  bookSelectedBadge: {
+    color: '#D48A3E',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 });

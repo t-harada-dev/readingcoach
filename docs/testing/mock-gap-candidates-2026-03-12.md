@@ -26,6 +26,7 @@ SC-21 / SC-23 改修後の画面構成を基準に、追加モック要否を整
 - `SC-21`: `no_cover` / `cover_removed` / `rehab(progress_off相当)` 追加済み
 - `SC-14/15`: `normal` / `rehab` 両シナリオで表示確認可能に拡張済み
 - `SC-23`: `due` / `rehab` の両シナリオをモック表示可能
+- `SC-22`: 時刻変更モックから総合設定モック（Settings）へ差し替え済み
 - 未着手: 「本登録完了」「書籍削除」「読了分岐（NextFocusNomination 独立モック）」は次バッチ
 
 ## 関連計画（全画面化）

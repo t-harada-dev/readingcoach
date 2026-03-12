@@ -91,14 +91,13 @@ export function SC11CatalogPreview({ scenario }: { scenario: MockScenario }) {
                                 <Text style={styles.rowTitle}>深く考える技術</Text>
                                 <Text style={styles.rowMeta}>中村 健</Text>
                             </View>
-                            <Text style={styles.rowBadge}>選択中</Text>
+                            <Text style={styles.rowBadge}>この本を読んでいます</Text>
                         </View>
                         <View style={styles.row}>
                             <View style={styles.rowMain}>
                                 <Text style={styles.rowTitle}>思考を鍛える読書</Text>
                                 <Text style={styles.rowMeta}>佐藤 彩</Text>
                             </View>
-                            <Text style={styles.rowBadge}>候補</Text>
                         </View>
                     </>
                 )}
@@ -131,21 +130,37 @@ export function SC19CatalogPreview({ scenario: _scenario }: { scenario: MockScen
         <View style={styles.previewContainer}>
             <Text style={styles.title}>1冊読み切りました！</Text>
             <Text style={styles.subtitle}>次の本を選択しましょう</Text>
-            <View style={styles.card}>
-                <View style={[styles.row, styles.rowSelected]}>
-                    <View style={styles.rowMain}>
-                        <Text style={styles.rowTitle}>1分で戻る読書習慣</Text>
-                        <Text style={styles.rowMeta}>佐藤 彩</Text>
+            <View style={[styles.card, styles.selectionArea]}>
+                <Text style={styles.label}>次に読む本</Text>
+                <View style={styles.selectionList}>
+                    <View style={[styles.row, styles.rowSelected]}>
+                        <View style={styles.rowMain}>
+                            <Text style={styles.rowTitle}>1分で戻る読書習慣</Text>
+                            <Text style={styles.rowMeta}>佐藤 彩</Text>
+                        </View>
+                        <Text style={styles.rowBadge}>この本を読んでいます</Text>
                     </View>
-                    <Text style={styles.rowBadge}>選択中</Text>
-                </View>
-                <View style={styles.row}>
-                    <View style={styles.rowMain}>
-                        <Text style={styles.rowTitle}>週末に読みたい本</Text>
-                        <Text style={styles.rowMeta}>山田 理央</Text>
+                    <View style={styles.row}>
+                        <View style={styles.rowMain}>
+                            <Text style={styles.rowTitle}>週末に読みたい本</Text>
+                            <Text style={styles.rowMeta}>山田 理央</Text>
+                        </View>
                     </View>
-                    <Text style={styles.rowBadge}>候補</Text>
+                    <View style={styles.row}>
+                        <View style={styles.rowMain}>
+                            <Text style={styles.rowTitle}>読書メモの技術</Text>
+                            <Text style={styles.rowMeta}>中村 健</Text>
+                        </View>
+                    </View>
+                    <View style={styles.row}>
+                        <View style={styles.rowMain}>
+                            <Text style={styles.rowTitle}>構造化思考トレーニング</Text>
+                            <Text style={styles.rowMeta}>小林 理央</Text>
+                        </View>
+                    </View>
                 </View>
+            </View>
+            <View style={styles.previewBottomActions}>
                 <SessionCTAButton label="次の本を選ぶ" onPress={() => {}} />
                 <SessionCTAButton tone="secondary" label="本を追加する" onPress={() => {}} />
             </View>
@@ -381,6 +396,14 @@ const styles = StyleSheet.create({
     },
     previewBottomActions: {
         marginTop: 12,
+    },
+    selectionArea: {
+        flex: 1,
+    },
+    selectionList: {
+        minHeight: 260,
+        maxHeight: 260,
+        overflow: 'hidden',
     },
     chipRow: {
         flexDirection: 'row',

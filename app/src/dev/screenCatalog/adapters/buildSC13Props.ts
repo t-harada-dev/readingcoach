@@ -14,8 +14,12 @@ export function buildSC13Props(scenario: MockScenario): ActiveSessionViewProps {
         mode: 'rehab_3m',
         durationSeconds: 3 * 60,
         remainingSeconds: isRehab ? 95 : 128,
+        paused: false,
         done: false,
         completing: false,
-        onPressBack: () => {},
+        onPressPause: () => {},
+        onPressResume: () => {},
+        onPressFinishedBook: () => {},
+        onPressQuit: () => {},
     };
 }

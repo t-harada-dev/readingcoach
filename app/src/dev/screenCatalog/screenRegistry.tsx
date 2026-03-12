@@ -9,7 +9,7 @@ import { OnboardingNotificationScreen } from '../../screens/OnboardingNotificati
 import { OnboardingTimeScreen } from '../../screens/OnboardingTimeScreen';
 import { ProgressTrackingPromptScreen } from '../../screens/ProgressTrackingPromptScreen';
 import { ProgressTrackingSetupScreen } from '../../screens/ProgressTrackingSetupScreen';
-import { TimeChangeScreen } from '../../screens/TimeChangeScreen';
+import { SettingsScreen } from '../../screens/SettingsScreen';
 import { buildSC04Props } from './adapters/buildSC04Props';
 import { buildSC05Props } from './adapters/buildSC05Props';
 import { buildSC06Props } from './adapters/buildSC06Props';
@@ -91,7 +91,12 @@ const renderByScreenId: Record<ScreenId, (scenario: MockScenario) => React.React
     'SC-19': (scenario) => <SC19CatalogPreview scenario={scenario} />,
     'SC-20': (scenario) => <LibraryView {...buildSC20Props(scenario)} />,
     'SC-21': (scenario) => <BookDetailView {...buildSC21Props(scenario)} />,
-    'SC-22': () => <TimeChangeScreen navigation={stubNavigation} />,
+    'SC-22': (scenario) => (
+        <SettingsScreen
+            navigation={stubNavigation}
+            route={{ params: { forceNotificationsEnabled: scenario === 'rehab' } }}
+        />
+    ),
     'SC-23': (scenario) => <SC23CatalogPreview scenario={scenario} />,
     'SC-24': (scenario) => <ActiveSessionView {...buildSC24Props(scenario)} />,
     'SF-01': (scenario) => <SFCatalogPreview surfaceId="SF-01" scenario={scenario} />,

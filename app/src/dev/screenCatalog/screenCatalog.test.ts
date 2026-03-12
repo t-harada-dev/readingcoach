@@ -105,15 +105,26 @@ describe('screen catalog', () => {
         const sc09 = screenRegistry.find((item) => item.screenId === 'SC-09');
         const sc19 = screenRegistry.find((item) => item.screenId === 'SC-19');
         const sc03 = screenRegistry.find((item) => item.screenId === 'SC-03');
+        const sc22 = screenRegistry.find((item) => item.screenId === 'SC-22');
+        const sc24 = screenRegistry.find((item) => item.screenId === 'SC-24');
         const sf03 = screenRegistry.find((item) => item.screenId === 'SF-03');
         expect(sc09).toBeTruthy();
         expect(sc19).toBeTruthy();
         expect(sc03).toBeTruthy();
+        expect(sc22).toBeTruthy();
+        expect(sc24).toBeTruthy();
         expect(sf03).toBeTruthy();
 
         expect(renderToStaticMarkup(sc09!.render('timeout_or_error'))).toContain('本を追加する');
-        expect(renderToStaticMarkup(sc19!.render('finished_book'))).toContain('次の本を選択しましょう');
+        const sc19Markup = renderToStaticMarkup(sc19!.render('finished_book'));
+        expect(sc19Markup).toContain('次の本を選択しましょう');
+        expect(sc19Markup).toContain('この本を読んでいます');
+        expect(sc19Markup).not.toContain('候補');
         expect(renderToStaticMarkup(sc03!.render('already_has_data'))).toContain('通知は有効です');
+        expect(renderToStaticMarkup(sc22!.render('normal'))).toContain('読書時間を保存');
+        expect(renderToStaticMarkup(sc24!.render('normal'))).toContain('一時中断');
+        expect(renderToStaticMarkup(sc24!.render('normal'))).toContain('読み終わった');
+        expect(renderToStaticMarkup(sc24!.render('normal'))).toContain('やめる（ホームに戻る）');
         expect(renderToStaticMarkup(sf03!.render('normal'))).toContain('予定時刻通知（通常）');
     });
 
@@ -125,6 +136,8 @@ describe('screen catalog', () => {
         const noResultMarkup = renderToStaticMarkup(sc11!.render('no_result'));
 
         expect(normalMarkup).toContain('この本を追加する');
+        expect(normalMarkup).toContain('この本を読んでいます');
+        expect(normalMarkup).not.toContain('候補');
         expect(noResultMarkup).toContain('戻る');
         expect(noResultMarkup).not.toContain('この本を追加する');
     });

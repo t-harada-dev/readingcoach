@@ -144,7 +144,7 @@ export default function App() {
                             <Stack.Screen
                                 name="ProgressTrackingSetup"
                                 component={ProgressTrackingSetupScreen}
-                                options={{ title: '進捗設定' }}
+                                options={{ title: '進捗状況の登録' }}
                             />
                             <Stack.Screen
                                 name="NextFocusNomination"

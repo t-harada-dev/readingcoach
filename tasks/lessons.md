@@ -23,6 +23,7 @@
 ## Vitest + React Native
 
 1. **`vitest` の `environment: node` で画面コンポーネントを直接読むと Flow 構文で失敗する**: `react-native` 本体の parse error（`Expected 'from', got 'typeOf'`）が出る。画面テストは runner を分離（jsdom + rn 対応設定 or jest）してから入れる。
+2. **`vitest.config.ts` の `include` パターンを先に確認する**: このリポジトリは `src/**/*.test.ts` 固定のため、`.test.tsx` を追加しても実行対象に入らない。新規テストは `.test.ts` で作成するか、include を更新する。
 
 ## 通知アクションの開始モード
 

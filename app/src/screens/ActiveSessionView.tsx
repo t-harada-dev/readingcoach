@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import type { BookDTO } from '../bridge/PersistenceBridge';
+import { SessionCTAButton } from '../components/SessionCTAButton';
 import { BookCoverImage } from '../components/BookCoverImage';
 import { copy } from '../config/copy';
 import type { SessionMode } from '../useCases/StartSessionUseCase';
@@ -32,9 +33,13 @@ export type ActiveSessionViewProps = {
   mode?: SessionMode;
   durationSeconds: number;
   remainingSeconds: number;
+  paused: boolean;
   done: boolean;
   completing: boolean;
-  onPressBack: () => void;
+  onPressPause: () => void;
+  onPressResume: () => void;
+  onPressFinishedBook: () => void;
+  onPressQuit: () => void;
 };
 
 function toProgressRatio(remainingSeconds: number, durationSeconds: number): number {
@@ -50,15 +55,20 @@ export function ActiveSessionView({
   mode,
   durationSeconds,
   remainingSeconds,
+  paused,
   done,
   completing,
-  onPressBack,
+  onPressPause,
+  onPressResume,
+  onPressFinishedBook,
+  onPressQuit,
 }: ActiveSessionViewProps) {
   const progressRatio = toProgressRatio(remainingSeconds, durationSeconds);
   const rightRotation = `${Math.min(progressRatio, 0.5) * 360}deg`;
   const leftRotation = `${Math.max(0, progressRatio - 0.5) * 360}deg`;
   const isLeftVisible = progressRatio > 0.5;
   const remaining = done ? (completing ? '完了処理中…' : copy.activeSession.completed) : formatRemaining(remainingSeconds);
+  const disabledActions = completing;
 
   return (
     <View testID="active-session-screen" style={styles.container}>
@@ -90,10 +100,46 @@ export function ActiveSessionView({
           </Text>
         </View>
       </View>
-
-      <TouchableOpacity style={styles.secondaryBtn} onPress={onPressBack}>
-        <Text style={styles.secondaryText}>{copy.activeSession.backToHome}</Text>
-      </TouchableOpacity>
+      {paused ? (
+        <Text testID="active-session-paused-state" style={styles.pausedText}>
+          {copy.activeSession.paused}
+        </Text>
+      ) : null}
+      <View style={styles.actions}>
+        {paused ? (
+          <SessionCTAButton
+            testID="active-session-resume"
+            tone="primary"
+            label={copy.activeSession.resume}
+            onPress={onPressResume}
+            disabled={disabledActions}
+          />
+        ) : (
+          <>
+            <SessionCTAButton
+              testID="active-session-pause"
+              tone="primary"
+              label={copy.activeSession.pause}
+              onPress={onPressPause}
+              disabled={disabledActions || done}
+            />
+            <SessionCTAButton
+              testID="active-session-finished-book"
+              tone="secondary"
+              label={copy.activeSession.finishBook}
+              onPress={onPressFinishedBook}
+              disabled={disabledActions}
+            />
+          </>
+        )}
+        <SessionCTAButton
+          testID="active-session-quit"
+          tone="ghost"
+          label={copy.activeSession.backToHome}
+          onPress={onPressQuit}
+          disabled={disabledActions}
+        />
+      </View>
     </View>
   );
 }
@@ -182,17 +228,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 1,
   },
-  secondaryBtn: {
-    marginTop: 32,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 138, 62, 0.45)',
-  },
-  secondaryText: {
+  pausedText: {
     color: AMBER,
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 14,
+  },
+  actions: {
+    width: '100%',
+    marginTop: 22,
+    paddingBottom: 10,
   },
 });

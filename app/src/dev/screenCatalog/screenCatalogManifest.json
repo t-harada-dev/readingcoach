@@ -141,7 +141,7 @@
   },
   {
     "screenId": "SC-22",
-    "title": "Time Change",
+    "title": "Settings",
     "defaultScenario": "normal",
     "supportedScenarios": ["normal", "rehab"],
     "screenshotKeyPrefix": "screen-catalog_SC-22"

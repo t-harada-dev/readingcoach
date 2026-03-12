@@ -49,8 +49,12 @@ export const copy = {
   },
   activeSession: {
     caption: '集中の時間',
+    paused: '一時中断中',
     completed: '完了',
-    backToHome: 'ホームへ戻る',
+    pause: '一時中断',
+    resume: '再開',
+    finishBook: '読み終わった',
+    backToHome: 'やめる（ホームに戻る）',
   },
   completion: {
     elapsedPrefix: '読書した時間',

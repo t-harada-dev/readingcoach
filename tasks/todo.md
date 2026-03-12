@@ -1,5 +1,40 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-13: SC-20 選択カード強調（Library）
+
+- [x] `LibraryView` の選択中カード（`isFocus`）に強調スタイル（背景/枠）を追加
+- [x] 「この本を読んでいます」バッジの視認性を向上（色付きラベル化）
+- [x] `cd app && npm run typecheck`
+- [x] `cd app && npm test -- src/dev/screenCatalog/screenCatalog.test.ts`
+
+## 2026-03-13: SC-20 余白調整（Library）
+
+- [x] `LibraryView` の `FlatList` に `ItemSeparatorComponent` を追加し、本カード間の余白を 12px で統一
+- [x] `selectionArea` を `flex: 1 + minHeight` 構成へ調整し、`maxHeight` を外して縦方向の過剰余白を抑制
+- [x] `footer` の `marginTop: 'auto'` を廃止し、固定余白でスクロール領域との距離を最適化
+- [x] `cd app && npm run typecheck`
+- [x] `cd app && npm test -- src/dev/screenCatalog/screenCatalog.test.ts`
+
+## 2026-03-12: SC-11/17/19/20/22/24 + 総合設定モック反映
+
+- [x] SC-11: 実画面/AddBook の選択ラベルを「この本を読んでいます」に変更し、非選択行の「候補」表示を出さない
+- [x] SC-11: Screen Catalog モックを同表示ルールへ同期
+- [x] SC-17: 見出しを「進捗状況の登録」に変更（実画面 + Catalog + 画面定義doc）
+- [x] SC-19: 本選択エリアとCTAエリアを分離し、下部固定CTA + 固定高スクロール選択エリアに再構成
+- [x] SC-20: 一覧領域と下部操作領域を分離し、20冊想定でも固定領域スクロールを維持
+- [x] SC-20: Screen Catalog fixture を20冊相当に拡張
+- [x] SC-24: 全セッション共通で「一時中断/再開」「読み終わった」「やめる（ホームに戻る）」を実装
+- [x] SC-24: 「読み終わった」でセッション確定 + 本completed + SC-19直接遷移を実装
+- [x] SC-22: Screen Catalog レンダリングを TimeChange -> Settings へ切替
+- [x] SC-22: manifest/title と画面定義docを「総合設定」基準へ同期
+- [x] ActiveSessionView の props 契約拡張と呼び出し側追従（ActiveSessionScreen/Catalog adapters）
+- [x] テスト追加: SC-24 の一時中断/再開表示切替を担保
+- [x] 検証: `cd app && npm run typecheck`
+- [x] 検証: `cd app && npm test -- src/dev/screenCatalog/screenCatalog.test.ts src/screens/SettingsScreen.test.ts src/screens/ActiveSessionScreen.test.ts`
+- [ ] 検証: `cd app && npx detox test -c ios.sim.debug e2e/next-focus-visible.e2e.js e2e/home.session-start.e2e.js -- --watchman=false`
+  - [ ] 上記複数スイート同時実行は FAIL（`next-focus-visible` timeout 後に Detox 接続不安定化）
+  - [x] `e2e/home.session-start.e2e.js` 単体再実行は PASS（1 suite / 2 tests）
+
 ## 2026-03-12: Review指摘2件の修正（settings既定値 / 手動変更カウント）
 
 - [x] `saveSettingsWithDefaults` で `notificationsEnabled` を暗黙OFF化しないよう修正

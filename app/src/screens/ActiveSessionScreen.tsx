@@ -30,6 +30,8 @@ export function ActiveSessionScreen({
 
   const endTime = useMemo(() => new Date(endTimeISO).getTime(), [endTimeISO]);
   const [now, setNow] = useState(() => Date.now());
+  const [endTimeMs, setEndTimeMs] = useState(endTime);
+  const [pauseStartedAt, setPauseStartedAt] = useState<number | null>(null);
   const [completing, setCompleting] = useState(false);
   const [bookCoverUri, setBookCoverUri] = useState<string | undefined>(undefined);
   const [bookCoverSource, setBookCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
@@ -40,8 +42,10 @@ export function ActiveSessionScreen({
     return () => clearInterval(t);
   }, []);
 
-  const remainingSeconds = Math.max(0, Math.ceil((endTime - now) / 1000));
-  const done = remainingSeconds <= 0;
+  const paused = pauseStartedAt !== null;
+  const referenceNow = paused ? pauseStartedAt : now;
+  const remainingSeconds = Math.max(0, Math.ceil((endTimeMs - referenceNow) / 1000));
+  const done = !paused && remainingSeconds <= 0;
 
   useEffect(() => {
     let alive = true;
@@ -58,7 +62,7 @@ export function ActiveSessionScreen({
   }, [bookId]);
 
   useEffect(() => {
-    if (!done || finalizedRef.current || completing) return;
+    if (!done || finalizedRef.current || completing || paused) return;
     if (!planId || !sessionId || !mode) return;
     finalizedRef.current = true;
     setCompleting(true);
@@ -85,7 +89,35 @@ export function ActiveSessionScreen({
         setCompleting(false);
       }
     })();
-  }, [bookId, bookTitle, completing, done, durationSeconds, mode, navigation, planId, sessionId, startedAt]);
+  }, [bookId, bookTitle, completing, done, durationSeconds, mode, navigation, paused, planId, sessionId, startedAt]);
+
+  const onPressFinishedBook = async () => {
+    if (completing || !bookId) return;
+    setCompleting(true);
+    try {
+      if (planId && sessionId && mode) {
+        await runCompleteSessionUseCase({
+          planId,
+          sessionId,
+          mode,
+          bookTitle,
+          endedAtISO: new Date().toISOString(),
+        });
+      }
+      await persistenceBridge.saveBook({
+        id: bookId,
+        title: bookTitle,
+        status: 'completed',
+      });
+      navigation.replace('NextFocusNomination', {
+        completedBookId: bookId,
+      });
+    } catch {
+      navigation.navigate('FocusCore');
+    } finally {
+      setCompleting(false);
+    }
+  };
 
   return (
     <ActiveSessionView
@@ -95,9 +127,21 @@ export function ActiveSessionScreen({
       mode={mode}
       durationSeconds={durationSeconds ?? 0}
       remainingSeconds={remainingSeconds}
+      paused={paused}
       done={done}
       completing={completing}
-      onPressBack={() => navigation.goBack()}
+      onPressPause={() => setPauseStartedAt(Date.now())}
+      onPressResume={() => {
+        if (pauseStartedAt === null) return;
+        const pausedDuration = Date.now() - pauseStartedAt;
+        setEndTimeMs((prev) => prev + pausedDuration);
+        setPauseStartedAt(null);
+        setNow(Date.now());
+      }}
+      onPressFinishedBook={() => {
+        void onPressFinishedBook();
+      }}
+      onPressQuit={() => navigation.navigate('FocusCore')}
     />
   );
 }

@@ -70,7 +70,7 @@ export function ProgressTrackingSetupScreen({ navigation, route }: any) {
 
   return (
     <View testID="progress-setup-screen" style={styles.container}>
-      <Text style={styles.title}>進捗の初期設定</Text>
+      <Text style={styles.title}>進捗状況の登録</Text>
       <Text style={styles.subtitle}>あとで変更できます。未入力のまま戻ることも可能です。</Text>
       <View testID="progress-setup-book-card" style={styles.bookCard}>
         <Text style={styles.bookLabel}>対象の本</Text>

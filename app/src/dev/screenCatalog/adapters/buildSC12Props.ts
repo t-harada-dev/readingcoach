@@ -13,8 +13,12 @@ export function buildSC12Props(scenario: MockScenario): ActiveSessionViewProps {
     mode: fixture.mode,
     durationSeconds: fixture.durationSeconds,
     remainingSeconds: fixture.remainingSeconds,
+    paused: false,
     done: false,
     completing: false,
-    onPressBack: () => {},
+    onPressPause: () => {},
+    onPressResume: () => {},
+    onPressFinishedBook: () => {},
+    onPressQuit: () => {},
   };
 }
