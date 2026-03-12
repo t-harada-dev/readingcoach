@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { copy } from '../config/copy';
 
 export type BookDetailViewProps = {
@@ -15,7 +15,8 @@ export type BookDetailViewProps = {
   onChangeAuthor: (value: string) => void;
   onChangePageCount: (value: string) => void;
   onChangeCurrentPage: (value: string) => void;
-  onChangeThumbnailUrl: (value: string) => void;
+  onPressTakePhoto: () => void;
+  onPressPickFromLibrary: () => void;
   onPressToggleProgress: () => void;
   onPressSave: () => void;
   onPressSetFocusBook: () => void;
@@ -34,14 +35,15 @@ export function BookDetailView({
   onChangeAuthor,
   onChangePageCount,
   onChangeCurrentPage,
-  onChangeThumbnailUrl,
+  onPressTakePhoto,
+  onPressPickFromLibrary,
   onPressToggleProgress,
   onPressSave,
   onPressSetFocusBook,
 }: BookDetailViewProps) {
   return (
     <ScrollView testID="book-detail-screen" contentContainerStyle={styles.container}>
-      <Text style={styles.subtitle}>{copy.bookDetail.subtitle}</Text>
+      {copy.bookDetail.subtitle ? <Text style={styles.subtitle}>{copy.bookDetail.subtitle}</Text> : null}
 
       {thumbnailUrl.trim().length > 0 ? (
         <Image source={{ uri: thumbnailUrl }} style={styles.cover} resizeMode="cover" />
@@ -53,24 +55,23 @@ export function BookDetailView({
       <Text style={styles.label}>{copy.bookDetail.labelAuthor}</Text>
       <TextInput testID="book-detail-author" style={styles.input} value={author} onChangeText={onChangeAuthor} placeholder="著者名" />
 
-      <Text style={styles.label}>{copy.bookDetail.labelPageCount}</Text>
-      <TextInput
-        testID="book-detail-page-count"
-        style={styles.input}
-        value={pageCount}
-        onChangeText={onChangePageCount}
-        keyboardType="numeric"
-        placeholder="例: 320"
-      />
-
-      <Text style={styles.label}>{copy.bookDetail.labelCoverUrl}</Text>
-      <TextInput
-        style={styles.input}
-        value={thumbnailUrl}
-        onChangeText={onChangeThumbnailUrl}
-        placeholder="https://..."
-        autoCapitalize="none"
-      />
+      <Text style={styles.label}>{copy.bookDetail.labelCoverImage}</Text>
+      <TouchableOpacity
+        testID="book-detail-cover-camera"
+        style={styles.secondaryButton}
+        onPress={onPressTakePhoto}
+        disabled={saving}
+      >
+        <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaTakePhoto}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        testID="book-detail-cover-library"
+        style={styles.secondaryButton}
+        onPress={onPressPickFromLibrary}
+        disabled={saving}
+      >
+        <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaPickImage}</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         testID="book-detail-progress-toggle"
@@ -86,21 +87,32 @@ export function BookDetailView({
         </Text>
       </TouchableOpacity>
 
-      {progressEnabled ? (
-        <>
-          <Text style={styles.label}>{copy.bookDetail.labelCurrentPage}</Text>
-          <TextInput
-            testID="book-detail-current-page"
-            style={styles.input}
-            value={currentPage}
-            onChangeText={onChangeCurrentPage}
-            keyboardType="numeric"
-            placeholder="例: 120"
-          />
-        </>
-      ) : (
-        <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text>
-      )}
+      <View style={styles.pageBlock}>
+        <Text style={styles.label}>{copy.bookDetail.labelPageCount}</Text>
+        <TextInput
+          testID="book-detail-page-count"
+          style={styles.input}
+          value={pageCount}
+          onChangeText={onChangePageCount}
+          keyboardType="numeric"
+          placeholder="例: 320"
+        />
+
+        {progressEnabled ? (
+          <>
+            <Text style={styles.label}>{copy.bookDetail.labelCurrentPage}</Text>
+            <TextInput
+              testID="book-detail-current-page"
+              style={styles.input}
+              value={currentPage}
+              onChangeText={onChangeCurrentPage}
+              keyboardType="numeric"
+              placeholder="例: 120"
+            />
+          </>
+        ) : null}
+        {!progressEnabled ? <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text> : null}
+      </View>
 
       <TouchableOpacity testID="book-detail-save" style={[styles.primaryButton, !canSave && styles.disabled]} onPress={onPressSave} disabled={!canSave}>
         <Text style={styles.primaryButtonText}>{copy.bookDetail.ctaSave}</Text>
@@ -156,6 +168,14 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 12,
     marginTop: 8,
+  },
+  pageBlock: {
+    marginTop: 8,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(44,44,44,0.08)',
+    backgroundColor: '#FFFFFF',
   },
   primaryButton: {
     marginTop: 16,

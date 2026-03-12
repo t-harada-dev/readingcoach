@@ -8,6 +8,7 @@ const getSettingsMock = vi.hoisted(() => vi.fn(async () => null));
 
 vi.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
+  Text: ({ children }: { children: React.ReactNode }) => React.createElement('span', null, children),
   View: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
 }));
 

@@ -30,7 +30,7 @@ export function resolveHomeActionPlan(input: HomeActionPolicyInput): HomeActionP
       surface: 'rehab',
       primaryMode: 'ignition_1m',
       secondaryMode: 'rescue_5m',
-      rehabMode: 'rehab_3m',
+      rehabMode: null,
     };
   }
 
@@ -41,4 +41,3 @@ export function resolveHomeActionPlan(input: HomeActionPolicyInput): HomeActionP
     rehabMode: null,
   };
 }
-

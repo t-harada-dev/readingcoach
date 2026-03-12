@@ -15,13 +15,16 @@ type CompletionFeedback = {
 };
 
 function toElapsedLabel(seconds: number): string {
-  const mins = Math.max(1, Math.round(seconds / 60));
-  return `${copy.completion.elapsedPrefix}: ${mins}分`;
+  const clamped = Math.max(0, Math.floor(seconds));
+  const mm = String(Math.floor(clamped / 60)).padStart(2, '0');
+  const ss = String(clamped % 60).padStart(2, '0');
+  return `${copy.completion.elapsedPrefix}: ${mm}:${ss}`;
 }
 
 export type CompletionViewProps = {
   result: CompletionResult;
   elapsedSeconds: number;
+  bookTitle: string;
   feedback: CompletionFeedback;
   busy: boolean;
   finishedBookError: string | null;
@@ -33,6 +36,7 @@ export type CompletionViewProps = {
 
 export function CompletionView({
   elapsedSeconds,
+  bookTitle,
   feedback,
   busy,
   finishedBookError,
@@ -54,6 +58,9 @@ export function CompletionView({
         elapsedTestID="completion-duration"
         progressTestID="completion-progress"
       />
+      <Text testID="completion-book-title" style={styles.bookTitle}>
+        {copy.completion.readBookPrefix}: {bookTitle}
+      </Text>
 
       <View testID="extra-session-screen">
       {ctaOrder.map((cta) => {
@@ -129,5 +136,11 @@ const styles = StyleSheet.create({
     color: '#B91C1C',
     fontSize: 13,
     textAlign: 'center',
+  },
+  bookTitle: {
+    marginTop: 10,
+    marginBottom: 14,
+    color: '#4B5563',
+    fontSize: 14,
   },
 });

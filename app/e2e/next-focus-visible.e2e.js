@@ -1,4 +1,4 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { element, by, waitFor } = require('detox');
 const {
   launchRehabFast,
   reachCompletion,
@@ -6,10 +6,6 @@ const {
 } = require('./helpers/completionFlow');
 
 describe('Next Focus Visible', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-CMP-10E: SC-19 確定後にホーム表示 + FocusCore 次本反映
   it('shows nominated next book on FocusCore after confirm', async () => {
     await launchRehabFast({ state: 'normal' });
@@ -36,8 +32,7 @@ describe('Next Focus Visible', () => {
     await element(by.id('next-focus-confirm')).tap();
 
     await waitFor(element(by.id('next-focus-screen'))).not.toBeVisible().withTimeout(60000);
-    await device.enableSynchronization();
-    await waitFor(element(by.id('focus-core-open-library'))).toBeVisible().withTimeout(30000);
+    await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(30000);
     await waitFor(element(by.id('focus-core-book-title')))
       .toHaveText('再点火トレーニング (Native)')
       .withTimeout(30000);

@@ -172,8 +172,10 @@ export function FocusCoreScreen({ navigation, route }: any) {
     }, [policy.screenId, init.status, loading, navigation, plan, skipRestartOnce]);
 
     const dailyQuote = useMemo(() => dailyPerformanceMentorQuote(planDate), [planDate]);
-    const intentCopy = `「${dailyQuote.text}」\n— ${dailyQuote.author}`;
-
+    const intentCopy =
+        policy.screenId === 'SC-06'
+            ? '3日空いても大丈夫。今日は短くても、読書を再開できれば十分です。'
+            : `「${dailyQuote.text}」\n— ${dailyQuote.author}`;
     const viewProps: FocusCoreViewProps = {
         book,
         plan,
@@ -187,7 +189,6 @@ export function FocusCoreScreen({ navigation, route }: any) {
         intentCopy,
         startingMode: starting,
         onPressChangeBook,
-        onPressOpenLibrary: () => navigation.navigate('Library'),
         onPressPrimaryCTA: () => {
             void startSession(mainMode);
         },

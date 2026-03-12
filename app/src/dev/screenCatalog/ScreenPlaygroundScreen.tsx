@@ -4,29 +4,21 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { appTheme } from '../../theme/layout';
 import { DevNotice } from './components/DevNotice';
 import { ScenarioPicker } from './components/ScenarioPicker';
+import { screenCatalogManifest } from './screenCatalogManifest';
 import { screenRegistry, getScreenRegistryItem } from './screenRegistry';
 import type { MockScenario, ScreenId } from './types';
 
+const screenIdSet = new Set<ScreenId>(screenCatalogManifest.map((item) => item.screenId));
+
 function isScreenId(value: unknown): value is ScreenId {
-    return (
-        value === 'SC-04' ||
-        value === 'SC-05' ||
-        value === 'SC-06' ||
-        value === 'SC-07' ||
-        value === 'SC-12' ||
-        value === 'SC-14' ||
-        value === 'SC-15' ||
-        value === 'SC-20' ||
-        value === 'SC-21' ||
-        value === 'SC-23'
-    );
+    return typeof value === 'string' && screenIdSet.has(value as ScreenId);
 }
 
 function isScenario(value: unknown): value is MockScenario {
     return value === 'normal' || value === 'rehab' || value === 'long_absence' || value === 'due';
 }
 
-export function ScreenPlaygroundScreen({ route }: any) {
+export function ScreenPlaygroundScreen({ navigation, route }: any) {
     const params = route?.params ?? {};
     const [screenId, setScreenId] = useState<ScreenId>(isScreenId(params.screenId) ? params.screenId : 'SC-04');
     const [scenario, setScenario] = useState<MockScenario>(isScenario(params.scenario) ? params.scenario : 'normal');
@@ -57,9 +49,14 @@ export function ScreenPlaygroundScreen({ route }: any) {
                 <Text style={styles.summaryText}>
                     {currentScreen.screenId} / {scenario}
                 </Text>
-                <Pressable testID="playground-toggle-details" style={styles.toggleBtn} onPress={() => setShowDetails((v) => !v)}>
-                    <Text style={styles.toggleBtnText}>{showDetails ? '詳細を閉じる' : '詳細を表示'}</Text>
-                </Pressable>
+                <View style={styles.summaryActions}>
+                    <Pressable testID="back-to-catalog" style={styles.toggleBtn} onPress={() => navigation.navigate('DevScreenCatalog')}>
+                        <Text style={styles.toggleBtnText}>一覧へ戻る</Text>
+                    </Pressable>
+                    <Pressable testID="playground-toggle-details" style={styles.toggleBtn} onPress={() => setShowDetails((v) => !v)}>
+                        <Text style={styles.toggleBtnText}>{showDetails ? '詳細を閉じる' : '詳細を表示'}</Text>
+                    </Pressable>
+                </View>
             </View>
 
             {showDetails ? (
@@ -97,6 +94,11 @@ const styles = StyleSheet.create({
     screen: {
         flex: 1,
         backgroundColor: appTheme.colors.screenBackground,
+    },
+    summaryActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
     },
     content: {
         paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,

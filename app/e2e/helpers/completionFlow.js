@@ -1,22 +1,46 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { expect, element, by, waitFor } = require('detox');
+const { launchAppUnsynced } = require('./launchApp');
 
 async function sleep(ms) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function launchRehabFast({ state = 'rehab3', sessionSeconds = '2' } = {}) {
-  await device.launchApp({
+  await launchAppUnsynced({
     newInstance: true,
     delete: true,
     launchArgs: { e2e_state: state, e2e_session_seconds: sessionSeconds },
   });
-  await device.disableSynchronization();
 }
 
-async function reachCompletion({ dismissProgressPrompt = false } = {}) {
+async function startSessionFromHome() {
   await waitFor(element(by.id('focus-core-primary-cta'))).toBeVisible().withTimeout(15000);
+
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      await element(by.id('focus-core-primary-cta')).tap();
+      await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
+      return;
+    } catch {
+      // Ensure the CTA is inside hittable area on compact simulator heights.
+      try {
+        await element(by.id('focus-core-scroll')).scrollTo('bottom');
+      } catch {
+        // no-op
+      }
+      await sleep(300);
+    }
+  }
+
+  await waitFor(element(by.id('focus-core-primary-cta'))).toBeVisible().withTimeout(10000);
   await element(by.id('focus-core-primary-cta')).tap();
   await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
+}
+
+async function reachCompletion({ dismissProgressPrompt = false, sessionStarted = false } = {}) {
+  if (!sessionStarted) {
+    await startSessionFromHome();
+  }
 
   const deadline = Date.now() + 130000;
   while (Date.now() < deadline) {
@@ -63,7 +87,7 @@ async function ensureCompletionActionVisible(actionTestId) {
 module.exports = {
   sleep,
   launchRehabFast,
+  startSessionFromHome,
   reachCompletion,
   ensureCompletionActionVisible,
 };
-

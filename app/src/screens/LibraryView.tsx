@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { BookDTO } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
 
@@ -16,14 +16,10 @@ export function LibraryView({ books, onPressAddBook, onPressBook }: LibraryViewP
     <View testID="library-screen" style={styles.container}>
       <Text style={styles.title}>{copy.library.title}</Text>
       <Text style={styles.subtitle}>{copy.library.subtitle}</Text>
-
-      <TouchableOpacity testID="library-add-book" style={styles.addButton} onPress={onPressAddBook}>
-        <Text style={styles.addButtonText}>{copy.library.ctaAddBook}</Text>
-      </TouchableOpacity>
-
       <FlatList
         data={books}
         keyExtractor={(item) => item.id}
+        style={styles.listView}
         contentContainerStyle={books.length === 0 ? styles.emptyContainer : styles.list}
         ListEmptyComponent={<Text testID="library-empty-state" style={styles.empty}>{copy.library.empty}</Text>}
         renderItem={({ item }) => (
@@ -32,6 +28,20 @@ export function LibraryView({ books, onPressAddBook, onPressBook }: LibraryViewP
             style={styles.row}
             onPress={() => onPressBook(item.id)}
           >
+            {item.thumbnailUrl ? (
+              <Image
+                testID={`library-book-cover-${item.id}`}
+                source={{ uri: item.thumbnailUrl }}
+                style={styles.cover}
+                resizeMode="cover"
+              />
+            ) : (
+              <View testID={`library-book-cover-fallback-${item.id}`} style={styles.coverFallback}>
+                <Text style={styles.coverFallbackText} numberOfLines={2}>
+                  {item.title}
+                </Text>
+              </View>
+            )}
             <View style={styles.rowMain}>
               <Text style={styles.bookTitle} numberOfLines={1}>
                 {item.title}
@@ -49,6 +59,11 @@ export function LibraryView({ books, onPressAddBook, onPressBook }: LibraryViewP
           </TouchableOpacity>
         )}
       />
+      <View style={styles.footer}>
+        <TouchableOpacity testID="library-add-book" style={styles.addButton} onPress={onPressAddBook}>
+          <Text style={styles.addButtonText}>{copy.library.ctaAddBook}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -71,9 +86,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 6,
   },
+  listView: {
+    flex: 1,
+    marginTop: 12,
+  },
   addButton: {
-    marginTop: 14,
-    marginBottom: 12,
     borderRadius: 16,
     backgroundColor: '#D48A3E',
     paddingVertical: 12,
@@ -86,6 +103,7 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: 10,
+    paddingBottom: 8,
   },
   emptyContainer: {
     flexGrow: 1,
@@ -107,6 +125,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  cover: {
+    width: 44,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: '#E5E7EB',
+    marginRight: 12,
+  },
+  coverFallback: {
+    width: 44,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    marginRight: 12,
+    padding: 4,
+    justifyContent: 'center',
+  },
+  coverFallbackText: {
+    color: '#6B7280',
+    fontSize: 9,
+    textAlign: 'center',
+  },
   rowMain: {
     flex: 1,
     paddingRight: 10,
@@ -125,5 +164,9 @@ const styles = StyleSheet.create({
     color: '#D48A3E',
     fontSize: 12,
     fontWeight: '700',
+  },
+  footer: {
+    paddingTop: 10,
+    paddingBottom: 4,
   },
 });

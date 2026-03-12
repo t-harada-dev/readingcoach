@@ -1,0 +1,133 @@
+{
+  "version": "1.1.0",
+  "updatedAt": "2026-03-12",
+  "coverageRule": "Core-10 snapshots only.",
+  "scope": {
+    "mode": "core10",
+    "description": "Only the 10 priority screens are baseline targets.",
+    "screenIds": [
+      "SC-04",
+      "SC-05",
+      "SC-06",
+      "SC-07",
+      "SC-12",
+      "SC-14",
+      "SC-15",
+      "SC-20",
+      "SC-21",
+      "SC-23"
+    ]
+  },
+  "entries": [
+    {
+      "targetId": "SC-04:normal",
+      "uiId": "SC-04",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/home-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-04_normal_part001"
+    },
+    {
+      "targetId": "SC-05:heavy_day",
+      "uiId": "SC-05",
+      "uiType": "screen",
+      "variantId": "heavy_day",
+      "baseline": true,
+      "captureMode": "detox_injected",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/home-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-05_heavy_day_part001"
+    },
+    {
+      "targetId": "SC-06:rehab",
+      "uiId": "SC-06",
+      "uiType": "screen",
+      "variantId": "rehab",
+      "baseline": true,
+      "captureMode": "detox_injected",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/home-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-06_rehab_part001"
+    },
+    {
+      "targetId": "SC-07:long_absence",
+      "uiId": "SC-07",
+      "uiType": "screen",
+      "variantId": "long_absence",
+      "baseline": true,
+      "captureMode": "detox_injected",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/home-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-07_long_absence_part001"
+    },
+    {
+      "targetId": "SC-12:normal",
+      "uiId": "SC-12",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/session-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-12_normal_part001"
+    },
+    {
+      "targetId": "SC-14:rehab",
+      "uiId": "SC-14",
+      "uiType": "screen",
+      "variantId": "rehab",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/session-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-14_rehab_part001"
+    },
+    {
+      "targetId": "SC-15:rehab",
+      "uiId": "SC-15",
+      "uiType": "screen",
+      "variantId": "rehab",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/session-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-15_rehab_part001"
+    },
+    {
+      "targetId": "SC-20:normal",
+      "uiId": "SC-20",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/library-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-20_normal_part001"
+    },
+    {
+      "targetId": "SC-21:normal",
+      "uiId": "SC-21",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/library-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-21_normal_part001"
+    },
+    {
+      "targetId": "SC-23:due",
+      "uiId": "SC-23",
+      "uiType": "screen",
+      "variantId": "due",
+      "baseline": true,
+      "captureMode": "detox_injected",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/home-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-23_due_part001"
+    }
+  ]
+}

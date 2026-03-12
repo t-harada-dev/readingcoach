@@ -67,7 +67,6 @@ describe('RestartRecoveryScreen', () => {
     );
     expect(ctaCalls.map((c) => c.label)).toEqual([
       '1分だけ読んでみる',
-      'ライブラリを開く',
       '時間を変える',
       '今日はやめる',
     ]);
@@ -82,7 +81,7 @@ describe('RestartRecoveryScreen', () => {
       })
     );
 
-    await ctaCalls[3]?.onPress();
+    await ctaCalls[2]?.onPress();
     expect(navigate).toHaveBeenCalledWith('FocusCore', { skipRestartOnce: true });
   });
 });

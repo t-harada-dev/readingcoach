@@ -1,4 +1,4 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { expect, element, by, waitFor } = require('detox');
 const {
   launchRehabFast,
   reachCompletion,
@@ -6,10 +6,6 @@ const {
 } = require('./helpers/completionFlow');
 
 describe('Completion Flow', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-CMP-01: SC-15 -> 閉じる -> 状態依存ホーム復帰（rehab）
   it('closes completion and returns to rehab home route', async () => {
     await launchRehabFast();
@@ -19,7 +15,7 @@ describe('Completion Flow', () => {
     await waitFor(element(by.id('completion-close'))).toBeVisible().withTimeout(10000);
     await element(by.id('completion-close')).tap();
 
-    await waitFor(element(by.id('focus-core-open-library'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(10000);
   });
 
   // TC-CMP-02: SC-15 -> もう5分 -> SC-24

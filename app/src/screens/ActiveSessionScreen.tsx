@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { runCompleteSessionUseCase } from '../useCases/CompleteSessionUseCase';
 import type { SessionMode } from '../useCases/StartSessionUseCase';
+import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { ActiveSessionView } from './ActiveSessionView';
 
 export function ActiveSessionScreen({
@@ -30,6 +31,7 @@ export function ActiveSessionScreen({
   const endTime = useMemo(() => new Date(endTimeISO).getTime(), [endTimeISO]);
   const [now, setNow] = useState(() => Date.now());
   const [completing, setCompleting] = useState(false);
+  const [bookCoverUri, setBookCoverUri] = useState<string | undefined>(undefined);
   const finalizedRef = useRef(false);
 
   useEffect(() => {
@@ -39,6 +41,19 @@ export function ActiveSessionScreen({
 
   const remainingSeconds = Math.max(0, Math.ceil((endTime - now) / 1000));
   const done = remainingSeconds <= 0;
+
+  useEffect(() => {
+    let alive = true;
+    if (!bookId) return;
+    void (async () => {
+      const book = await persistenceBridge.getBook(bookId);
+      if (!alive) return;
+      setBookCoverUri(book?.thumbnailUrl);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [bookId]);
 
   useEffect(() => {
     if (!done || finalizedRef.current || completing) return;
@@ -73,7 +88,9 @@ export function ActiveSessionScreen({
   return (
     <ActiveSessionView
       bookTitle={bookTitle}
+      bookCoverUri={bookCoverUri}
       mode={mode}
+      durationSeconds={durationSeconds ?? 0}
       remainingSeconds={remainingSeconds}
       done={done}
       completing={completing}

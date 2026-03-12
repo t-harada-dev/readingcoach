@@ -32,7 +32,6 @@ export type FocusCoreViewProps = {
     intentCopy: string;
     startingMode: SessionMode | null;
     onPressChangeBook: () => void;
-    onPressOpenLibrary: () => void;
     onPressPrimaryCTA: () => void;
     onPressSecondaryCTA: () => void;
     onPressRehabCTA: () => void;
@@ -51,7 +50,6 @@ export function FocusCoreView({
     intentCopy,
     startingMode,
     onPressChangeBook,
-    onPressOpenLibrary,
     onPressPrimaryCTA,
     onPressSecondaryCTA,
     onPressRehabCTA,
@@ -105,16 +103,6 @@ export function FocusCoreView({
                             <Text style={styles.ghostLinkText}>{copy.focusCore.changeBookLink}</Text>
                         </TouchableOpacity>
                     ) : null}
-                    <TouchableOpacity
-                        testID="focus-core-open-library"
-                        accessible={true}
-                        accessibilityRole="button"
-                        accessibilityLabel="focus-core-open-library"
-                        style={styles.ghostLink}
-                        onPress={onPressOpenLibrary}
-                    >
-                        <Text style={styles.ghostLinkText}>{copy.focusCore.openLibraryLink}</Text>
-                    </TouchableOpacity>
                 </View>
 
                 <View style={styles.menu}>

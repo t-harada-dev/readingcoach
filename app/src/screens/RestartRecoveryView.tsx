@@ -9,7 +9,6 @@ export type RestartRecoveryViewProps = {
     busy: boolean;
     errorText: string | null;
     onPressStartIgnition: () => void;
-    onPressOpenLibrary: () => void;
     onPressChangeTime: () => void;
     onPressClose: () => void;
 };
@@ -18,7 +17,6 @@ export function RestartRecoveryView({
     busy,
     errorText,
     onPressStartIgnition,
-    onPressOpenLibrary,
     onPressChangeTime,
     onPressClose,
 }: RestartRecoveryViewProps) {
@@ -35,12 +33,6 @@ export function RestartRecoveryView({
                     tone="primary"
                     label={copy.restartRecovery.ctaStartIgnition}
                     onPress={onPressStartIgnition}
-                    disabled={busy}
-                />
-                <SessionCTAButton
-                    tone="ghost"
-                    label={copy.restartRecovery.ctaOpenLibrary}
-                    onPress={onPressOpenLibrary}
                     disabled={busy}
                 />
                 <SessionCTAButton

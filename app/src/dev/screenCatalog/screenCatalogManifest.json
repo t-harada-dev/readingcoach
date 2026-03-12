@@ -1,0 +1,72 @@
+[
+  {
+    "screenId": "SC-04",
+    "title": "Normal Home",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-04"
+  },
+  {
+    "screenId": "SC-05",
+    "title": "Lightweight Home",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-05"
+  },
+  {
+    "screenId": "SC-06",
+    "title": "Recovery Home (3+ missed)",
+    "defaultScenario": "rehab",
+    "supportedScenarios": ["rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-06"
+  },
+  {
+    "screenId": "SC-07",
+    "title": "Restart Recovery",
+    "defaultScenario": "long_absence",
+    "supportedScenarios": ["long_absence"],
+    "screenshotKeyPrefix": "screen-catalog_SC-07"
+  },
+  {
+    "screenId": "SC-12",
+    "title": "Active Session",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-12"
+  },
+  {
+    "screenId": "SC-14",
+    "title": "Completion (Soft)",
+    "defaultScenario": "rehab",
+    "supportedScenarios": ["rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-14"
+  },
+  {
+    "screenId": "SC-15",
+    "title": "Completion (Hard)",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal"],
+    "screenshotKeyPrefix": "screen-catalog_SC-15"
+  },
+  {
+    "screenId": "SC-20",
+    "title": "Library",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal"],
+    "screenshotKeyPrefix": "screen-catalog_SC-20"
+  },
+  {
+    "screenId": "SC-21",
+    "title": "Book Detail",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal"],
+    "screenshotKeyPrefix": "screen-catalog_SC-21"
+  },
+  {
+    "screenId": "SC-23",
+    "title": "Due Action Sheet",
+    "defaultScenario": "due",
+    "supportedScenarios": ["due"],
+    "screenshotKeyPrefix": "screen-catalog_SC-23"
+  }
+]

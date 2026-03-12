@@ -1,0 +1,62 @@
+[
+  {
+    "screenId": "SC-04",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-05",
+    "scenario": "heavy_day",
+    "captureSource": "injected",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-06",
+    "scenario": "rehab",
+    "captureSource": "injected",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-07",
+    "scenario": "long_absence",
+    "captureSource": "injected",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-23",
+    "scenario": "due",
+    "captureSource": "injected",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-12",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "session"
+  },
+  {
+    "screenId": "SC-14",
+    "scenario": "rehab",
+    "captureSource": "flow",
+    "suite": "session"
+  },
+  {
+    "screenId": "SC-15",
+    "scenario": "rehab",
+    "captureSource": "flow",
+    "suite": "session"
+  },
+  {
+    "screenId": "SC-20",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "library"
+  },
+  {
+    "screenId": "SC-21",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "library"
+  }
+]

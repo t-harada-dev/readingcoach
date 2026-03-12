@@ -1,14 +1,14 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { element, by, waitFor } = require('detox');
+const { launchAppUnsynced } = require('./helpers/launchApp');
 
 async function launchToLibrary(extra = {}) {
-  await device.launchApp({
+  await launchAppUnsynced({
     newInstance: true,
     delete: true,
     launchArgs: extra,
   });
-  await device.disableSynchronization();
-  await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(15000);
-  await element(by.id('focus-core-open-library')).tap();
+  await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(15000);
+  await element(by.id('focus-core-change-book')).tap();
   await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
 }
 
@@ -42,10 +42,6 @@ async function saveCandidate() {
 }
 
 describe('Add Book Flow', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-BOOK-05
   it('BOOK-05: opens add-book search from library', async () => {
     await launchToLibrary();

@@ -1,17 +1,14 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { element, by, waitFor } = require('detox');
+const { launchAppUnsynced } = require('./helpers/launchApp');
 const {
   reachCompletion,
   ensureCompletionActionVisible,
 } = require('./helpers/completionFlow');
 
 describe('Finished Book Recovery', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-CMP-09F (UI): finished_book 保存1回失敗時に完了画面で再試行導線を維持
   it('keeps completion screen and allows retry after one save failure', async () => {
-    await device.launchApp({
+    await launchAppUnsynced({
       newInstance: true,
       delete: true,
       launchArgs: {
@@ -20,7 +17,6 @@ describe('Finished Book Recovery', () => {
         e2e_fail_save_book_once: '1',
       },
     });
-    await device.disableSynchronization();
 
     await reachCompletion({ dismissProgressPrompt: true });
     await ensureCompletionActionVisible('completion-finished-book');

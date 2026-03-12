@@ -62,7 +62,7 @@ export const scenarioFixtures: Record<MockScenario, ScenarioFixture> = {
         },
         mainMode: 'ignition_1m',
         subMode: 'rescue_5m',
-        rehabMode: 'rehab_3m',
+        rehabMode: null,
     },
     long_absence: {
         scenario: 'long_absence',
@@ -102,7 +102,7 @@ export const scenarioFixtures: Record<MockScenario, ScenarioFixture> = {
         },
         mainMode: 'ignition_1m',
         subMode: 'rescue_5m',
-        rehabMode: 'rehab_3m',
+        rehabMode: null,
     },
 };
 

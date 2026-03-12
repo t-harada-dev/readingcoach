@@ -21,7 +21,6 @@ export function SC07CatalogPreview({ scenario }: { scenario: MockScenario }) {
             <RestartRecoveryView
                 {...props}
                 onPressStartIgnition={() => setActionLog((current) => [`start:ignition_1m`, ...current].slice(0, 4))}
-                onPressOpenLibrary={() => setActionLog((current) => ['navigate:library', ...current].slice(0, 4))}
                 onPressChangeTime={() => setActionLog((current) => ['navigate:time-change', ...current].slice(0, 4))}
                 onPressClose={() => setActionLog((current) => ['navigate:focus-core(skipRestartOnce)', ...current].slice(0, 4))}
             />

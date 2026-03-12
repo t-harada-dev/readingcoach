@@ -1,10 +1,10 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { expect, element, by, waitFor } = require('detox');
+const { launchAppUnsynced } = require('./helpers/launchApp');
 
 async function launchToLibrary() {
-  await device.launchApp({ newInstance: true, delete: true });
-  await device.disableSynchronization();
-  await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(15000);
-  await element(by.id('focus-core-open-library')).tap();
+  await launchAppUnsynced({ newInstance: true, delete: true });
+  await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(15000);
+  await element(by.id('focus-core-change-book')).tap();
   await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
 }
 
@@ -25,13 +25,13 @@ async function focusFromDetail() {
   for (let i = 0; i < 2; i += 1) {
     await element(by.id('book-detail-focus')).tap();
     try {
-      await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(3000);
+      await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(3000);
       return;
     } catch {
       // retry
     }
   }
-  await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(15000);
+  await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(15000);
 }
 
 async function ensureProgressEnabled() {
@@ -57,8 +57,11 @@ async function ensureProgressEnabled() {
 }
 
 describe('Library and Book Detail', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
+  // TC-LIB-01
+  it('LIB-01: shows cover image or placeholder on library rows', async () => {
+    await launchToLibrary();
+    await waitFor(element(by.id('library-book-row-native_book_1'))).toExist().withTimeout(10000);
+    await waitFor(element(by.id('library-book-cover-fallback-native_book_1'))).toBeVisible().withTimeout(10000);
   });
 
   // TC-BOOK-06

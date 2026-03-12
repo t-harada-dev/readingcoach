@@ -1,7 +1,8 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { element, by, waitFor } = require('detox');
+const { launchAppUnsynced } = require('./helpers/launchApp');
 
 async function launchOnboarding(extra = {}) {
-  await device.launchApp({
+  await launchAppUnsynced({
     newInstance: true,
     delete: true,
     launchArgs: {
@@ -9,7 +10,6 @@ async function launchOnboarding(extra = {}) {
       ...extra,
     },
   });
-  await device.disableSynchronization();
 }
 
 async function completeOnboardingBookBySearch() {
@@ -22,10 +22,6 @@ async function completeOnboardingBookBySearch() {
 }
 
 describe('Onboarding Flow', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-ONB-01
   it('ONB-01: search success and candidate save moves to time screen', async () => {
     await launchOnboarding({ e2e_book_search_mode: 'success' });
@@ -73,7 +69,7 @@ describe('Onboarding Flow', () => {
     });
     await waitFor(element(by.id('onboarding-notification-enable'))).toExist().withTimeout(15000);
     await element(by.id('onboarding-notification-enable')).tap();
-    await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(10000);
+    await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(10000);
   });
 
   // TC-ONB-06
@@ -84,6 +80,6 @@ describe('Onboarding Flow', () => {
     });
     await waitFor(element(by.id('onboarding-notification-later'))).toExist().withTimeout(15000);
     await element(by.id('onboarding-notification-later')).tap();
-    await waitFor(element(by.id('focus-core-open-library'))).toExist().withTimeout(10000);
+    await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(10000);
   });
 });

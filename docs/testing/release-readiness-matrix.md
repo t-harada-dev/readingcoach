@@ -17,6 +17,10 @@
 | ABN | TC-ABN-NA-03 | manual native acceptance | 未実施（要注入環境） | 失敗時 non-blocker | ABN-07 設計方針 + session継続 | iOS | 表示障害の局所化 |
 | ONB | TC-ONB-NA-01 | manual native acceptance | 未実施（要新規インストール） | 失敗時 blocker | ONB-05/06 Detox (mock) | iOS | 権限ダイアログ実UI |
 | BOOK | TC-BOOK-NA-01 | manual native acceptance | 未実施（要実ネットワーク） | 失敗時 blocker | BOOK-01/02/03/04 Detox (mock) | App | 実通信品質・縮退導線 |
+| SESSION | TC-SESSION-01 | Detox | 実装予定 | 失敗時 blocker | `e2e/session-completion-consistency.e2e.js` | App | 完了画面の読書時間一致 |
+| SESSION | TC-SESSION-02 | Detox | 実装予定 | 失敗時 blocker | `e2e/session-completion-consistency.e2e.js` | App | 完了画面の書籍一致 |
+| HOME | TC-REHAB-01 | Detox | 実装予定 | 失敗時 blocker | `e2e/home.rehab.e2e.js` | App | SC-06で3分再開が非表示 |
+| LIB | TC-LIB-01 | Detox | 実装予定 | 失敗時 blocker | `e2e/library-detail.e2e.js` | App | ライブラリで書影/placeholder表示 |
 
 ## 自動化レイヤ現状（参照）
 - Detox:
@@ -30,6 +34,7 @@
 - Gate-1: blocker ケースの manual acceptance が全件 PASS
 - Gate-2: `npm run e2e:test:ios` と `npm test` が直近実行で PASS
 - Gate-3: non-blocker は既知制約として証跡リンク付きで管理
+- Gate-4: `npm run e2e:snapshot:manifest:check` が PASS（Core 10 画面の欠落なし）
 
 ## blocker 扱い（初期定義）
 - TC-SUR-NA-01

@@ -1,12 +1,12 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { expect, element, by, waitFor } = require('detox');
+const { launchAppUnsynced } = require('./helpers/launchApp');
 
 async function launchToCompletion(launchArgs = {}) {
-  await device.launchApp({
+  await launchAppUnsynced({
     newInstance: true,
     delete: true,
     launchArgs: { e2e_session_seconds: '2', ...launchArgs },
   });
-  await device.disableSynchronization();
 
   const startDeadline = Date.now() + 20000;
   let started = false;
@@ -66,10 +66,6 @@ async function launchToCompletion(launchArgs = {}) {
 }
 
 describe('Completion Return Routes', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-CMP-01N: normal completion close returns to SC-04(FocusCore)
   it('returns to normal home route on close', async () => {
     await launchToCompletion();
@@ -77,7 +73,7 @@ describe('Completion Return Routes', () => {
     await waitFor(element(by.id('completion-close'))).toBeVisible().withTimeout(10000);
     await element(by.id('completion-close')).tap();
 
-    await waitFor(element(by.id('focus-core-open-library'))).toBeVisible().withTimeout(15000);
+    await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(15000);
   });
 
   // TC-CMP-01R: restart completion close returns to SC-07(RestartRecovery)

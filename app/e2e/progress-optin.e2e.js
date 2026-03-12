@@ -1,11 +1,7 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { element, by, waitFor } = require('detox');
 const { sleep, launchRehabFast, reachCompletion } = require('./helpers/completionFlow');
 
 describe('Progress Opt-in Flow', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-CMP-04: 初回完了かつ未設定時に SC-16 が表示される
   it('shows progress opt-in prompt on first completion', async () => {
     await launchRehabFast();

@@ -1,7 +1,7 @@
-const { device } = require('detox');
+const { launchAppUnsynced } = require('./launchApp');
 
 async function launchSurface({ source, action, state, extraLaunchArgs }) {
-  await device.launchApp({
+  await launchAppUnsynced({
     newInstance: true,
     delete: true,
     launchArgs: {
@@ -11,7 +11,6 @@ async function launchSurface({ source, action, state, extraLaunchArgs }) {
       e2e_surface_action: action,
     },
   });
-  await device.disableSynchronization();
 }
 
 module.exports = {

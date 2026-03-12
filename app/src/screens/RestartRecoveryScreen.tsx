@@ -54,7 +54,6 @@ export function RestartRecoveryScreen({ navigation, route }: any) {
             busy={busy}
             errorText={errorText}
             onPressStartIgnition={startIgnition}
-            onPressOpenLibrary={() => navigation.navigate('Library')}
             onPressChangeTime={() => navigation.navigate('TimeChange')}
             onPressClose={() => navigation.navigate('FocusCore', { skipRestartOnce: true })}
         />

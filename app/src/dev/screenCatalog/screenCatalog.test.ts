@@ -20,22 +20,32 @@ vi.mock('react-native', () => ({
 }));
 
 import { ScreenCatalogScreen } from './ScreenCatalogScreen';
+import { screenCatalogManifest } from './screenCatalogManifest';
 import { screenRegistry } from './screenRegistry';
 
 describe('screen catalog', () => {
     it('registers the requested screens', () => {
-        expect(screenRegistry.map((item) => item.screenId)).toEqual([
-            'SC-04',
-            'SC-05',
-            'SC-06',
-            'SC-07',
-            'SC-12',
-            'SC-14',
-            'SC-15',
-            'SC-20',
-            'SC-21',
-            'SC-23',
-        ]);
+        expect(screenRegistry.map((item) => item.screenId)).toEqual(screenCatalogManifest.map((item) => item.screenId));
+    });
+
+    it('keeps manifest and registry metadata aligned', () => {
+        expect(
+            screenRegistry.map((item) => ({
+                screenId: item.screenId,
+                title: item.title,
+                defaultScenario: item.defaultScenario,
+                supportedScenarios: item.supportedScenarios,
+                screenshotKey: item.buildScreenshotKey(item.defaultScenario),
+            }))
+        ).toEqual(
+            screenCatalogManifest.map((item) => ({
+                screenId: item.screenId,
+                title: item.title,
+                defaultScenario: item.defaultScenario,
+                supportedScenarios: item.supportedScenarios,
+                screenshotKey: `${item.screenshotKeyPrefix}_${item.defaultScenario}`,
+            }))
+        );
     });
 
     it('renders the catalog list with screen ids and titles', () => {

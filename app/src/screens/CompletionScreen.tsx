@@ -88,6 +88,7 @@ export function CompletionScreen({ navigation, route }: any) {
     <CompletionView
       result={result}
       elapsedSeconds={elapsedSeconds}
+      bookTitle={bookTitle}
       feedback={feedback}
       busy={busy}
       finishedBookError={finishedBookError}

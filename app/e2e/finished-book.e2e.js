@@ -1,4 +1,4 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { element, by, waitFor } = require('detox');
 const {
   launchRehabFast,
   reachCompletion,
@@ -6,10 +6,6 @@ const {
 } = require('./helpers/completionFlow');
 
 describe('Finished Book Flow', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-CMP-09: 読了 -> 次本指名導線（SC-19）へ遷移
   it('moves from finished-book action to next-focus nomination', async () => {
     await launchRehabFast();

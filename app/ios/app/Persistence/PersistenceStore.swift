@@ -45,6 +45,7 @@ private struct E2EInjectedPlanState {
   let state: String?
   let retryCount: Int?
   let overrideBookId: String?
+  let forceHeavyDay: Bool?
 }
 
 @available(iOS 17.0, *)
@@ -332,6 +333,11 @@ final class PersistenceStore {
         todayPlan?.startedAt = nil
       }
     }
+    if injected?.forceHeavyDay == true {
+      todayPlan?.state = "scheduled"
+      todayPlan?.result = "attempted"
+      todayPlan?.startedAt = nil
+    }
     if let overrideBookId = injected?.overrideBookId {
       todayPlan?.bookId = overrideBookId
     }
@@ -361,21 +367,23 @@ final class PersistenceStore {
     let state = args[idx + 1].lowercased()
     switch state {
     case "rehab3":
-      return E2EInjectedPlanState(missedDays: 3, state: nil, retryCount: nil, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 3, state: nil, retryCount: nil, overrideBookId: nil, forceHeavyDay: nil)
     case "rehab7":
-      return E2EInjectedPlanState(missedDays: 7, state: nil, retryCount: nil, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 7, state: nil, retryCount: nil, overrideBookId: nil, forceHeavyDay: nil)
+    case "heavy_day":
+      return E2EInjectedPlanState(missedDays: 0, state: "scheduled", retryCount: nil, overrideBookId: "__MISSING_BOOK__", forceHeavyDay: true)
     case "due_normal":
-      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 0, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 0, overrideBookId: nil, forceHeavyDay: nil)
     case "due_rehab3":
-      return E2EInjectedPlanState(missedDays: 3, state: "due", retryCount: 0, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 3, state: "due", retryCount: 0, overrideBookId: nil, forceHeavyDay: nil)
     case "due_restart7":
-      return E2EInjectedPlanState(missedDays: 7, state: "due", retryCount: 0, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 7, state: "due", retryCount: 0, overrideBookId: nil, forceHeavyDay: nil)
     case "deferred_retry_pending":
-      return E2EInjectedPlanState(missedDays: 0, state: "deferred", retryCount: 0, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 0, state: "deferred", retryCount: 0, overrideBookId: nil, forceHeavyDay: nil)
     case "retry_fired_once":
-      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 1, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 1, overrideBookId: nil, forceHeavyDay: nil)
     case "book_missing":
-      return E2EInjectedPlanState(missedDays: 0, state: nil, retryCount: nil, overrideBookId: "__MISSING_BOOK__")
+      return E2EInjectedPlanState(missedDays: 0, state: nil, retryCount: nil, overrideBookId: "__MISSING_BOOK__", forceHeavyDay: nil)
     default:
       return nil
     }

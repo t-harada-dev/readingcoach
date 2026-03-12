@@ -9,7 +9,9 @@ export function buildSC12Props(scenario: MockScenario): ActiveSessionViewProps {
 
   return {
     bookTitle: fixture.bookTitle,
+    bookCoverUri: fixture.bookCoverUri,
     mode: fixture.mode,
+    durationSeconds: fixture.durationSeconds,
     remainingSeconds: fixture.remainingSeconds,
     done: false,
     completing: false,

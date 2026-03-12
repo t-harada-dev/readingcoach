@@ -13,6 +13,7 @@ export function buildSC14Props(_scenario: MockScenario): CompletionViewProps {
   return {
     result: fixture.result,
     elapsedSeconds: fixture.elapsedSeconds,
+    bookTitle: fixture.bookTitle,
     feedback,
     busy: false,
     finishedBookError: null,

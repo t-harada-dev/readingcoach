@@ -12,6 +12,19 @@ type Params = {
   bookId: string;
 };
 
+type ImagePickerModule = typeof import('expo-image-picker');
+let cachedImagePickerModule: ImagePickerModule | null | undefined;
+
+async function resolveImagePickerModule(): Promise<ImagePickerModule | null> {
+  if (cachedImagePickerModule !== undefined) return cachedImagePickerModule;
+  try {
+    cachedImagePickerModule = await import('expo-image-picker');
+  } catch {
+    cachedImagePickerModule = null;
+  }
+  return cachedImagePickerModule;
+}
+
 export function BookDetailScreen({ route, navigation }: any) {
   const { bookId } = (route.params ?? {}) as Params;
 
@@ -108,6 +121,59 @@ export function BookDetailScreen({ route, navigation }: any) {
     }
   };
 
+  const pickImageFromLibrary = async () => {
+    if (saving) return;
+    try {
+      const imagePicker = await resolveImagePickerModule();
+      if (!imagePicker) {
+        Alert.alert('画像機能を利用できません', 'このビルドでは画像選択機能が無効です。');
+        return;
+      }
+      const permission = await imagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('権限が必要です', '写真ライブラリへのアクセスを許可してください。');
+        return;
+      }
+      const result = await imagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const selected = result.assets[0];
+      if (!selected?.uri) return;
+      setThumbnailUrl(selected.uri);
+    } catch (error) {
+      Alert.alert('画像の選択に失敗しました', error instanceof Error ? error.message : String(error));
+    }
+  };
+
+  const takePhoto = async () => {
+    if (saving) return;
+    try {
+      const imagePicker = await resolveImagePickerModule();
+      if (!imagePicker) {
+        Alert.alert('画像機能を利用できません', 'このビルドではカメラ機能が無効です。');
+        return;
+      }
+      const permission = await imagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('権限が必要です', 'カメラへのアクセスを許可してください。');
+        return;
+      }
+      const result = await imagePicker.launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const selected = result.assets[0];
+      if (!selected?.uri) return;
+      setThumbnailUrl(selected.uri);
+    } catch (error) {
+      Alert.alert('撮影に失敗しました', error instanceof Error ? error.message : String(error));
+    }
+  };
+
   const onSetFocusBook = async () => {
     if (saving) return;
     setSaving(true);
@@ -133,7 +199,12 @@ export function BookDetailScreen({ route, navigation }: any) {
       onChangeAuthor={setAuthor}
       onChangePageCount={setPageCount}
       onChangeCurrentPage={setCurrentPage}
-      onChangeThumbnailUrl={setThumbnailUrl}
+      onPressTakePhoto={() => {
+        void takePhoto();
+      }}
+      onPressPickFromLibrary={() => {
+        void pickImageFromLibrary();
+      }}
       onPressToggleProgress={() => {
         void onToggleProgress();
       }}

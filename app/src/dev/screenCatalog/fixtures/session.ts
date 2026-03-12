@@ -3,12 +3,16 @@ import type { SessionMode } from '../../../useCases/StartSessionUseCase';
 export const fixtureActiveSession = {
   normal: {
     bookTitle: '深く考える技術',
+    bookCoverUri: 'https://example.com/cover-standard.png',
     mode: 'normal_15m' as SessionMode,
+    durationSeconds: 15 * 60,
     remainingSeconds: 9 * 60 + 42,
   },
   rehab: {
     bookTitle: '1分で戻る読書習慣',
+    bookCoverUri: 'https://example.com/cover-light.png',
     mode: 'ignition_1m' as SessionMode,
+    durationSeconds: 60,
     remainingSeconds: 42,
   },
 };

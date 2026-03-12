@@ -18,7 +18,6 @@ export function buildSC05Props(scenario: MockScenario): FocusCoreViewProps {
     intentCopy: '今日は軽く始めるだけで十分です。1分だけでも前進です。',
     startingMode: null,
     onPressChangeBook: () => {},
-    onPressOpenLibrary: () => {},
     onPressPrimaryCTA: () => {},
     onPressSecondaryCTA: () => {},
     onPressRehabCTA: () => {},

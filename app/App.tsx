@@ -14,6 +14,7 @@ import {
     ScreenCatalogScreen,
     ScreenPlaygroundScreen,
 } from './src/dev/screenCatalog';
+import { persistenceBridge } from './src/bridge/PersistenceBridge';
 import { copy } from './src/config/copy';
 import { ActiveSessionScreen } from './src/screens/ActiveSessionScreen';
 import { AddBookScreen } from './src/screens/AddBookScreen';
@@ -49,10 +50,14 @@ const theme = {
 
 export default function App() {
     const [activeRouteName, setActiveRouteName] = useState<string | undefined>(undefined);
+    const [e2eCatalogEnabled, setE2eCatalogEnabled] = useState(false);
+    const [e2eCatalogAutoOpen, setE2eCatalogAutoOpen] = useState(false);
     const syncRouteName = useCallback(() => {
         if (!navigationRef.isReady()) return;
         setActiveRouteName(navigationRef.getCurrentRoute()?.name);
     }, []);
+
+    const showCatalogDevTools = __DEV__ || e2eCatalogEnabled || e2eCatalogAutoOpen;
 
     const hideCatalogLauncher =
         activeRouteName === 'DevScreenCatalog' || activeRouteName === 'DevScreenPlayground';
@@ -61,7 +66,24 @@ export default function App() {
         <View testID="app-root" style={{ flex: 1 }}>
             <SafeAreaProvider>
                 <AppInitProvider>
-                    <NavigationContainer theme={theme} ref={navigationRef} onReady={syncRouteName} onStateChange={syncRouteName}>
+                    <NavigationContainer
+                        theme={theme}
+                        ref={navigationRef}
+                        onReady={async () => {
+                            syncRouteName();
+                            const enabled = (await persistenceBridge.getLaunchArg('e2e_screen_catalog')) === '1';
+                            const autoOpen = (await persistenceBridge.getLaunchArg('e2e_screen_catalog_auto_open')) === '1';
+                            setE2eCatalogEnabled(enabled);
+                            setE2eCatalogAutoOpen(autoOpen);
+                            if (enabled && autoOpen) {
+                                requestAnimationFrame(() => {
+                                    if (!navigationRef.isReady()) return;
+                                    navigationRef.navigate('DevScreenCatalog' as never);
+                                });
+                            }
+                        }}
+                        onStateChange={syncRouteName}
+                    >
                         <NotificationResponseCoordinator navigationRef={navigationRef} />
                         <SurfaceTriggerCoordinator navigationRef={navigationRef} />
                         <OnboardingCoordinator navigationRef={navigationRef} />
@@ -160,7 +182,7 @@ export default function App() {
                                 component={OnboardingNotificationScreen}
                                 options={{ title: '通知案内', headerBackVisible: false }}
                             />
-                            {__DEV__ ? (
+                            {showCatalogDevTools ? (
                                 <>
                                     <Stack.Screen
                                         name="DevScreenCatalog"
@@ -176,7 +198,7 @@ export default function App() {
                             ) : null}
                         </Stack.Navigator>
                     </NavigationContainer>
-                    {__DEV__ && !hideCatalogLauncher ? (
+                    {showCatalogDevTools && !hideCatalogLauncher ? (
                         <ScreenCatalogLauncher
                             onPress={() => {
                                 if (!navigationRef.isReady()) return;
