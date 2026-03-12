@@ -38,35 +38,35 @@
     "screenId": "SC-14",
     "title": "Completion (Soft)",
     "defaultScenario": "rehab",
-    "supportedScenarios": ["rehab"],
+    "supportedScenarios": ["rehab", "normal"],
     "screenshotKeyPrefix": "screen-catalog_SC-14"
   },
   {
     "screenId": "SC-15",
     "title": "Completion (Hard)",
     "defaultScenario": "normal",
-    "supportedScenarios": ["normal"],
+    "supportedScenarios": ["normal", "rehab"],
     "screenshotKeyPrefix": "screen-catalog_SC-15"
   },
   {
     "screenId": "SC-20",
     "title": "Library",
     "defaultScenario": "normal",
-    "supportedScenarios": ["normal"],
+    "supportedScenarios": ["normal", "empty"],
     "screenshotKeyPrefix": "screen-catalog_SC-20"
   },
   {
     "screenId": "SC-21",
     "title": "Book Detail",
     "defaultScenario": "normal",
-    "supportedScenarios": ["normal"],
+    "supportedScenarios": ["normal", "rehab", "no_cover", "cover_removed"],
     "screenshotKeyPrefix": "screen-catalog_SC-21"
   },
   {
     "screenId": "SC-23",
     "title": "Due Action Sheet",
     "defaultScenario": "due",
-    "supportedScenarios": ["due"],
+    "supportedScenarios": ["due", "rehab"],
     "screenshotKeyPrefix": "screen-catalog_SC-23"
   }
 ]

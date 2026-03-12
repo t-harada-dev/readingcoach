@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { persistenceBridge } from '../bridge/PersistenceBridge';
+import { runFindPlanByIdUseCase } from '../useCases/FindPlanUseCase';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
@@ -15,6 +17,30 @@ type Params = {
 export function DueActionSheetScreen({ navigation, route }: any) {
     const { planId, defaultMode, entryPoint } = (route.params ?? {}) as Params;
     const [busy, setBusy] = useState(false);
+    const [bookTitle, setBookTitle] = useState('今日のFocus Book');
+    const [bookAuthor, setBookAuthor] = useState<string | undefined>(undefined);
+    const [bookThumbnailUrl, setBookThumbnailUrl] = useState<string | undefined>(undefined);
+    const [bookCoverSource, setBookCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
+
+    useEffect(() => {
+        let alive = true;
+        if (!planId) return () => { alive = false; };
+
+        void (async () => {
+            const plan = await runFindPlanByIdUseCase(planId);
+            if (!alive || !plan) return;
+            const book = await persistenceBridge.getBook(plan.bookId);
+            if (!alive || !book) return;
+            setBookTitle(book.title || '今日のFocus Book');
+            setBookAuthor(book.author);
+            setBookThumbnailUrl(book.thumbnailUrl);
+            setBookCoverSource(book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'));
+        })();
+
+        return () => {
+            alive = false;
+        };
+    }, [planId]);
 
     const onStart = async (mode: 'normal_15m' | 'ignition_1m' | 'rescue_5m') => {
         if (!planId || busy) return;
@@ -35,6 +61,10 @@ export function DueActionSheetScreen({ navigation, route }: any) {
         <DueActionSheetView
             busy={busy}
             defaultMode={defaultMode ?? 'normal_15m'}
+            bookTitle={bookTitle}
+            bookAuthor={bookAuthor}
+            bookThumbnailUrl={bookThumbnailUrl}
+            bookCoverSource={bookCoverSource}
             onPressStart={onStart}
             onPressSnooze={async () => {
                 if (!planId || busy) return;

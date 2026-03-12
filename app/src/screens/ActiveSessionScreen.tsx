@@ -32,6 +32,7 @@ export function ActiveSessionScreen({
   const [now, setNow] = useState(() => Date.now());
   const [completing, setCompleting] = useState(false);
   const [bookCoverUri, setBookCoverUri] = useState<string | undefined>(undefined);
+  const [bookCoverSource, setBookCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
   const finalizedRef = useRef(false);
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export function ActiveSessionScreen({
       const book = await persistenceBridge.getBook(bookId);
       if (!alive) return;
       setBookCoverUri(book?.thumbnailUrl);
+      setBookCoverSource(book?.coverSource ?? (book?.thumbnailUrl ? 'google_books' : 'placeholder'));
     })();
     return () => {
       alive = false;
@@ -89,6 +91,7 @@ export function ActiveSessionScreen({
     <ActiveSessionView
       bookTitle={bookTitle}
       bookCoverUri={bookCoverUri}
+      bookCoverSource={bookCoverSource}
       mode={mode}
       durationSeconds={durationSeconds ?? 0}
       remainingSeconds={remainingSeconds}

@@ -10,6 +10,7 @@ export const fixtureBooks = {
         format: 'paper',
         status: 'active',
         thumbnailUrl: 'https://example.com/cover-standard.png',
+        coverSource: 'google_books',
     } satisfies BookDTO,
     lightweightBook: {
         id: 'fixture-book-light',
@@ -20,6 +21,7 @@ export const fixtureBooks = {
         format: 'paper',
         status: 'active',
         thumbnailUrl: 'https://example.com/cover-light.png',
+        coverSource: 'google_books',
     } satisfies BookDTO,
     unknownPageCountBook: {
         id: 'fixture-book-unknown-pages',
@@ -37,6 +39,7 @@ export const fixtureBooks = {
         currentPage: 21,
         format: 'paper',
         status: 'active',
+        coverSource: 'placeholder',
     } satisfies BookDTO,
     recentlyAddedBook: {
         id: 'fixture-book-recent',

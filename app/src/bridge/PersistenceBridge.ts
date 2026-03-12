@@ -27,6 +27,7 @@ export interface BookDTO {
   author?: string;
   googleBooksId?: string;
   thumbnailUrl?: string;
+  coverSource?: 'manual' | 'google_books' | 'placeholder';
   pageCount?: number;
   currentPage?: number;
   lastProgressUpdatedAt?: string;
@@ -214,6 +215,7 @@ const mockBridge: NativePersistenceBridgeAPI = {
       author: params.author,
       googleBooksId: params.googleBooksId,
       thumbnailUrl: params.thumbnailUrl,
+      coverSource: params.coverSource,
       pageCount: params.pageCount,
       currentPage: params.currentPage,
       lastProgressUpdatedAt: params.lastProgressUpdatedAt,

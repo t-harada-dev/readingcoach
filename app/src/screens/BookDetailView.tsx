@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { BookCoverImage } from '../components/BookCoverImage';
 import { copy } from '../config/copy';
 
 export type BookDetailViewProps = {
@@ -8,6 +9,7 @@ export type BookDetailViewProps = {
   pageCount: string;
   currentPage: string;
   thumbnailUrl: string;
+  coverSource?: 'manual' | 'google_books' | 'placeholder';
   progressEnabled: boolean;
   saving: boolean;
   canSave: boolean;
@@ -17,6 +19,7 @@ export type BookDetailViewProps = {
   onChangeCurrentPage: (value: string) => void;
   onPressTakePhoto: () => void;
   onPressPickFromLibrary: () => void;
+  onPressRemoveCover: () => void;
   onPressToggleProgress: () => void;
   onPressSave: () => void;
   onPressSetFocusBook: () => void;
@@ -28,6 +31,7 @@ export function BookDetailView({
   pageCount,
   currentPage,
   thumbnailUrl,
+  coverSource,
   progressEnabled,
   saving,
   canSave,
@@ -37,6 +41,7 @@ export function BookDetailView({
   onChangeCurrentPage,
   onPressTakePhoto,
   onPressPickFromLibrary,
+  onPressRemoveCover,
   onPressToggleProgress,
   onPressSave,
   onPressSetFocusBook,
@@ -45,17 +50,65 @@ export function BookDetailView({
     <ScrollView testID="book-detail-screen" contentContainerStyle={styles.container}>
       {copy.bookDetail.subtitle ? <Text style={styles.subtitle}>{copy.bookDetail.subtitle}</Text> : null}
 
-      {thumbnailUrl.trim().length > 0 ? (
-        <Image source={{ uri: thumbnailUrl }} style={styles.cover} resizeMode="cover" />
-      ) : null}
-
       <Text style={styles.label}>{copy.bookDetail.labelTitle}</Text>
       <TextInput testID="book-detail-title" style={styles.input} value={title} onChangeText={onChangeTitle} placeholder="本のタイトル" />
 
       <Text style={styles.label}>{copy.bookDetail.labelAuthor}</Text>
       <TextInput testID="book-detail-author" style={styles.input} value={author} onChangeText={onChangeAuthor} placeholder="著者名" />
 
+      <Text style={styles.label}>{copy.bookDetail.labelPageCount}</Text>
+      <TextInput
+        testID="book-detail-page-count"
+        style={styles.input}
+        value={pageCount}
+        onChangeText={onChangePageCount}
+        keyboardType="numeric"
+        placeholder="例: 320"
+      />
+
+      <Text style={styles.label}>{copy.bookDetail.labelCurrentPage}</Text>
+      {progressEnabled ? (
+        <TextInput
+          testID="book-detail-current-page"
+          style={styles.input}
+          value={currentPage}
+          onChangeText={onChangeCurrentPage}
+          keyboardType="numeric"
+          placeholder="例: 120"
+        />
+      ) : (
+        <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text>
+      )}
+
+      <View style={styles.progressSettingRow}>
+        <View style={styles.progressSettingTextWrap}>
+          <Text style={styles.progressSettingLabel}>進捗バー設定</Text>
+          <Text
+            testID={progressEnabled ? 'book-detail-disable-progress' : 'book-detail-enable-progress'}
+            style={styles.progressState}
+          >
+            {progressEnabled ? '現在: ON' : '現在: OFF'}
+          </Text>
+        </View>
+        <Switch
+          testID="book-detail-progress-toggle"
+          value={progressEnabled}
+          onValueChange={onPressToggleProgress}
+          disabled={saving}
+          trackColor={{ false: '#C7CED8', true: '#F0C58C' }}
+          thumbColor={progressEnabled ? '#D48A3E' : '#FFFFFF'}
+        />
+      </View>
+
       <Text style={styles.label}>{copy.bookDetail.labelCoverImage}</Text>
+      <BookCoverImage
+        testID="book-detail-cover-image"
+        placeholderTestID="book-detail-cover-placeholder"
+        thumbnailUrl={thumbnailUrl}
+        coverSource={coverSource}
+        title={title}
+        style={styles.cover}
+      />
       <TouchableOpacity
         testID="book-detail-cover-camera"
         style={styles.secondaryButton}
@@ -72,47 +125,14 @@ export function BookDetailView({
       >
         <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaPickImage}</Text>
       </TouchableOpacity>
-
       <TouchableOpacity
-        testID="book-detail-progress-toggle"
+        testID="book-detail-cover-remove"
         style={styles.secondaryButton}
-        onPress={onPressToggleProgress}
-        disabled={saving}
+        onPress={onPressRemoveCover}
+        disabled={saving || thumbnailUrl.trim().length === 0}
       >
-        <Text
-          testID={progressEnabled ? 'book-detail-disable-progress' : 'book-detail-enable-progress'}
-          style={styles.secondaryButtonText}
-        >
-          {progressEnabled ? copy.bookDetail.ctaDisableProgress : copy.bookDetail.ctaEnableProgress}
-        </Text>
+        <Text style={styles.secondaryButtonText}>表紙画像を削除</Text>
       </TouchableOpacity>
-
-      <View style={styles.pageBlock}>
-        <Text style={styles.label}>{copy.bookDetail.labelPageCount}</Text>
-        <TextInput
-          testID="book-detail-page-count"
-          style={styles.input}
-          value={pageCount}
-          onChangeText={onChangePageCount}
-          keyboardType="numeric"
-          placeholder="例: 320"
-        />
-
-        {progressEnabled ? (
-          <>
-            <Text style={styles.label}>{copy.bookDetail.labelCurrentPage}</Text>
-            <TextInput
-              testID="book-detail-current-page"
-              style={styles.input}
-              value={currentPage}
-              onChangeText={onChangeCurrentPage}
-              keyboardType="numeric"
-              placeholder="例: 120"
-            />
-          </>
-        ) : null}
-        {!progressEnabled ? <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text> : null}
-      </View>
 
       <TouchableOpacity testID="book-detail-save" style={[styles.primaryButton, !canSave && styles.disabled]} onPress={onPressSave} disabled={!canSave}>
         <Text style={styles.primaryButtonText}>{copy.bookDetail.ctaSave}</Text>
@@ -165,17 +185,41 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   helpText: {
-    color: '#6B7280',
-    fontSize: 12,
-    marginTop: 8,
-  },
-  pageBlock: {
-    marginTop: 8,
-    padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.08)',
+    borderColor: 'rgba(44,44,44,0.10)',
     backgroundColor: '#FFFFFF',
+    color: '#6B7280',
+    fontSize: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  progressSettingRow: {
+    marginTop: 14,
+    marginBottom: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(44,44,44,0.10)',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  progressSettingTextWrap: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  progressSettingLabel: {
+    color: '#4B5563',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  progressState: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginTop: 3,
   },
   primaryButton: {
     marginTop: 16,

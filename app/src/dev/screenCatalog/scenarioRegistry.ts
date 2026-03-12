@@ -21,4 +21,19 @@ export const scenarioRegistry: ScenarioRegistryItem[] = [
         label: 'Due',
         description: '期限超過時に判断を促す導線の fixture。',
     },
+    {
+        scenario: 'empty',
+        label: 'Empty',
+        description: 'データ0件の空状態を確認する fixture。',
+    },
+    {
+        scenario: 'no_cover',
+        label: 'No Cover',
+        description: '書影未設定時のプレースホルダー表示を確認する fixture。',
+    },
+    {
+        scenario: 'cover_removed',
+        label: 'Cover Removed',
+        description: '書影削除後の表示を確認する fixture。',
+    },
 ];

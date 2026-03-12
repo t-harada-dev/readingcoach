@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CompletionFeedbackCard } from '../components/CompletionFeedbackCard';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { copy } from '../config/copy';
 import { completionCtaOrder } from './screenPolicy';
@@ -37,7 +36,7 @@ export type CompletionViewProps = {
 export function CompletionView({
   elapsedSeconds,
   bookTitle,
-  feedback,
+  feedback: _feedback,
   busy,
   finishedBookError,
   onPressExtra5m,
@@ -46,23 +45,29 @@ export function CompletionView({
   onPressClose,
 }: CompletionViewProps) {
   const ctaOrder = completionCtaOrder();
+  const summaryItems = [
+    copy.completion.completedTitle,
+    copy.completion.forwardMomentum,
+    toElapsedLabel(elapsedSeconds),
+    `${copy.completion.readBookPrefix}: ${bookTitle}`,
+  ];
 
   return (
     <View testID="completion-screen" style={styles.container}>
-      <CompletionFeedbackCard
-        title={feedback.title}
-        message={feedback.message}
-        elapsedLabel={toElapsedLabel(elapsedSeconds)}
-        progressRatio={feedback.progressRatio}
-        messageTestID="completion-message"
-        elapsedTestID="completion-duration"
-        progressTestID="completion-progress"
-      />
-      <Text testID="completion-book-title" style={styles.bookTitle}>
-        {copy.completion.readBookPrefix}: {bookTitle}
-      </Text>
+      <View style={styles.summaryCard}>
+        <Text testID="completion-message" style={styles.summaryTitle}>
+          {summaryItems[0]}
+        </Text>
+        <Text style={styles.summarySubTitle}>{summaryItems[1]}</Text>
+        <Text testID="completion-duration" style={styles.summaryMeta}>
+          {summaryItems[2]}
+        </Text>
+        <Text testID="completion-book-title" style={styles.summaryMeta}>
+          {summaryItems[3]}
+        </Text>
+      </View>
 
-      <View testID="extra-session-screen">
+      <View testID="extra-session-screen" style={styles.ctaStack}>
       {ctaOrder.map((cta) => {
         if (cta === 'extra_5m') {
           return (
@@ -129,18 +134,41 @@ const styles = StyleSheet.create({
     backgroundColor: appTheme.colors.screenBackground,
     paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 20,
-    paddingBottom: 24,
+    paddingBottom: 14,
+  },
+  summaryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(44,44,44,0.08)',
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+  },
+  summaryTitle: {
+    color: '#2C2C2C',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  summarySubTitle: {
+    color: '#525252',
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  summaryMeta: {
+    color: '#2C2C2C',
+    fontSize: 15,
+    fontWeight: '600',
+    marginTop: 12,
   },
   errorText: {
-    marginTop: 12,
+    marginTop: 10,
     color: '#B91C1C',
     fontSize: 13,
     textAlign: 'center',
   },
-  bookTitle: {
-    marginTop: 10,
-    marginBottom: 14,
-    color: '#4B5563',
-    fontSize: 14,
+  ctaStack: {
+    marginTop: 'auto',
+    paddingBottom: 10,
   },
 });

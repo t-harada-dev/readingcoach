@@ -3,11 +3,18 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { DueActionSheetView } from '../../../screens/DueActionSheetView';
 import { appTheme } from '../../../theme/layout';
+import { fixtureBooks } from '../fixtures/books';
 import type { MockScenario } from '../types';
 
 export function buildSC23Props(scenario: MockScenario) {
+    const focusBook = scenario === 'rehab' || scenario === 'due' ? fixtureBooks.missingCoverBook : fixtureBooks.standardBook;
+    const bookThumbnailUrl = (focusBook as { thumbnailUrl?: string }).thumbnailUrl;
     return {
-        defaultMode: (scenario === 'normal' ? 'normal_15m' : 'ignition_1m') as 'normal_15m' | 'ignition_1m',
+        defaultMode: (scenario === 'rehab' ? 'ignition_1m' : 'normal_15m') as 'normal_15m' | 'ignition_1m',
+        bookTitle: focusBook.title,
+        bookAuthor: focusBook.author,
+        bookThumbnailUrl,
+        bookCoverSource: (bookThumbnailUrl ? 'google_books' : 'placeholder') as 'google_books' | 'placeholder',
     };
 }
 
@@ -20,6 +27,10 @@ export function SC23CatalogPreview({ scenario }: { scenario: MockScenario }) {
             <DueActionSheetView
                 busy={false}
                 defaultMode={props.defaultMode}
+                bookTitle={props.bookTitle}
+                bookAuthor={props.bookAuthor}
+                bookThumbnailUrl={props.bookThumbnailUrl}
+                bookCoverSource={props.bookCoverSource}
                 onPressStart={(mode) => setActionLog((current) => [`start:${mode}`, ...current].slice(0, 4))}
                 onPressSnooze={() => setActionLog((current) => ['snooze:30m', ...current].slice(0, 4))}
             />

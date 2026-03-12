@@ -1,5 +1,7 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import type { BookDTO } from '../bridge/PersistenceBridge';
+import { BookCoverImage } from '../components/BookCoverImage';
 import { copy } from '../config/copy';
 import type { SessionMode } from '../useCases/StartSessionUseCase';
 import { appTheme } from '../theme/layout';
@@ -26,6 +28,7 @@ function modeTestId(mode?: SessionMode): string | undefined {
 export type ActiveSessionViewProps = {
   bookTitle: string;
   bookCoverUri?: string;
+  bookCoverSource?: BookDTO['coverSource'];
   mode?: SessionMode;
   durationSeconds: number;
   remainingSeconds: number;
@@ -43,6 +46,7 @@ function toProgressRatio(remainingSeconds: number, durationSeconds: number): num
 export function ActiveSessionView({
   bookTitle,
   bookCoverUri,
+  bookCoverSource,
   mode,
   durationSeconds,
   remainingSeconds,
@@ -59,15 +63,14 @@ export function ActiveSessionView({
   return (
     <View testID="active-session-screen" style={styles.container}>
       <Text testID={modeTestId(mode)} style={styles.caption}>{copy.activeSession.caption}</Text>
-      {bookCoverUri ? (
-        <Image testID="active-session-cover" source={{ uri: bookCoverUri }} style={styles.cover} resizeMode="cover" />
-      ) : (
-        <View testID="active-session-cover-fallback" style={styles.coverFallback}>
-          <Text style={styles.coverFallbackText} numberOfLines={3}>
-            {bookTitle}
-          </Text>
-        </View>
-      )}
+      <BookCoverImage
+        testID="active-session-cover"
+        placeholderTestID="active-session-cover-fallback"
+        thumbnailUrl={bookCoverUri}
+        coverSource={bookCoverSource}
+        title={bookTitle}
+        style={styles.cover}
+      />
       <Text testID="active-session-book-title" style={styles.title}>
         {bookTitle}
       </Text>
@@ -121,21 +124,6 @@ const styles = StyleSheet.create({
     height: 160,
     borderRadius: 12,
     backgroundColor: '#E5E7EB',
-  },
-  coverFallback: {
-    marginTop: 14,
-    width: 120,
-    height: 160,
-    borderRadius: 12,
-    padding: 12,
-    justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
-  },
-  coverFallbackText: {
-    color: TEXT,
-    fontSize: 13,
-    fontWeight: '600',
-    textAlign: 'center',
   },
   progressCircle: {
     marginTop: 24,

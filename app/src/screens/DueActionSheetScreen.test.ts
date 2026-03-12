@@ -6,6 +6,8 @@ const ctaCalls: Array<{ label: string; tone: string; onPress: () => void | Promi
 
 vi.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
+  Image: () => React.createElement('img'),
+  ImageBackground: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
   Text: ({ children }: { children: React.ReactNode }) => React.createElement('span', null, children),
   View: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
 }));
@@ -19,6 +21,8 @@ vi.mock('../components/SessionCTAButton', () => ({
 
 const startMock = vi.hoisted(() => vi.fn());
 const snoozeMock = vi.hoisted(() => vi.fn());
+const findPlanMock = vi.hoisted(() => vi.fn());
+const getBookMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../useCases/StartSessionUseCase', () => ({
   runStartSessionUseCase: startMock,
@@ -26,6 +30,20 @@ vi.mock('../useCases/StartSessionUseCase', () => ({
 
 vi.mock('../useCases/SnoozePlanUseCase', () => ({
   runSnoozePlanUseCase: snoozeMock,
+}));
+
+vi.mock('../useCases/FindPlanUseCase', () => ({
+  runFindPlanByIdUseCase: findPlanMock,
+}));
+
+vi.mock('../bridge/PersistenceBridge', () => ({
+  persistenceBridge: {
+    getBook: getBookMock,
+  },
+}));
+
+vi.mock('../components/BookCoverImage', () => ({
+  BookCoverImage: () => React.createElement('img'),
 }));
 
 import { DueActionSheetScreen } from './DueActionSheetScreen';
@@ -42,9 +60,11 @@ describe('DueActionSheetScreen', () => {
       durationSeconds: 900,
     });
     snoozeMock.mockResolvedValue(undefined);
+    findPlanMock.mockResolvedValue(null);
+    getBookMock.mockResolvedValue(null);
   });
 
-  it('SC-23 の CTA 順序（開始/5分/30分延期）を維持する', () => {
+  it('SC-23 の CTA 配置（主CTAを最下段）を維持する', () => {
     renderToStaticMarkup(
       React.createElement(DueActionSheetScreen, {
         navigation: { replace: vi.fn(), goBack: vi.fn() },
@@ -52,8 +72,8 @@ describe('DueActionSheetScreen', () => {
       })
     );
 
-    expect(ctaCalls.map((c) => c.label)).toEqual(['開始', '5分だけ', '30分延期']);
-    expect(ctaCalls.map((c) => c.tone)).toEqual(['primary', 'secondary', 'ghost']);
+    expect(ctaCalls.map((c) => c.label)).toEqual(['5分だけ', '30分延期', '開始']);
+    expect(ctaCalls.map((c) => c.tone)).toEqual(['secondary', 'ghost', 'primary']);
   });
 
   it('通知起点では start の entryPoint が notification になる', async () => {
@@ -65,7 +85,7 @@ describe('DueActionSheetScreen', () => {
       })
     );
 
-    await ctaCalls[0]?.onPress();
+    await ctaCalls[2]?.onPress();
 
     expect(startMock).toHaveBeenCalledWith({
       planId: 'p1',

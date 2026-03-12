@@ -20,6 +20,7 @@ type SavePayload = {
   googleBooksId?: string;
   pageCount?: number;
   thumbnailUrl?: string;
+  coverSource?: 'manual' | 'google_books' | 'placeholder';
 };
 
 function normalizePageCount(raw: string): number | undefined {
@@ -64,6 +65,7 @@ export function AddBookScreen({ navigation, route }: any) {
       googleBooksId: payload.googleBooksId,
       pageCount: payload.pageCount,
       thumbnailUrl: payload.thumbnailUrl,
+      coverSource: payload.coverSource,
       format: 'paper',
       status: 'active',
     });
@@ -101,6 +103,7 @@ export function AddBookScreen({ navigation, route }: any) {
         author: author.trim() || undefined,
         pageCount: normalizePageCount(pageCount),
         thumbnailUrl: thumbnailUrl.trim() || undefined,
+        coverSource: thumbnailUrl.trim() ? 'manual' : 'placeholder',
       },
       { clearManualInputs: true }
     );
@@ -134,6 +137,7 @@ export function AddBookScreen({ navigation, route }: any) {
         googleBooksId: selectedCandidate.googleBooksId,
         pageCount: selectedCandidate.pageCount,
         thumbnailUrl: selectedCandidate.thumbnailUrl,
+        coverSource: selectedCandidate.thumbnailUrl ? 'google_books' : 'placeholder',
       });
   };
 

@@ -7,16 +7,22 @@ vi.mock('react-native', () => ({
     FlatList: ({ data, renderItem }: { data: unknown[]; renderItem: ({ item }: { item: any }) => React.ReactNode }) =>
         React.createElement('div', null, ...(data ?? []).map((item, index) => React.createElement('div', { key: index }, renderItem({ item })))),
     Image: () => React.createElement('img'),
+    ImageBackground: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
     Platform: { select: (options: Record<string, unknown>) => options.default ?? options.ios ?? options.android ?? {} },
     Pressable: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) =>
         React.createElement('button', { onClick: onPress }, children),
     ScrollView: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
     StyleSheet: { create: (styles: unknown) => styles, absoluteFillObject: {} },
+    Switch: ({ value }: { value: boolean }) => React.createElement('input', { type: 'checkbox', checked: value, readOnly: true }),
     Text: ({ children }: { children: React.ReactNode }) => React.createElement('span', null, children),
     TextInput: ({ value }: { value?: string }) => React.createElement('input', { value }),
     TouchableOpacity: ({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) =>
         React.createElement('button', { onClick: onPress }, children),
     View: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
+}));
+
+vi.mock('../../components/BookCoverImage', () => ({
+    BookCoverImage: () => React.createElement('img'),
 }));
 
 import { ScreenCatalogScreen } from './ScreenCatalogScreen';

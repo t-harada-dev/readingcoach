@@ -4,7 +4,7 @@ import { fixtureCompletion } from '../fixtures/session';
 import type { MockScenario } from '../types';
 
 export function buildSC14Props(_scenario: MockScenario): CompletionViewProps {
-  const fixture = fixtureCompletion.sc14;
+  const fixture = _scenario === 'normal' ? fixtureCompletion.sc14Normal : fixtureCompletion.sc14;
   const feedback = buildCompletionFeedback({
     result: fixture.result,
     bookTitle: fixture.bookTitle,

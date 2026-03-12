@@ -1,5 +1,30 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-12: 書影優先順位固定 + SC-14/15/20/23 UI再整理
+
+- [x] `BookDTO` に `coverSource` を追加し、保存時に manual/google_books/placeholder を保持
+- [x] 共通書影解決 `resolveCoverForDisplay` を追加し、URL欠損/取得失敗時に placeholder へフォールバック
+- [x] `BookCoverImage` に `onError` フォールバックを実装し、SC-21/23（加えて SC-20/12）へ適用
+- [x] SC-14/15 の表示レイアウトを統一し、表示順を「完了タイトル→補助文→読書時間→読書本」に固定
+- [x] SC-23 に書影ベース背景（低不透明）を追加し、CTA を下部配置へ調整
+- [x] Screen Catalog シナリオを拡張（SC-20 empty, SC-21 no_cover/cover_removed, SC-14/15 normal+rehab, SC-23 rehab）
+- [x] 検証実行
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/domain/coverDisplay.test.ts src/screens/DueActionSheetScreen.test.ts src/screens/CompletionScreen.test.ts src/dev/screenCatalog/screenCatalog.test.ts`（exit code 0, 4 files / 13 tests passed）
+
+## 2026-03-12: SC-21/SC-23 UI再設計 + プレースホルダー共通化 + VirtualizedList警告解消
+
+- [x] SC-21 本詳細UIを単一レイアウトへ統一（書影あり/なし分岐廃止、既定プレースホルダー画像表示、項目順を「タイトル→著者→総ページ数→現在ページ→進捗設定→表紙操作」に変更）
+- [x] SC-21 の進捗設定を「現在の有効/無効が視認でき、その場で切替可能」なトグルUIへ変更
+- [x] SC-23 Due Action Sheet に対象書籍情報（書影/タイトル/著者）を追加し、書影欠損時は既定プレースホルダー画像を表示
+- [x] SC-21/SC-23 で共通利用する書影コンポーネント（既定プレースホルダー画像内包）を追加し、グレー空枠フォールバックを廃止
+- [x] Screen Catalog/モック定義を更新し、変更後UIを SC-21/SC-23 のモックに反映
+- [x] 不足画面候補（本登録完了/空ライブラリ/書影再設定・削除/現在ページ更新/書籍削除/読書セッション中/読書完了分岐）を整理し、追加要否を docs に明記
+- [x] `VirtualizedLists should never be nested inside plain ScrollViews` 警告を解消（Screen Catalog の ScrollView 構造を見直し）
+- [x] 影響範囲のテスト実行（最低: typecheck + 対象ユニットテスト）と結果記録
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/screens/DueActionSheetScreen.test.ts src/dev/screenCatalog/screenCatalog.test.ts`（exit code 0, 2 files / 6 tests passed）
+
 ## 2026-03-12: 引き継ぎ資料作成（本日時点）
 
 - [x] ここまでの作業内容（実施済み/未完/検証結果）を整理

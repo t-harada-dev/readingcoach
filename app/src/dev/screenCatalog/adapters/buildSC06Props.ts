@@ -4,7 +4,16 @@ import { scenarioFixtures } from '../fixtures/scenarios';
 import type { MockScenario } from '../types';
 
 export function buildSC06Props(scenario: MockScenario): FocusCoreViewProps {
-    const fixture = scenarioFixtures[scenario === 'normal' || scenario === 'long_absence' || scenario === 'due' ? 'rehab' : scenario];
+    const normalizedScenario =
+        scenario === 'normal' ||
+        scenario === 'long_absence' ||
+        scenario === 'due' ||
+        scenario === 'empty' ||
+        scenario === 'no_cover' ||
+        scenario === 'cover_removed'
+            ? 'rehab'
+            : scenario;
+    const fixture = scenarioFixtures[normalizedScenario];
     const book = fixtureBooks[fixture.bookKey];
     const intentCopy = '3日空いても大丈夫。今日は短くても、読書を再開できれば十分です。';
 

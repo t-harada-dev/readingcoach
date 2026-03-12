@@ -11,7 +11,7 @@ export type ScreenId =
     | 'SC-20'
     | 'SC-21'
     | 'SC-23';
-export type MockScenario = 'normal' | 'rehab' | 'long_absence' | 'due';
+export type MockScenario = 'normal' | 'rehab' | 'long_absence' | 'due' | 'empty' | 'no_cover' | 'cover_removed';
 
 export type ScenarioRegistryItem = {
     scenario: MockScenario;

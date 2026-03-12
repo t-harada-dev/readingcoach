@@ -15,7 +15,15 @@ function isScreenId(value: unknown): value is ScreenId {
 }
 
 function isScenario(value: unknown): value is MockScenario {
-    return value === 'normal' || value === 'rehab' || value === 'long_absence' || value === 'due';
+    return (
+        value === 'normal' ||
+        value === 'rehab' ||
+        value === 'long_absence' ||
+        value === 'due' ||
+        value === 'empty' ||
+        value === 'no_cover' ||
+        value === 'cover_removed'
+    );
 }
 
 export function ScreenPlaygroundScreen({ navigation, route }: any) {
@@ -43,7 +51,8 @@ export function ScreenPlaygroundScreen({ navigation, route }: any) {
     }, [currentScreen, params.scenario, scenario]);
 
     return (
-        <ScrollView testID="screen-playground-screen" style={styles.screen} contentContainerStyle={styles.content}>
+        <View testID="screen-playground-screen" style={styles.screen}>
+            <View style={styles.content}>
             <DevNotice compact={true} />
             <View style={styles.summaryRow}>
                 <Text style={styles.summaryText}>
@@ -86,7 +95,8 @@ export function ScreenPlaygroundScreen({ navigation, route }: any) {
             ) : null}
 
             <View style={styles.previewCard}>{currentScreen.render(scenario)}</View>
-        </ScrollView>
+            </View>
+        </View>
     );
 }
 
@@ -101,6 +111,7 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     content: {
+        flex: 1,
         paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
         paddingTop: 12,
         paddingBottom: 32,

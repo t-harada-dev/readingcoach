@@ -33,6 +33,7 @@ export function BookDetailScreen({ route, navigation }: any) {
   const [pageCount, setPageCount] = useState('');
   const [currentPage, setCurrentPage] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [coverSource, setCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
   const [progressEnabled, setProgressEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -50,6 +51,7 @@ export function BookDetailScreen({ route, navigation }: any) {
     setPageCount(book.pageCount ? String(book.pageCount) : '');
     setCurrentPage(book.currentPage ? String(book.currentPage) : '');
     setThumbnailUrl(book.thumbnailUrl ?? '');
+    setCoverSource(book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'));
     setProgressEnabled(Boolean(settings?.progressTrackingEnabled));
   }, [bookId]);
 
@@ -102,6 +104,7 @@ export function BookDetailScreen({ route, navigation }: any) {
         author: author.trim() || undefined,
         pageCount: normalizedPageCount,
         thumbnailUrl: thumbnailUrl.trim() || undefined,
+        coverSource: thumbnailUrl.trim().length > 0 ? coverSource : 'placeholder',
       });
 
       if (progressEnabled) {
@@ -143,6 +146,7 @@ export function BookDetailScreen({ route, navigation }: any) {
       const selected = result.assets[0];
       if (!selected?.uri) return;
       setThumbnailUrl(selected.uri);
+      setCoverSource('manual');
     } catch (error) {
       Alert.alert('画像の選択に失敗しました', error instanceof Error ? error.message : String(error));
     }
@@ -169,6 +173,7 @@ export function BookDetailScreen({ route, navigation }: any) {
       const selected = result.assets[0];
       if (!selected?.uri) return;
       setThumbnailUrl(selected.uri);
+      setCoverSource('manual');
     } catch (error) {
       Alert.alert('撮影に失敗しました', error instanceof Error ? error.message : String(error));
     }
@@ -192,6 +197,7 @@ export function BookDetailScreen({ route, navigation }: any) {
       pageCount={pageCount}
       currentPage={currentPage}
       thumbnailUrl={thumbnailUrl}
+      coverSource={coverSource}
       progressEnabled={progressEnabled}
       saving={saving}
       canSave={canSave}
@@ -204,6 +210,10 @@ export function BookDetailScreen({ route, navigation }: any) {
       }}
       onPressPickFromLibrary={() => {
         void pickImageFromLibrary();
+      }}
+      onPressRemoveCover={() => {
+        setThumbnailUrl('');
+        setCoverSource('placeholder');
       }}
       onPressToggleProgress={() => {
         void onToggleProgress();

@@ -3,7 +3,11 @@ import { scenarioFixtures } from '../fixtures/scenarios';
 import type { MockScenario } from '../types';
 
 export function buildSC05Props(scenario: MockScenario): FocusCoreViewProps {
-  const fixture = scenarioFixtures[scenario === 'due' ? 'rehab' : scenario];
+  const normalizedScenario =
+    scenario === 'due' || scenario === 'empty' || scenario === 'no_cover' || scenario === 'cover_removed'
+      ? 'rehab'
+      : scenario;
+  const fixture = scenarioFixtures[normalizedScenario];
 
   return {
     book: null,

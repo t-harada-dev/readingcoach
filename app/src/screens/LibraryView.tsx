@@ -1,6 +1,7 @@
 import React from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { BookDTO } from '../bridge/PersistenceBridge';
+import { BookCoverImage } from '../components/BookCoverImage';
 import { copy } from '../config/copy';
 
 export type LibraryItem = BookDTO & { isFocus: boolean };
@@ -28,20 +29,14 @@ export function LibraryView({ books, onPressAddBook, onPressBook }: LibraryViewP
             style={styles.row}
             onPress={() => onPressBook(item.id)}
           >
-            {item.thumbnailUrl ? (
-              <Image
-                testID={`library-book-cover-${item.id}`}
-                source={{ uri: item.thumbnailUrl }}
-                style={styles.cover}
-                resizeMode="cover"
-              />
-            ) : (
-              <View testID={`library-book-cover-fallback-${item.id}`} style={styles.coverFallback}>
-                <Text style={styles.coverFallbackText} numberOfLines={2}>
-                  {item.title}
-                </Text>
-              </View>
-            )}
+            <BookCoverImage
+              testID={`library-book-cover-${item.id}`}
+              placeholderTestID={`library-book-cover-fallback-${item.id}`}
+              thumbnailUrl={item.thumbnailUrl}
+              coverSource={item.coverSource}
+              title={item.title}
+              style={styles.cover}
+            />
             <View style={styles.rowMain}>
               <Text style={styles.bookTitle} numberOfLines={1}>
                 {item.title}
@@ -131,20 +126,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#E5E7EB',
     marginRight: 12,
-  },
-  coverFallback: {
-    width: 44,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-    marginRight: 12,
-    padding: 4,
-    justifyContent: 'center',
-  },
-  coverFallbackText: {
-    color: '#6B7280',
-    fontSize: 9,
-    textAlign: 'center',
   },
   rowMain: {
     flex: 1,

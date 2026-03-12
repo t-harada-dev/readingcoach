@@ -53,6 +53,7 @@ export const copy = {
   completion: {
     elapsedPrefix: '読書した時間',
     completedTitle: '今日のセッションを完了しました',
+    forwardMomentum: '小さな前進を積み上げています',
     readBookPrefix: '読書した本',
     ctaExtra5m: 'もう 5 分やる',
     ctaExtra15m: 'もう 15 分やる',
