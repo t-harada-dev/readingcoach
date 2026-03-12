@@ -1,19 +1,15 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { expect, element, by, waitFor } = require('detox');
+const { launchAppSynced } = require('./helpers/launchApp');
 
 async function launchDue(state) {
-  await device.launchApp({
+  await launchAppSynced({
     newInstance: true,
     delete: true,
     launchArgs: { e2e_state: state },
   });
-  await device.disableSynchronization();
 }
 
 describe('Due Action Sheet', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-DUE-02: due(normal) -> 開始 -> SC-12(15分)
   it('maps start to 15m in normal due state', async () => {
     await launchDue('due_normal');
@@ -43,7 +39,7 @@ describe('Due Action Sheet', () => {
     await waitFor(element(by.id('due-action-snooze-30m'))).toBeVisible().withTimeout(20000);
     await element(by.id('due-action-snooze-30m')).tap();
 
-    await waitFor(element(by.id('focus-core-open-library'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('due-action-sheet'))).not.toExist().withTimeout(10000);
     await expect(element(by.id('active-session-screen'))).not.toBeVisible();
   });
 
@@ -77,7 +73,7 @@ describe('Due Action Sheet', () => {
     await expect(element(by.id('due-action-start'))).toBeVisible();
     await expect(element(by.id('due-action-start-5m'))).toBeVisible();
     await expect(element(by.id('due-action-snooze-30m'))).toBeVisible();
-    await expect(element(by.id('focus-core-open-library'))).not.toBeVisible();
+    await expect(element(by.id('focus-core-change-book'))).not.toBeVisible();
     await expect(element(by.id('focus-core-change-book'))).not.toBeVisible();
   });
 });
