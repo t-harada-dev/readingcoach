@@ -3,12 +3,17 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { RestartRecoveryView } from '../../../screens/RestartRecoveryView';
 import { appTheme } from '../../../theme/layout';
+import { fixtureBooks } from '../fixtures/books';
 import type { MockScenario } from '../types';
 
 export function buildSC07Props(_scenario: MockScenario) {
     return {
         busy: false,
+        hasSelectedBook: true,
         errorText: null,
+        bookTitle: fixtureBooks.standardBook.title,
+        bookThumbnailUrl: fixtureBooks.standardBook.thumbnailUrl,
+        bookCoverSource: fixtureBooks.standardBook.coverSource,
     };
 }
 
@@ -21,8 +26,8 @@ export function SC07CatalogPreview({ scenario }: { scenario: MockScenario }) {
             <RestartRecoveryView
                 {...props}
                 onPressStartIgnition={() => setActionLog((current) => [`start:ignition_1m`, ...current].slice(0, 4))}
-                onPressChangeTime={() => setActionLog((current) => ['navigate:time-change', ...current].slice(0, 4))}
-                onPressClose={() => setActionLog((current) => ['navigate:focus-core(skipRestartOnce)', ...current].slice(0, 4))}
+                onPressChangeTime={() => setActionLog((current) => ['navigate:settings', ...current].slice(0, 4))}
+                onPressChangeBook={() => setActionLog((current) => ['navigate:library', ...current].slice(0, 4))}
             />
             <View style={styles.logCard}>
                 <Text style={styles.logTitle}>Stub Actions</Text>

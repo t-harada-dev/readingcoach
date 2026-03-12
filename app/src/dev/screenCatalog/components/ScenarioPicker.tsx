@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { MockScenario } from '../types';
 
@@ -13,7 +13,7 @@ export function ScenarioPicker({
     onSelect: (scenario: MockScenario) => void;
 }) {
     return (
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+        <View style={styles.row}>
             {options.map((option) => {
                 const active = option === selected;
                 return (
@@ -27,12 +27,14 @@ export function ScenarioPicker({
                     </Pressable>
                 );
             })}
-        </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     row: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: 8,
         paddingVertical: 4,
     },

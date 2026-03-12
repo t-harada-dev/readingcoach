@@ -36,4 +36,24 @@ export const scenarioRegistry: ScenarioRegistryItem[] = [
         label: 'Cover Removed',
         description: '書影削除後の表示を確認する fixture。',
     },
+    {
+        scenario: 'already_has_data',
+        label: 'Already Has Data',
+        description: '初回導線の再訪時を想定した fixture。',
+    },
+    {
+        scenario: 'timeout_or_error',
+        label: 'Timeout / Error',
+        description: 'APIタイムアウト・失敗時の縮退導線を確認する fixture。',
+    },
+    {
+        scenario: 'no_result',
+        label: 'No Result',
+        description: '検索0件時の代替導線を確認する fixture。',
+    },
+    {
+        scenario: 'finished_book',
+        label: 'Finished Book',
+        description: '読了後の分岐導線を確認する fixture。',
+    },
 ];

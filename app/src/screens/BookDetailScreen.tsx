@@ -7,9 +7,12 @@ import { enableProgressTracking, updateBookProgress } from '../useCases/Progress
 import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { runSetFocusBookForTodayUseCase } from '../useCases/SetFocusBookForTodayUseCase';
 import { BookDetailView } from './BookDetailView';
+import { validateProgressToggleInputs } from './bookDetailProgressGuard';
 
 type Params = {
   bookId: string;
+  manualChangePlanDate?: string;
+  manualChangeCurrentBookId?: string;
 };
 
 type ImagePickerModule = typeof import('expo-image-picker');
@@ -26,7 +29,7 @@ async function resolveImagePickerModule(): Promise<ImagePickerModule | null> {
 }
 
 export function BookDetailScreen({ route, navigation }: any) {
-  const { bookId } = (route.params ?? {}) as Params;
+  const { bookId, manualChangePlanDate, manualChangeCurrentBookId } = (route.params ?? {}) as Params;
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -75,6 +78,28 @@ export function BookDetailScreen({ route, navigation }: any) {
         progressPromptShown: true,
       });
       setProgressEnabled(false);
+      return;
+    }
+
+    const guard = validateProgressToggleInputs(pageCount, currentPage);
+    if (!guard.ok) {
+      const message = (() => {
+        switch (guard.reason) {
+          case 'missing_page_count':
+            return copy.bookDetail.progressGuardMissingPageCount;
+          case 'invalid_page_count':
+            return copy.bookDetail.progressGuardInvalidPageCount;
+          case 'missing_current_page':
+            return copy.bookDetail.progressGuardMissingCurrentPage;
+          case 'invalid_current_page':
+            return copy.bookDetail.progressGuardInvalidCurrentPage;
+          case 'current_exceeds_page_count':
+            return copy.bookDetail.progressGuardCurrentExceedsPageCount;
+          default:
+            return copy.bookDetail.progressGuardMissingPageCount;
+        }
+      })();
+      Alert.alert(copy.bookDetail.progressGuardTitle, message);
       return;
     }
 
@@ -183,7 +208,10 @@ export function BookDetailScreen({ route, navigation }: any) {
     if (saving) return;
     setSaving(true);
     try {
-      await runSetFocusBookForTodayUseCase(bookId);
+      await runSetFocusBookForTodayUseCase(bookId, {
+        manualChangePlanDate,
+        manualChangeCurrentBookId,
+      });
       navigation.navigate('FocusCore');
     } finally {
       setSaving(false);

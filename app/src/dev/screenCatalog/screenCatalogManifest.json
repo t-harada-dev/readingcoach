@@ -1,5 +1,26 @@
 [
   {
+    "screenId": "SC-01",
+    "title": "Onboarding Add Book",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "already_has_data"],
+    "screenshotKeyPrefix": "screen-catalog_SC-01"
+  },
+  {
+    "screenId": "SC-02",
+    "title": "Onboarding Time Setup",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "already_has_data"],
+    "screenshotKeyPrefix": "screen-catalog_SC-02"
+  },
+  {
+    "screenId": "SC-03",
+    "title": "Onboarding Notification",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "already_has_data"],
+    "screenshotKeyPrefix": "screen-catalog_SC-03"
+  },
+  {
     "screenId": "SC-04",
     "title": "Normal Home",
     "defaultScenario": "normal",
@@ -28,11 +49,39 @@
     "screenshotKeyPrefix": "screen-catalog_SC-07"
   },
   {
+    "screenId": "SC-09",
+    "title": "Add Book",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "timeout_or_error", "no_result"],
+    "screenshotKeyPrefix": "screen-catalog_SC-09"
+  },
+  {
+    "screenId": "SC-10",
+    "title": "Add Book",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "timeout_or_error"],
+    "screenshotKeyPrefix": "screen-catalog_SC-10"
+  },
+  {
+    "screenId": "SC-11",
+    "title": "Add Book",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "no_result"],
+    "screenshotKeyPrefix": "screen-catalog_SC-11"
+  },
+  {
     "screenId": "SC-12",
     "title": "Active Session",
     "defaultScenario": "normal",
     "supportedScenarios": ["normal", "rehab"],
     "screenshotKeyPrefix": "screen-catalog_SC-12"
+  },
+  {
+    "screenId": "SC-13",
+    "title": "Active Session (3m)",
+    "defaultScenario": "rehab",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-13"
   },
   {
     "screenId": "SC-14",
@@ -49,6 +98,34 @@
     "screenshotKeyPrefix": "screen-catalog_SC-15"
   },
   {
+    "screenId": "SC-16",
+    "title": "Progress Prompt",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-16"
+  },
+  {
+    "screenId": "SC-17",
+    "title": "Progress Setup",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-17"
+  },
+  {
+    "screenId": "SC-18",
+    "title": "Extra Session Choice",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-18"
+  },
+  {
+    "screenId": "SC-19",
+    "title": "Next Focus Nomination",
+    "defaultScenario": "finished_book",
+    "supportedScenarios": ["normal", "finished_book"],
+    "screenshotKeyPrefix": "screen-catalog_SC-19"
+  },
+  {
     "screenId": "SC-20",
     "title": "Library",
     "defaultScenario": "normal",
@@ -63,10 +140,87 @@
     "screenshotKeyPrefix": "screen-catalog_SC-21"
   },
   {
+    "screenId": "SC-22",
+    "title": "Time Change",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-22"
+  },
+  {
     "screenId": "SC-23",
     "title": "Due Action Sheet",
     "defaultScenario": "due",
     "supportedScenarios": ["due", "rehab"],
     "screenshotKeyPrefix": "screen-catalog_SC-23"
+  },
+  {
+    "screenId": "SC-24",
+    "title": "Active Session (5m)",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SC-24"
+  },
+  {
+    "screenId": "SF-01",
+    "title": "Widget Surface (Normal)",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal"],
+    "screenshotKeyPrefix": "screen-catalog_SF-01"
+  },
+  {
+    "screenId": "SF-02",
+    "title": "Widget Surface (Rehab)",
+    "defaultScenario": "rehab",
+    "supportedScenarios": ["rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SF-02"
+  },
+  {
+    "screenId": "SF-03",
+    "title": "Notification Surface (Normal)",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal"],
+    "screenshotKeyPrefix": "screen-catalog_SF-03"
+  },
+  {
+    "screenId": "SF-04",
+    "title": "Notification Surface (Rehab)",
+    "defaultScenario": "rehab",
+    "supportedScenarios": ["rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SF-04"
+  },
+  {
+    "screenId": "SF-05",
+    "title": "Live Activity (15m)",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal"],
+    "screenshotKeyPrefix": "screen-catalog_SF-05"
+  },
+  {
+    "screenId": "SF-06",
+    "title": "Live Activity (3m)",
+    "defaultScenario": "rehab",
+    "supportedScenarios": ["rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SF-06"
+  },
+  {
+    "screenId": "SF-07",
+    "title": "Live Activity (1m)",
+    "defaultScenario": "rehab",
+    "supportedScenarios": ["rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SF-07"
+  },
+  {
+    "screenId": "SF-08",
+    "title": "App Intents Surface",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal", "rehab"],
+    "screenshotKeyPrefix": "screen-catalog_SF-08"
+  },
+  {
+    "screenId": "SF-09",
+    "title": "Live Activity (5m)",
+    "defaultScenario": "normal",
+    "supportedScenarios": ["normal"],
+    "screenshotKeyPrefix": "screen-catalog_SF-09"
   }
 ]

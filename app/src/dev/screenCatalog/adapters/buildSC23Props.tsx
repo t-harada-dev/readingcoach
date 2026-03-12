@@ -27,11 +27,13 @@ export function SC23CatalogPreview({ scenario }: { scenario: MockScenario }) {
             <DueActionSheetView
                 busy={false}
                 defaultMode={props.defaultMode}
+                hasSelectedBook={true}
                 bookTitle={props.bookTitle}
                 bookAuthor={props.bookAuthor}
                 bookThumbnailUrl={props.bookThumbnailUrl}
                 bookCoverSource={props.bookCoverSource}
                 onPressStart={(mode) => setActionLog((current) => [`start:${mode}`, ...current].slice(0, 4))}
+                onPressResolveBook={() => setActionLog((current) => ['navigate:library', ...current].slice(0, 4))}
                 onPressSnooze={() => setActionLog((current) => ['snooze:30m', ...current].slice(0, 4))}
             />
             <View style={styles.logCard}>

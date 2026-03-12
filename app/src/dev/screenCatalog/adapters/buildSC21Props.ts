@@ -3,16 +3,10 @@ import { fixtureBooks } from '../fixtures/books';
 import type { MockScenario } from '../types';
 
 export function buildSC21Props(scenario: MockScenario): BookDetailViewProps {
-  const scenarioBookMap = {
-    rehab: fixtureBooks.missingCoverBook,
-    no_cover: fixtureBooks.missingCoverBook,
-    cover_removed: fixtureBooks.missingCoverBook,
-    normal: fixtureBooks.standardBook,
-    long_absence: fixtureBooks.standardBook,
-    due: fixtureBooks.standardBook,
-    empty: fixtureBooks.standardBook,
-  } as const;
-  const book = scenarioBookMap[scenario];
+  const book =
+    scenario === 'rehab' || scenario === 'no_cover' || scenario === 'cover_removed'
+      ? fixtureBooks.missingCoverBook
+      : fixtureBooks.standardBook;
   const isNoCover = scenario === 'no_cover' || scenario === 'cover_removed';
   const thumbnailUrl = isNoCover ? undefined : (book as { thumbnailUrl?: string }).thumbnailUrl;
   const progressEnabled = scenario !== 'rehab';

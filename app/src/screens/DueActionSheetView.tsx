@@ -13,22 +13,26 @@ type DueActionMode = 'normal_15m' | 'ignition_1m' | 'rescue_5m';
 export type DueActionSheetViewProps = {
     busy: boolean;
     defaultMode: 'normal_15m' | 'ignition_1m';
+    hasSelectedBook: boolean;
     bookTitle: string;
     bookAuthor?: string;
     bookThumbnailUrl?: string;
     bookCoverSource?: BookDTO['coverSource'];
     onPressStart: (mode: DueActionMode) => void;
+    onPressResolveBook: () => void;
     onPressSnooze: () => void;
 };
 
 export function DueActionSheetView({
     busy,
     defaultMode,
+    hasSelectedBook,
     bookTitle,
     bookAuthor,
     bookThumbnailUrl,
     bookCoverSource,
     onPressStart,
+    onPressResolveBook,
     onPressSnooze,
 }: DueActionSheetViewProps) {
     const actions = dueActionOrder();
@@ -48,6 +52,11 @@ export function DueActionSheetView({
             <View style={styles.sheet}>
                 <Text style={styles.title}>{copy.dueAction.title}</Text>
                 <Text style={styles.subtitle}>{copy.dueAction.subtitle}</Text>
+                {!hasSelectedBook ? (
+                    <Text testID="due-action-no-book-warning" style={styles.warningText}>
+                        {copy.focusCore.noBookSelected}
+                    </Text>
+                ) : null}
                 <View style={styles.bookContextRow}>
                     <BookCoverImage
                         testID="due-action-book-cover"
@@ -69,6 +78,15 @@ export function DueActionSheetView({
                     </View>
                 </View>
                 <View style={styles.actionStack}>
+                {!hasSelectedBook ? (
+                    <SessionCTAButton
+                        testID="due-action-resolve-book"
+                        tone="secondary"
+                        label={copy.focusCore.resolveBookLink}
+                        onPress={onPressResolveBook}
+                        disabled={busy}
+                    />
+                ) : null}
                 {secondaryActions.map((action) => {
                     if (action === 'rescue_5m') {
                         return (
@@ -78,7 +96,7 @@ export function DueActionSheetView({
                                 tone="secondary"
                                 label={copy.dueAction.cta5m}
                                 onPress={() => onPressStart('rescue_5m')}
-                                disabled={busy}
+                                disabled={busy || !hasSelectedBook}
                             />
                         );
                     }
@@ -98,7 +116,7 @@ export function DueActionSheetView({
                     tone="primary"
                     label={copy.dueAction.ctaStart}
                     onPress={() => onPressStart(defaultMode)}
-                    disabled={busy}
+                    disabled={busy || !hasSelectedBook}
                 />
                 </View>
             </View>
@@ -138,6 +156,11 @@ const styles = StyleSheet.create({
         fontSize: 13,
         marginTop: 6,
         marginBottom: 12,
+    },
+    warningText: {
+        color: '#B91C1C',
+        fontSize: 13,
+        marginBottom: 8,
     },
     bookContextRow: {
         borderRadius: 14,

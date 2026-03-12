@@ -61,8 +61,8 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
 
   return (
     <View testID="next-focus-screen" style={styles.container}>
-      <Text style={styles.title}>次に読む本を決めましょう</Text>
-      <Text style={styles.subtitle}>読了おめでとうございます。明日の Focus Book を1冊だけ選びます。</Text>
+      <Text style={styles.title}>1冊読み切りました！</Text>
+      <Text style={styles.subtitle}>次の本を選択しましょう</Text>
       {loading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator />
@@ -84,24 +84,27 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
             </View>
           )}
           ListEmptyComponent={
-            <Text style={styles.empty}>候補がありません。後でライブラリから設定できます。</Text>
+            <Text style={styles.empty}>候補がありません。ライブラリで本を追加してください。</Text>
           }
         />
       )}
       {!loading && selectedBookId ? <View testID="next-focus-selection-ready" /> : null}
-      <SessionCTAButton
-        testID="next-focus-confirm"
-        label="次の本を確定"
-        tone="primary"
-        onPress={onConfirm}
-        disabled={!selected || saving}
-      />
-      <SessionCTAButton
-        label="あとで"
-        tone="ghost"
-        onPress={resetToHome}
-        disabled={saving}
-      />
+      <View style={styles.actions}>
+        <SessionCTAButton
+          testID="next-focus-confirm"
+          label="次の本を選ぶ"
+          tone="primary"
+          onPress={onConfirm}
+          disabled={!selected || saving}
+        />
+        <SessionCTAButton
+          testID="next-focus-add-book"
+          label="本を追加する"
+          tone="secondary"
+          onPress={() => navigation.navigate('Library')}
+          disabled={saving}
+        />
+      </View>
     </View>
   );
 }
@@ -120,9 +123,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   subtitle: {
-    color: '#6B7280',
-    fontSize: 14,
-    lineHeight: 22,
+    color: '#2C2C2C',
+    fontSize: 18,
+    fontWeight: '700',
     marginTop: 8,
     marginBottom: 8,
   },
@@ -137,5 +140,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     marginBottom: 12,
+  },
+  actions: {
+    marginTop: 'auto',
   },
 });

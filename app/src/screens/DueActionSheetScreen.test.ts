@@ -60,8 +60,13 @@ describe('DueActionSheetScreen', () => {
       durationSeconds: 900,
     });
     snoozeMock.mockResolvedValue(undefined);
-    findPlanMock.mockResolvedValue(null);
-    getBookMock.mockResolvedValue(null);
+    findPlanMock.mockResolvedValue({ planId: 'p1', bookId: 'book-1' });
+    getBookMock.mockResolvedValue({
+      id: 'book-1',
+      title: 'Book',
+      format: 'paper',
+      status: 'active',
+    });
   });
 
   it('SC-23 の CTA 配置（主CTAを最下段）を維持する', () => {

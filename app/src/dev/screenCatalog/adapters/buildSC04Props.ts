@@ -1,21 +1,24 @@
 import type { FocusCoreViewProps } from '../../../screens/FocusCoreView';
 import { fixtureBooks } from '../fixtures/books';
-import { scenarioFixtures } from '../fixtures/scenarios';
+import { scenarioFixtures, type CoreMockScenario } from '../fixtures/scenarios';
 import type { MockScenario } from '../types';
 
 export function buildSC04Props(scenario: MockScenario): FocusCoreViewProps {
-    const normalizedScenario =
-        scenario === 'long_absence'
+    const normalizedScenario: CoreMockScenario =
+        scenario === 'rehab'
             ? 'rehab'
-            : scenario === 'due' || scenario === 'empty' || scenario === 'no_cover' || scenario === 'cover_removed'
-              ? 'normal'
-              : scenario;
+            : scenario === 'long_absence'
+              ? 'rehab'
+              : scenario === 'due' || scenario === 'empty' || scenario === 'no_cover' || scenario === 'cover_removed'
+                ? 'normal'
+                : 'normal';
     const fixture = scenarioFixtures[normalizedScenario];
     const book = fixtureBooks[fixture.bookKey];
 
     return {
         book,
         plan: fixture.plan,
+        hasSelectedBook: true,
         loading: false,
         initStatus: 'ready',
         canManualChange: true,
@@ -26,6 +29,7 @@ export function buildSC04Props(scenario: MockScenario): FocusCoreViewProps {
         intentCopy: '「人生は短いのではない。私たちがそれを浪費しているのだ」\n— セネカ',
         startingMode: null,
         onPressChangeBook: () => {},
+        onPressResolveBook: () => {},
         onPressPrimaryCTA: () => {},
         onPressSecondaryCTA: () => {},
         onPressRehabCTA: () => {},

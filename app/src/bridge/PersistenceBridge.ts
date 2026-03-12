@@ -19,6 +19,7 @@ export interface UserSettingsDTO {
   dayRolloverHour: number;
   progressTrackingEnabled?: boolean;
   progressPromptShown?: boolean;
+  notificationsEnabled?: boolean;
 }
 
 export interface BookDTO {

@@ -1,5 +1,141 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-12: Review指摘2件の修正（settings既定値 / 手動変更カウント）
+
+- [x] `saveSettingsWithDefaults` で `notificationsEnabled` を暗黙OFF化しないよう修正
+- [x] `FocusCore -> Library -> BookDetail` 経由の Focus Book 変更時に manual change count を加算
+- [x] 関連ユースケーステストを更新して回帰を防止
+- [x] `cd app && npm run typecheck` と関連テストを実行し結果を記録
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/useCases/SetFocusBookForTodayUseCase.test.ts src/useCases/SaveSettingsWithDefaults.test.ts`（exit code 0, 2 files / 6 tests passed）
+  - [x] `cd app && npm test`（exit code 0, 38 files / 110 tests passed）
+
+## 2026-03-12: SC-01/02/03/05/08/09/10/11/17/18/22 UI改修 + SC-08廃止統合 + 総合設定画面追加
+
+- [x] SC-01/02/03（オンボーディング）の文言・余白・通知説明を更新
+- [x] SC-05 の no-book 表示時に 1分/5分CTA 非表示化 + 文言を「読む本」へ統一
+- [x] SC-08 を廃止し、Screen Catalog とアプリ導線を SC-20 に統合
+- [x] SC-09/10/11（本追加）の見出し・文言・SC-10 UI/CTA配置を更新
+- [x] SC-17/18（進捗設定・追加セッション）の表示仕様を更新
+- [x] SC-22 の時刻重複表示を削除し、説明文を更新
+- [x] 新規 SettingsScreen を追加（読書時間 + 通知ON/OFFを同画面で直接編集）
+- [x] App ルーティング/導線を Settings に集約し、FocusBookPicker 依存を撤去
+- [x] Screen Catalog 型/manifest/registry/test を更新（SC-08除外）
+- [x] 仕様文書（画面定義・screen catalog plan）を更新
+- [x] typecheck / 単体テスト / 必要E2E を実行し結果を記録
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/dev/screenCatalog/screenCatalog.test.ts src/screens/RestartRecoveryScreen.test.ts src/screens/CompletionScreen.test.ts src/screens/DueActionSheetScreen.test.ts src/screens/SettingsScreen.test.ts`（exit code 0, 5 files / 18 tests passed）
+  - [x] `cd app && npx detox test -c ios.sim.debug e2e/onboarding-flow.e2e.js e2e/add-book-flow.e2e.js -- --watchman=false`（exit code 0, 2 suites / 11 tests passed）
+
+## 2026-03-12: Screen Catalog文言・導線再整理（更新版）
+
+- [ ] 対象画面（SC-01/02/03/07/08/09/10/11/17/18/19/22）の文言・CTA位置を更新（Catalog/実画面）
+- [x] SC-02/SC-22 を自由時刻入力化（プリセット廃止）
+- [x] SC-08 進捗有効時の進捗表示を追加
+- [x] SC-17 対象本情報表示 + 未入力で戻る導線
+- [x] SC-19 文言/CTA再構成（「あとで」削除、「本を追加する」追加）
+- [x] Focus Book未選択ガード（開始CTA disable + 代替導線）を実画面へ導入
+- [x] 通知無効化の永続設定（`notificationsEnabled`）追加と予約抑止反映
+- [x] 通知ON/OFF設定画面を追加し、画面導線を接続
+- [x] SC-11 no_result のみ「戻る」へ分岐
+- [x] 型/テスト/manifest gate を実行して結果記録
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/dev/screenCatalog/screenCatalog.test.ts src/screens/RestartRecoveryScreen.test.ts src/screens/CompletionScreen.test.ts src/screens/DueActionSheetScreen.test.ts`（exit code 0, 4 files / 14 tests passed）
+  - [x] `cd app && npm run e2e:snapshot:manifest:check`（exit code 0, core10 gate 維持）
+- [x] 対象画面（SC-01/02/03/07/08/09/10/11/17/18/19/22）の文言・CTA位置を更新（Catalog/実画面）
+
+## 2026-03-12: Screen Catalog 全画面化（SC-01..24 + SF-01..09）
+
+- [x] Catalog の型・manifest・registry を全画面対応へ拡張
+- [x] SC 追加画面（SC-01/02/03/08/09/10/11/13/16/17/18/19/22/24）のプレビュー実装
+- [x] SF-01..09 の静的プレビュー共通コンポーネント実装
+- [x] scenarioRegistry / Playground のシナリオ拡張と切替維持を確認
+- [x] screenCatalog テスト更新（manifest整合 + 代表追加画面スモーク）
+- [x] 検証実行（typecheck, screenCatalog test, 主要回帰, snapshot gate check）
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/dev/screenCatalog/screenCatalog.test.ts`（exit code 0, 1 file / 6 tests passed）
+  - [x] `cd app && npm test -- src/screens/RestartRecoveryScreen.test.ts src/screens/CompletionScreen.test.ts`（exit code 0, 2 files / 5 tests passed）
+  - [x] `cd app && npm run e2e:snapshot:manifest:check`（exit code 0, core10 gate 維持）
+
+## 2026-03-12: SC-07 ボタン構成変更 + 書影表示追加
+
+- [x] SC-07 のCTAを更新（`本を変える` 追加、`今日はやめる` 廃止）
+- [x] SC-07 の「この本を読みます」に書影を追加（プレースホルダー含む）
+- [x] `FocusCore -> RestartRecovery` の受け渡しパラメータを拡張（bookId/書影情報）
+- [x] Screen Catalog SC-07 モックを新UIへ追従
+- [x] 型/関連テスト実行
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/screens/RestartRecoveryScreen.test.ts src/dev/screenCatalog/screenCatalog.test.ts`（exit code 0, 2 files / 7 tests passed）
+
+## 2026-03-12: SC-07/14/15/20 文言・表示改善 + 手動確認起動
+
+- [x] SC-07 に「どの本を読むか」表示を追加（FocusCore からの遷移時に書名受け渡し）
+- [x] SC-14/15 の「読了した」を「読み終わった」に変更
+- [x] SC-20 の focus 表示文言を「この本を読んでいます」に変更
+- [x] 型/関連テストを実行し、回帰がないことを確認
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/screens/RestartRecoveryScreen.test.ts src/dev/screenCatalog/screenCatalog.test.ts`（exit code 0, 2 files / 7 tests passed）
+- [x] 最新反映ビルドで Screen Catalog を起動し、他画面確認可能状態にする
+  - [x] `./run-ios.sh`（exit code 0, BUILD SUCCEEDED）
+  - [x] `xcrun simctl terminate booted com.anonymous.app || true`
+  - [x] `xcrun simctl launch booted com.anonymous.app -e2e_screen_catalog 1 -e2e_screen_catalog_auto_open 1`（exit code 0, `com.anonymous.app: 81247`）
+
+## 2026-03-12: Screen Catalog シナリオ切替不具合の修正（rehab/emptyが押せない）
+
+- [x] `ScreenPlayground` の scenario state が route params に巻き戻される不具合を修正
+- [ ] SC-04/05/12 の `rehab`、SC-20 の `empty` が選択維持されることを確認（手動最終確認待ち）
+- [x] SC-21 の最新UI反映を手動確認し、必要なら再起動手順を記録
+  - [x] `./run-ios.sh`（exit code 0, BUILD SUCCEEDED）
+  - [x] `xcrun simctl terminate booted com.anonymous.app || true`
+  - [x] `xcrun simctl launch booted com.anonymous.app -e2e_screen_catalog 1 -e2e_screen_catalog_auto_open 1`（exit code 0）
+- [x] 型/関連テストを実行して結果を記録
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/dev/screenCatalog/screenCatalog.test.ts`（exit code 0, 1 file / 5 tests passed）
+
+## 2026-03-12: SC-21 UI整形 + 進捗ONガード + 文言横展開 + Catalog全画面化計画
+
+- [x] SC-21 を「項目名 + 値」表示基調で再編し、進捗バー設定を同一フォーマットへ統一
+- [x] 進捗バー OFF→ON の入力ガード（総ページ数/現在ページ/大小関係）を実装し、未充足時は理由付きで抑止
+- [x] 表紙画像セクションを一体表示（見出し + 書影 + 3操作）へ再構成
+- [x] `Focus Book にする` を `この本を読む` へ横展開（testIDは維持）
+- [x] Screen Catalog 全画面化の実行計画ドキュメントを追加（差分一覧/優先度/必要シナリオ/段階導入）
+- [x] 検証実行（typecheck, 追加単体テスト, 既存E2E最小）
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm test -- src/screens/bookDetailProgressGuard.test.ts src/dev/screenCatalog/screenCatalog.test.ts`（exit code 0, 2 files / 9 tests passed）
+  - [x] `cd app && npx detox test -c ios.sim.debug e2e/library-detail.e2e.js -- --watchman=false`（exit code 0, 1 suite / 5 tests passed）
+
+## 2026-03-12: 手動確認画面（Screen Catalog）起動
+
+- [x] Metro の起動状態を確認し、未起動なら 8081 で起動
+  - [x] `lsof -nP -iTCP:8081 -sTCP:LISTEN`（既存 `node` プロセスで LISTEN を確認）
+- [x] iOSアプリを起動し、`e2e_screen_catalog` 引数で Screen Catalog を自動オープン
+  - [x] `./run-ios.sh`（exit code 0, BUILD SUCCEEDED）
+  - [x] `xcrun simctl terminate booted com.anonymous.app || true`
+  - [x] `xcrun simctl launch booted com.anonymous.app -e2e_screen_catalog 1 -e2e_screen_catalog_auto_open 1`（exit code 0, `com.anonymous.app: 70038`）
+- [x] 起動コマンドと結果（exit code）を記録
+
+## 2026-03-12: library-detail flake再判定と launchToLibrary 遷移調査
+
+- [x] `library-detail` を同一コマンドで再実行して再現性を確認
+  - [x] `cd app && npx detox test -c ios.sim.debug e2e/library-detail.e2e.js -- --watchman=false`（exit code 1, 1 suite / 4 tests failed）
+- [x] `focus-core-change-book -> library-add-book` 崩れの一次調査（遷移実装/seed/関連e2e比較）
+- [x] `launchToLibrary()` の待機条件/リトライを安定化して再実行
+- [x] 再実行ログで flake 判定（exit code と failed suites/tests）を確定
+  - [x] 1回目: `cd app && npx detox test -c ios.sim.debug e2e/library-detail.e2e.js -- --watchman=false`（exit code 0, 1 suite / 5 tests passed）
+  - [x] 2回目: `cd app && npx detox test -c ios.sim.debug e2e/library-detail.e2e.js -- --watchman=false`（exit code 0, 1 suite / 5 tests passed）
+
+## 2026-03-12: Detox 実機UI遷移確認（library-detail / due-action-sheet / home-snapshots）
+
+- [x] 事前準備（`app` 固定、artifacts prune、iOS build）
+  - [x] `cd app && npm run e2e:artifacts:prune`（exit code 0）
+  - [x] `cd app && npm run e2e:build:ios`（exit code 0, BUILD SUCCEEDED）
+- [x] 対象3スイートを個別実行
+  - [x] `cd app && npx detox test -c ios.sim.debug e2e/library-detail.e2e.js -- --watchman=false`（exit code 1, 1 suite / 5 tests failed）
+  - [x] `cd app && npx detox test -c ios.sim.debug e2e/due-action-sheet.e2e.js -- --watchman=false`（exit code 0, 1 suite / 6 tests passed）
+  - [x] `cd app && npx detox test -c ios.sim.debug e2e/snapshots/home-snapshots.e2e.js -- --watchman=false`（exit code 0, 1 suite / 5 tests passed）
+- [x] 結果集約（全PASSではなく一部FAIL）
+  - [x] 先頭失敗: `library-detail` の `LIB-01`（`library-add-book` が 10s timeout で未検出）
+
 ## 2026-03-12: 書影優先順位固定 + SC-14/15/20/23 UI再整理
 
 - [x] `BookDTO` に `coverSource` を追加し、保存時に manual/google_books/placeholder を保持

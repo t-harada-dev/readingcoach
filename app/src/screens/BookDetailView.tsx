@@ -80,16 +80,14 @@ export function BookDetailView({
         <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text>
       )}
 
-      <View style={styles.progressSettingRow}>
-        <View style={styles.progressSettingTextWrap}>
-          <Text style={styles.progressSettingLabel}>進捗バー設定</Text>
-          <Text
-            testID={progressEnabled ? 'book-detail-disable-progress' : 'book-detail-enable-progress'}
-            style={styles.progressState}
-          >
-            {progressEnabled ? '現在: ON' : '現在: OFF'}
-          </Text>
-        </View>
+      <Text style={styles.label}>進捗バー設定</Text>
+      <View style={styles.settingValueRow}>
+        <Text
+          testID={progressEnabled ? 'book-detail-disable-progress' : 'book-detail-enable-progress'}
+          style={styles.settingValue}
+        >
+          {progressEnabled ? 'ON' : 'OFF'}
+        </Text>
         <Switch
           testID="book-detail-progress-toggle"
           value={progressEnabled}
@@ -101,38 +99,40 @@ export function BookDetailView({
       </View>
 
       <Text style={styles.label}>{copy.bookDetail.labelCoverImage}</Text>
-      <BookCoverImage
-        testID="book-detail-cover-image"
-        placeholderTestID="book-detail-cover-placeholder"
-        thumbnailUrl={thumbnailUrl}
-        coverSource={coverSource}
-        title={title}
-        style={styles.cover}
-      />
-      <TouchableOpacity
-        testID="book-detail-cover-camera"
-        style={styles.secondaryButton}
-        onPress={onPressTakePhoto}
-        disabled={saving}
-      >
-        <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaTakePhoto}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        testID="book-detail-cover-library"
-        style={styles.secondaryButton}
-        onPress={onPressPickFromLibrary}
-        disabled={saving}
-      >
-        <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaPickImage}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        testID="book-detail-cover-remove"
-        style={styles.secondaryButton}
-        onPress={onPressRemoveCover}
-        disabled={saving || thumbnailUrl.trim().length === 0}
-      >
-        <Text style={styles.secondaryButtonText}>表紙画像を削除</Text>
-      </TouchableOpacity>
+      <View style={styles.coverSectionCard}>
+        <BookCoverImage
+          testID="book-detail-cover-image"
+          placeholderTestID="book-detail-cover-placeholder"
+          thumbnailUrl={thumbnailUrl}
+          coverSource={coverSource}
+          title={title}
+          style={styles.cover}
+        />
+        <TouchableOpacity
+          testID="book-detail-cover-camera"
+          style={styles.secondaryButton}
+          onPress={onPressTakePhoto}
+          disabled={saving}
+        >
+          <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaTakePhoto}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="book-detail-cover-library"
+          style={styles.secondaryButton}
+          onPress={onPressPickFromLibrary}
+          disabled={saving}
+        >
+          <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaPickImage}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="book-detail-cover-remove"
+          style={styles.secondaryButton}
+          onPress={onPressRemoveCover}
+          disabled={saving || thumbnailUrl.trim().length === 0}
+        >
+          <Text style={styles.secondaryButtonText}>表紙画像を削除</Text>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity testID="book-detail-save" style={[styles.primaryButton, !canSave && styles.disabled]} onPress={onPressSave} disabled={!canSave}>
         <Text style={styles.primaryButtonText}>{copy.bookDetail.ctaSave}</Text>
@@ -194,32 +194,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 11,
   },
-  progressSettingRow: {
-    marginTop: 14,
+  settingValueRow: {
+    marginTop: 2,
     marginBottom: 8,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.10)',
+    borderColor: 'rgba(44,44,44,0.12)',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  progressSettingTextWrap: {
-    flex: 1,
-    paddingRight: 10,
+  settingValue: {
+    color: '#2C2C2C',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  progressSettingLabel: {
-    color: '#4B5563',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  progressState: {
-    color: '#6B7280',
-    fontSize: 12,
-    marginTop: 3,
+  coverSectionCard: {
+    marginTop: 2,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(44,44,44,0.10)',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
   },
   primaryButton: {
     marginTop: 16,

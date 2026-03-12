@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Alert,
   StyleSheet,
@@ -48,6 +49,20 @@ export function AddBookScreen({ navigation, route }: any) {
   const [flow, setFlow] = useState<FlowState>('search');
   const [candidates, setCandidates] = useState<BookSearchCandidate[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<BookSearchCandidate | null>(null);
+  const [hasExistingBooks, setHasExistingBooks] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    if (!isOnboarding) return () => { alive = false; };
+    (async () => {
+      const books = await persistenceBridge.getBooks();
+      if (!alive) return;
+      setHasExistingBooks(books.length > 0);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [isOnboarding]);
 
   const finishAfterSave = () => {
     if (isOnboarding) {
@@ -94,6 +109,7 @@ export function AddBookScreen({ navigation, route }: any) {
   };
 
   const onSave = async () => {
+    Keyboard.dismiss();
     const normalizedTitle = title.trim();
     if (!normalizedTitle) return;
 
@@ -110,6 +126,7 @@ export function AddBookScreen({ navigation, route }: any) {
   };
 
   const onSearchSubmit = async () => {
+    Keyboard.dismiss();
     const q = query.trim();
     if (!q || saving) return;
     setSaving(true);
@@ -130,6 +147,7 @@ export function AddBookScreen({ navigation, route }: any) {
   };
 
   const onSaveCandidate = async () => {
+    Keyboard.dismiss();
     if (!selectedCandidate || saving) return;
     await persistAndFinish({
         title: selectedCandidate.title,
@@ -143,6 +161,13 @@ export function AddBookScreen({ navigation, route }: any) {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {isOnboarding ? (
+        <Text style={styles.onboardingTitle}>
+          {hasExistingBooks ? '本を追加する' : 'これから読む本について教えてください'}
+        </Text>
+      ) : (
+        <Text style={styles.screenTitle}>本を追加する</Text>
+      )}
       {flow === 'search' ? (
         <View testID={searchScreenTestId}>
           <Text style={styles.label}>書籍を検索</Text>
@@ -170,7 +195,10 @@ export function AddBookScreen({ navigation, route }: any) {
           <TouchableOpacity
             testID={`${searchPrefix}-search-empty-fallback`}
             style={styles.linkBtn}
-            onPress={() => setFlow('manual')}
+            onPress={() => {
+              Keyboard.dismiss();
+              setFlow('manual');
+            }}
           >
             <Text style={styles.linkText}>見つからないので手入力する</Text>
           </TouchableOpacity>
@@ -192,66 +220,73 @@ export function AddBookScreen({ navigation, route }: any) {
           ))}
           <TouchableOpacity
             testID="add-book-candidate-save"
-            style={[styles.cta, (!selectedCandidate || saving) && styles.ctaDisabled]}
-            onPress={onSaveCandidate}
-            disabled={!selectedCandidate || saving}
+            style={[styles.cta, saving && styles.ctaDisabled]}
+            onPress={selectedCandidate ? onSaveCandidate : () => setFlow('search')}
+            disabled={saving}
           >
-            <Text style={styles.ctaText}>この本を追加</Text>
+            <Text style={styles.ctaText}>{selectedCandidate ? 'この本を追加する' : '戻る'}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
 
       {flow === 'manual' ? (
-        <View testID={`${manualPrefix}-manual-entry`}>
+        <View testID={`${manualPrefix}-manual-entry`} style={styles.manualScreen}>
           <View testID="add-book-manual-screen" />
-          <Text style={styles.label}>{copy.addBook.labelTitle}</Text>
-          <TextInput
-            testID="add-book-manual-title"
-            style={styles.input}
-            value={title}
-            onChangeText={setTitle}
-            placeholder={copy.addBook.placeholderTitle}
-            placeholderTextColor="#666"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <Text style={styles.label}>{copy.addBook.labelAuthorOptional}</Text>
-          <TextInput
-            testID="add-book-manual-author"
-            style={styles.input}
-            value={author}
-            onChangeText={setAuthor}
-            placeholder={copy.addBook.placeholderAuthor}
-            placeholderTextColor="#666"
-            autoCapitalize="none"
-          />
-          <Text style={styles.label}>{copy.addBook.labelPageCountOptional}</Text>
-          <TextInput
-            testID="add-book-manual-page-count"
-            style={styles.input}
-            value={pageCount}
-            onChangeText={setPageCount}
-            placeholder={copy.addBook.placeholderPageCount}
-            placeholderTextColor="#9CA3AF"
-            keyboardType="numeric"
-          />
-          <Text style={styles.optionalLabel}>{copy.addBook.labelCoverUrlOptional}</Text>
-          <TextInput
-            style={styles.input}
-            value={thumbnailUrl}
-            onChangeText={setThumbnailUrl}
-            placeholder={copy.addBook.placeholderCoverUrl}
-            placeholderTextColor="#9CA3AF"
-            autoCapitalize="none"
-          />
-          <TouchableOpacity
-            testID="add-book-manual-save"
-            style={[styles.cta, (!title.trim() || saving) && styles.ctaDisabled]}
-            onPress={onSave}
-            disabled={!title.trim() || saving}
-          >
-            <Text style={styles.ctaText}>{copy.addBook.ctaAddAndBack}</Text>
-          </TouchableOpacity>
+          <View>
+            <Text style={styles.label}>{copy.addBook.labelTitle}</Text>
+            <TextInput
+              testID="add-book-manual-title"
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder={copy.addBook.placeholderTitle}
+              placeholderTextColor="#666"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <Text style={styles.label}>{copy.addBook.labelAuthorOptional}</Text>
+            <TextInput
+              testID="add-book-manual-author"
+              style={styles.input}
+              value={author}
+              onChangeText={setAuthor}
+              placeholder={copy.addBook.placeholderAuthor}
+              placeholderTextColor="#666"
+              autoCapitalize="none"
+            />
+            <Text style={styles.label}>{copy.addBook.labelPageCountOptional}</Text>
+            <TextInput
+              testID="add-book-manual-page-count"
+              style={styles.input}
+              value={pageCount}
+              onChangeText={setPageCount}
+              placeholder={copy.addBook.placeholderPageCount}
+              placeholderTextColor="#9CA3AF"
+              keyboardType="numeric"
+            />
+
+            <View style={styles.coverGroup}>
+              <Text style={styles.optionalLabel}>{copy.addBook.labelCoverUrlOptional}</Text>
+              <TextInput
+                style={styles.input}
+                value={thumbnailUrl}
+                onChangeText={setThumbnailUrl}
+                placeholder={copy.addBook.placeholderCoverUrl}
+                placeholderTextColor="#9CA3AF"
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+          <View style={styles.manualActions}>
+            <TouchableOpacity
+              testID="add-book-manual-save"
+              style={[styles.cta, (!title.trim() || saving) && styles.ctaDisabled]}
+              onPress={onSave}
+              disabled={!title.trim() || saving}
+            >
+              <Text style={styles.ctaText}>{copy.addBook.ctaAddAndBack}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : null}
     </KeyboardAvoidingView>
@@ -270,11 +305,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 8,
   },
+  onboardingTitle: {
+    color: '#2C2C2C',
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 24,
+  },
+  screenTitle: {
+    color: '#2C2C2C',
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 16,
+  },
   optionalLabel: {
     color: '#6B7280',
     fontSize: 12,
     marginBottom: 8,
-    marginTop: 8,
   },
   input: {
     backgroundColor: '#FFFFFF',
@@ -297,6 +343,23 @@ const styles = StyleSheet.create({
   ctaText: { color: '#fff', fontSize: 18, fontWeight: '600' },
   linkBtn: { marginTop: 12, alignSelf: 'center', paddingVertical: 6 },
   linkText: { color: '#6B7280', fontSize: 13, textDecorationLine: 'underline' },
+  manualScreen: {
+    flex: 1,
+  },
+  coverGroup: {
+    marginTop: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(44,44,44,0.10)',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 6,
+  },
+  manualActions: {
+    marginTop: 'auto',
+    paddingBottom: 4,
+  },
   bookRow: {
     borderWidth: 1,
     borderColor: 'rgba(44,44,44,0.12)',

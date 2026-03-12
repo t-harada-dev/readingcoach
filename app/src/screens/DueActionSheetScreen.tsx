@@ -21,6 +21,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
     const [bookAuthor, setBookAuthor] = useState<string | undefined>(undefined);
     const [bookThumbnailUrl, setBookThumbnailUrl] = useState<string | undefined>(undefined);
     const [bookCoverSource, setBookCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
+    const [hasSelectedBook, setHasSelectedBook] = useState(true);
 
     useEffect(() => {
         let alive = true;
@@ -28,13 +29,24 @@ export function DueActionSheetScreen({ navigation, route }: any) {
 
         void (async () => {
             const plan = await runFindPlanByIdUseCase(planId);
-            if (!alive || !plan) return;
+            if (!alive || !plan) {
+                setHasSelectedBook(false);
+                return;
+            }
             const book = await persistenceBridge.getBook(plan.bookId);
-            if (!alive || !book) return;
+            if (!alive || !book) {
+                setHasSelectedBook(false);
+                setBookTitle('読む本が未設定です');
+                setBookAuthor(undefined);
+                setBookThumbnailUrl(undefined);
+                setBookCoverSource('placeholder');
+                return;
+            }
             setBookTitle(book.title || '今日のFocus Book');
             setBookAuthor(book.author);
             setBookThumbnailUrl(book.thumbnailUrl);
             setBookCoverSource(book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'));
+            setHasSelectedBook(true);
         })();
 
         return () => {
@@ -43,7 +55,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
     }, [planId]);
 
     const onStart = async (mode: 'normal_15m' | 'ignition_1m' | 'rescue_5m') => {
-        if (!planId || busy) return;
+        if (!planId || busy || !hasSelectedBook) return;
         setBusy(true);
         try {
             const started = await runStartSessionUseCase({
@@ -65,7 +77,11 @@ export function DueActionSheetScreen({ navigation, route }: any) {
             bookAuthor={bookAuthor}
             bookThumbnailUrl={bookThumbnailUrl}
             bookCoverSource={bookCoverSource}
+            hasSelectedBook={hasSelectedBook}
             onPressStart={onStart}
+            onPressResolveBook={() => {
+                navigation.navigate('Library');
+            }}
             onPressSnooze={async () => {
                 if (!planId || busy) return;
                 setBusy(true);

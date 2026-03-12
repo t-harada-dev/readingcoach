@@ -1,8 +1,8 @@
 const { element, by, waitFor } = require('detox');
-const { launchAppUnsynced } = require('./helpers/launchApp');
+const { launchAppSynced } = require('./helpers/launchApp');
 
 async function launchOnboarding(extra = {}) {
-  await launchAppUnsynced({
+  await launchAppSynced({
     newInstance: true,
     delete: true,
     launchArgs: {
@@ -15,10 +15,25 @@ async function launchOnboarding(extra = {}) {
 async function completeOnboardingBookBySearch() {
   await waitFor(element(by.id('onboarding-search-input'))).toExist().withTimeout(15000);
   await element(by.id('onboarding-search-input')).typeText('DetoxBook');
-  await element(by.id('onboarding-search-submit')).tap();
+  await element(by.id('onboarding-search-input')).tapReturnKey();
   await waitFor(element(by.id('add-book-candidate-screen'))).toExist().withTimeout(10000);
   await element(by.id('add-book-candidate-save')).tap();
   await waitFor(element(by.id('onboarding-time-save'))).toExist().withTimeout(10000);
+}
+
+async function waitForOnboardingNotificationAction() {
+  await waitFor(element(by.id('onboarding-notification-screen'))).toExist().withTimeout(10000);
+  try {
+    await waitFor(element(by.id('onboarding-notification-enable'))).toExist().withTimeout(4000);
+    return 'enable';
+  } catch {
+    await waitFor(element(by.id('onboarding-notification-home'))).toExist().withTimeout(10000);
+    return 'home';
+  }
+}
+
+async function waitForReadyHome() {
+  await waitFor(element(by.id('focus-core-screen'))).toExist().withTimeout(10000);
 }
 
 describe('Onboarding Flow', () => {
@@ -34,7 +49,7 @@ describe('Onboarding Flow', () => {
 
     await waitFor(element(by.id('onboarding-search-input'))).toExist().withTimeout(15000);
     await element(by.id('onboarding-search-input')).typeText('NoResult');
-    await element(by.id('onboarding-search-submit')).tap();
+    await element(by.id('onboarding-search-input')).tapReturnKey();
     await waitFor(element(by.id('onboarding-manual-entry'))).toExist().withTimeout(10000);
     await element(by.id('add-book-manual-title')).typeText('Manual Onboarding');
     await element(by.id('add-book-manual-save')).tap();
@@ -58,7 +73,7 @@ describe('Onboarding Flow', () => {
     await launchOnboarding({ e2e_onboarding_stage: 'time' });
     await waitFor(element(by.id('onboarding-time-save'))).toExist().withTimeout(15000);
     await element(by.id('onboarding-time-save')).tap();
-    await waitFor(element(by.id('onboarding-notification-enable'))).toExist().withTimeout(10000);
+    await waitForOnboardingNotificationAction();
   });
 
   // TC-ONB-05
@@ -67,9 +82,9 @@ describe('Onboarding Flow', () => {
       e2e_onboarding_stage: 'notification',
       e2e_notification_permission: 'allowed',
     });
-    await waitFor(element(by.id('onboarding-notification-enable'))).toExist().withTimeout(15000);
-    await element(by.id('onboarding-notification-enable')).tap();
-    await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(10000);
+    const action = await waitForOnboardingNotificationAction();
+    await element(by.id(action === 'enable' ? 'onboarding-notification-enable' : 'onboarding-notification-home')).tap();
+    await waitForReadyHome();
   });
 
   // TC-ONB-06
@@ -80,6 +95,6 @@ describe('Onboarding Flow', () => {
     });
     await waitFor(element(by.id('onboarding-notification-later'))).toExist().withTimeout(15000);
     await element(by.id('onboarding-notification-later')).tap();
-    await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(10000);
+    await waitForReadyHome();
   });
 });

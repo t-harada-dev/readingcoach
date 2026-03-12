@@ -6,8 +6,10 @@ import { LibraryView } from './LibraryView';
 
 type LibraryItem = BookDTO & { isFocus: boolean };
 
-export function LibraryScreen({ navigation }: any) {
+export function LibraryScreen({ navigation, route }: any) {
   const [books, setBooks] = useState<LibraryItem[]>([]);
+  const manualChangePlanDate = route?.params?.manualChangePlanDate as string | undefined;
+  const manualChangeCurrentBookId = route?.params?.manualChangeCurrentBookId as string | undefined;
 
   const refresh = useCallback(async () => {
     const today = toLocalISODateString(new Date());
@@ -42,6 +44,8 @@ export function LibraryScreen({ navigation }: any) {
       onPressBook={(bookId) =>
         navigation.navigate('BookDetail', {
           bookId,
+          manualChangePlanDate,
+          manualChangeCurrentBookId,
         })
       }
     />

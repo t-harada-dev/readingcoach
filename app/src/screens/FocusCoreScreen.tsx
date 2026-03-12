@@ -51,6 +51,7 @@ export function FocusCoreScreen({ navigation, route }: any) {
     const planDate = useMemo(() => (plan?.planDate ? plan.planDate : toLocalISODateString(new Date())), [plan]);
     const canManualChange = manualChangeCount < 1;
     const progressRatio = progressRatioForPlan(plan);
+    const hasSelectedBook = Boolean(plan?.bookId && book && book.id === plan.bookId);
 
     const policy = useMemo(
         () =>
@@ -107,16 +108,18 @@ export function FocusCoreScreen({ navigation, route }: any) {
 
     const onPressChangeBook = () => {
         if (!plan || !canManualChange) return;
-        navigation.navigate('FocusBookPicker', {
-            planId: plan.planId,
-            planDate: plan.planDate,
-            scheduledAt: plan.scheduledAt,
-            currentBookId: plan.bookId,
+        navigation.navigate('Library', {
+            manualChangePlanDate: plan.planDate,
+            manualChangeCurrentBookId: plan.bookId,
         });
     };
 
+    const onPressResolveBook = () => {
+        navigation.navigate('Library');
+    };
+
     const startSession = async (mode: SessionMode) => {
-        if (!plan || starting) return;
+        if (!plan || !hasSelectedBook || starting) return;
         setStarting(mode);
         try {
             const result = await runStartSessionUseCase({
@@ -168,7 +171,14 @@ export function FocusCoreScreen({ navigation, route }: any) {
         if (plan.state === 'due') return;
         if (skipRestartOnce) return;
         if (policy.screenId !== 'SC-07') return;
-        navigation.navigate('RestartRecovery', { planId: plan.planId, planDate: plan.planDate });
+        navigation.navigate('RestartRecovery', {
+            planId: plan.planId,
+            planDate: plan.planDate,
+            bookId: book?.id,
+            bookTitle: book?.title,
+            bookThumbnailUrl: book?.thumbnailUrl,
+            bookCoverSource: book?.coverSource ?? (book?.thumbnailUrl ? 'google_books' : 'placeholder'),
+        });
     }, [policy.screenId, init.status, loading, navigation, plan, skipRestartOnce]);
 
     const dailyQuote = useMemo(() => dailyPerformanceMentorQuote(planDate), [planDate]);
@@ -179,6 +189,7 @@ export function FocusCoreScreen({ navigation, route }: any) {
     const viewProps: FocusCoreViewProps = {
         book,
         plan,
+        hasSelectedBook,
         loading,
         initStatus: init.status,
         canManualChange,
@@ -189,6 +200,7 @@ export function FocusCoreScreen({ navigation, route }: any) {
         intentCopy,
         startingMode: starting,
         onPressChangeBook,
+        onPressResolveBook,
         onPressPrimaryCTA: () => {
             void startSession(mainMode);
         },

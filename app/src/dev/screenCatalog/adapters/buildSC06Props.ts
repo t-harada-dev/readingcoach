@@ -1,18 +1,10 @@
 import type { FocusCoreViewProps } from '../../../screens/FocusCoreView';
 import { fixtureBooks } from '../fixtures/books';
-import { scenarioFixtures } from '../fixtures/scenarios';
+import { scenarioFixtures, type CoreMockScenario } from '../fixtures/scenarios';
 import type { MockScenario } from '../types';
 
-export function buildSC06Props(scenario: MockScenario): FocusCoreViewProps {
-    const normalizedScenario =
-        scenario === 'normal' ||
-        scenario === 'long_absence' ||
-        scenario === 'due' ||
-        scenario === 'empty' ||
-        scenario === 'no_cover' ||
-        scenario === 'cover_removed'
-            ? 'rehab'
-            : scenario;
+export function buildSC06Props(_scenario: MockScenario): FocusCoreViewProps {
+    const normalizedScenario: CoreMockScenario = 'rehab';
     const fixture = scenarioFixtures[normalizedScenario];
     const book = fixtureBooks[fixture.bookKey];
     const intentCopy = '3日空いても大丈夫。今日は短くても、読書を再開できれば十分です。';
@@ -20,6 +12,7 @@ export function buildSC06Props(scenario: MockScenario): FocusCoreViewProps {
     return {
         book,
         plan: { ...fixture.plan, state: 'scheduled' },
+        hasSelectedBook: true,
         loading: false,
         initStatus: 'ready',
         canManualChange: false,
@@ -30,6 +23,7 @@ export function buildSC06Props(scenario: MockScenario): FocusCoreViewProps {
         intentCopy,
         startingMode: null,
         onPressChangeBook: () => {},
+        onPressResolveBook: () => {},
         onPressPrimaryCTA: () => {},
         onPressSecondaryCTA: () => {},
         onPressRehabCTA: () => {},

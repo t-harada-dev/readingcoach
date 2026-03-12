@@ -70,6 +70,10 @@
 
 1. **`detoxEnableSynchronization=0` は全スイート一律適用にしない**: `due-action-sheet` / `home.session-start` ではタップ不可・モーダル遷移の不安定化が再現したため、起動helperは共通化しつつ suite ごとに synced/unsynced を選ぶ。
 
+## Detox タップ安定化（ScrollView）
+
+1. **`toExist()` だけでタップしない**: ScrollView 内の要素は存在していても画面外にあることがあり、`View is not hittable` につながる。`toBeVisible()` と必要最小限の `scroll()` をセットで使う。
+
 ## FocusCore の導線回帰防止
 
 1. **モーダル表示中でも親画面を `null` で潰さない**: `presentation: 'modal'` を使う画面で親を空描画にすると、戻る操作で空画面に落ちる経路が発生する。

@@ -3,8 +3,13 @@ import type { SessionMode } from '../../../useCases/StartSessionUseCase';
 import { fixtureBooks } from './books';
 import type { MockScenario } from '../types';
 
+export type CoreMockScenario = Extract<
+    MockScenario,
+    'normal' | 'rehab' | 'long_absence' | 'due' | 'empty' | 'no_cover' | 'cover_removed'
+>;
+
 type ScenarioFixture = {
-    scenario: MockScenario;
+    scenario: CoreMockScenario;
     continuousMissedDays: number;
     heavyDaySignal: boolean;
     notificationsAllowed: boolean;
@@ -23,7 +28,7 @@ const basePlan = {
     consistencyCredit: false,
 } as const;
 
-export const scenarioFixtures: Record<MockScenario, ScenarioFixture> = {
+export const scenarioFixtures: Record<CoreMockScenario, ScenarioFixture> = {
     normal: {
         scenario: 'normal',
         continuousMissedDays: 0,

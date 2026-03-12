@@ -72,7 +72,7 @@ describe('CompletionScreen', () => {
       })
     );
 
-    expect(ctaCalls.map((c) => c.label)).toEqual(['もう 5 分やる', 'もう 15 分やる', '読了した', '閉じる / ホームへ戻る']);
+    expect(ctaCalls.map((c) => c.label)).toEqual(['もう 5 分やる', 'もう 15 分やる', '読み終わった', '閉じる / ホームへ戻る']);
   });
 
   it('先頭CTAで rescue_5m 開始になる', async () => {
@@ -122,7 +122,7 @@ describe('CompletionScreen', () => {
       })
     );
 
-    const finished = ctaCalls.find((c) => c.label === '読了した');
+    const finished = ctaCalls.find((c) => c.label === '読み終わった');
     expect(finished).toBeTruthy();
 
     await finished?.onPress();

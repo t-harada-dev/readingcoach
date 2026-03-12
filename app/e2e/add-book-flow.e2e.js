@@ -1,8 +1,8 @@
 const { element, by, waitFor } = require('detox');
-const { launchAppUnsynced } = require('./helpers/launchApp');
+const { launchAppSynced } = require('./helpers/launchApp');
 
 async function launchToLibrary(extra = {}) {
-  await launchAppUnsynced({
+  await launchAppSynced({
     newInstance: true,
     delete: true,
     launchArgs: extra,

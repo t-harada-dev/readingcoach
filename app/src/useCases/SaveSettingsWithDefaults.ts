@@ -28,4 +28,3 @@ export async function saveSettingsWithDefaults(
   await persistenceBridge.saveSettings(next);
   return next;
 }
-

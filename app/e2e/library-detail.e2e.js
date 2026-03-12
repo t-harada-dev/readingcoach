@@ -3,8 +3,19 @@ const { launchAppUnsynced } = require('./helpers/launchApp');
 
 async function launchToLibrary() {
   await launchAppUnsynced({ newInstance: true, delete: true });
-  await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(15000);
-  await element(by.id('focus-core-change-book')).tap();
+  await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(15000);
+
+  for (let i = 0; i < 3; i += 1) {
+    await element(by.id('focus-core-change-book')).tap();
+    try {
+      await waitFor(element(by.id('library-screen'))).toBeVisible().withTimeout(2500);
+      break;
+    } catch {
+      // Retry to absorb occasional unsynced tap drops on simulator.
+    }
+  }
+
+  await waitFor(element(by.id('library-screen'))).toBeVisible().withTimeout(10000);
   await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
 }
 
@@ -22,6 +33,16 @@ async function openBookDetail(rowId) {
 }
 
 async function focusFromDetail() {
+  for (let i = 0; i < 5; i += 1) {
+    try {
+      await waitFor(element(by.id('book-detail-focus'))).toBeVisible().withTimeout(1200);
+      break;
+    } catch {
+      await element(by.id('book-detail-screen')).scroll(220, 'down');
+    }
+  }
+  await waitFor(element(by.id('book-detail-focus'))).toBeVisible().withTimeout(10000);
+
   for (let i = 0; i < 2; i += 1) {
     await element(by.id('book-detail-focus')).tap();
     try {

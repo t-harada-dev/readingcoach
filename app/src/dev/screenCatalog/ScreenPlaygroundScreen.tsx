@@ -5,25 +5,19 @@ import { appTheme } from '../../theme/layout';
 import { DevNotice } from './components/DevNotice';
 import { ScenarioPicker } from './components/ScenarioPicker';
 import { screenCatalogManifest } from './screenCatalogManifest';
+import { scenarioRegistry } from './scenarioRegistry';
 import { screenRegistry, getScreenRegistryItem } from './screenRegistry';
 import type { MockScenario, ScreenId } from './types';
 
 const screenIdSet = new Set<ScreenId>(screenCatalogManifest.map((item) => item.screenId));
+const scenarioSet = new Set<MockScenario>(scenarioRegistry.map((item) => item.scenario));
 
 function isScreenId(value: unknown): value is ScreenId {
     return typeof value === 'string' && screenIdSet.has(value as ScreenId);
 }
 
 function isScenario(value: unknown): value is MockScenario {
-    return (
-        value === 'normal' ||
-        value === 'rehab' ||
-        value === 'long_absence' ||
-        value === 'due' ||
-        value === 'empty' ||
-        value === 'no_cover' ||
-        value === 'cover_removed'
-    );
+    return typeof value === 'string' && scenarioSet.has(value as MockScenario);
 }
 
 export function ScreenPlaygroundScreen({ navigation, route }: any) {
@@ -33,29 +27,24 @@ export function ScreenPlaygroundScreen({ navigation, route }: any) {
     const [showDetails, setShowDetails] = useState(false);
 
     useEffect(() => {
-        if (isScreenId(params.screenId)) {
-            setScreenId(params.screenId);
-        }
-    }, [params.screenId]);
-
-    const currentScreen = useMemo(() => getScreenRegistryItem(screenId), [screenId]);
-
-    useEffect(() => {
-        if (isScenario(params.scenario) && currentScreen.supportedScenarios.includes(params.scenario)) {
+        if (!isScreenId(params.screenId)) return;
+        const nextScreen = getScreenRegistryItem(params.screenId);
+        setScreenId(params.screenId);
+        if (isScenario(params.scenario) && nextScreen.supportedScenarios.includes(params.scenario)) {
             setScenario(params.scenario);
             return;
         }
-        if (!currentScreen.supportedScenarios.includes(scenario)) {
-            setScenario(currentScreen.defaultScenario);
-        }
-    }, [currentScreen, params.scenario, scenario]);
+        setScenario(nextScreen.defaultScenario);
+    }, [params.scenario, params.screenId]);
+
+    const currentScreen = useMemo(() => getScreenRegistryItem(screenId), [screenId]);
 
     return (
         <View testID="screen-playground-screen" style={styles.screen}>
             <View style={styles.content}>
             <DevNotice compact={true} />
             <View style={styles.summaryRow}>
-                <Text style={styles.summaryText}>
+                <Text testID="playground-summary" style={styles.summaryText}>
                     {currentScreen.screenId} / {scenario}
                 </Text>
                 <View style={styles.summaryActions}>
@@ -94,7 +83,9 @@ export function ScreenPlaygroundScreen({ navigation, route }: any) {
                 </View>
             ) : null}
 
-            <View style={styles.previewCard}>{currentScreen.render(scenario)}</View>
+            <View testID={`playground-preview-${currentScreen.screenId}-${scenario}`} style={styles.previewCard}>
+                {currentScreen.render(scenario)}
+            </View>
             </View>
         </View>
     );

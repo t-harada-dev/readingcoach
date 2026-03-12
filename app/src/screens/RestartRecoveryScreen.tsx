@@ -12,17 +12,23 @@ import { RestartRecoveryView } from './RestartRecoveryView';
 type Params = {
     planId?: string;
     planDate?: string;
+    bookId?: string;
+    bookTitle?: string;
+    bookThumbnailUrl?: string;
+    bookCoverSource?: 'manual' | 'google_books' | 'placeholder';
 };
 
 export function RestartRecoveryScreen({ navigation, route }: any) {
-    const { planId, planDate } = (route.params ?? {}) as Params;
+    const { planId, planDate, bookId, bookTitle, bookThumbnailUrl, bookCoverSource } = (route.params ?? {}) as Params;
     const [busy, setBusy] = useState(false);
     const [errorText, setErrorText] = useState<string | null>(null);
 
     const targetDate = useMemo(() => planDate ?? toLocalISODateString(new Date()), [planDate]);
+    const hasSelectedBook = Boolean(bookId);
 
     const startIgnition = async () => {
         if (busy) return;
+        if (!hasSelectedBook) return;
         setBusy(true);
         setErrorText(null);
         try {
@@ -52,10 +58,14 @@ export function RestartRecoveryScreen({ navigation, route }: any) {
     return (
         <RestartRecoveryView
             busy={busy}
+            hasSelectedBook={hasSelectedBook}
             errorText={errorText}
+            bookTitle={bookTitle}
+            bookThumbnailUrl={bookThumbnailUrl}
+            bookCoverSource={bookCoverSource}
             onPressStartIgnition={startIgnition}
-            onPressChangeTime={() => navigation.navigate('TimeChange')}
-            onPressClose={() => navigation.navigate('FocusCore', { skipRestartOnce: true })}
+            onPressChangeTime={() => navigation.navigate('Settings')}
+            onPressChangeBook={() => navigation.navigate('Library')}
         />
     );
 }

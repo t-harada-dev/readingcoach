@@ -21,7 +21,6 @@ import { AddBookScreen } from './src/screens/AddBookScreen';
 import { BookDetailScreen } from './src/screens/BookDetailScreen';
 import { CompletionScreen } from './src/screens/CompletionScreen';
 import { DueActionSheetScreen } from './src/screens/DueActionSheetScreen';
-import { FocusBookPickerScreen } from './src/screens/FocusBookPickerScreen';
 import { FocusCoreScreen } from './src/screens/FocusCoreScreen';
 import { LibraryScreen } from './src/screens/LibraryScreen';
 import { NextFocusNominationScreen } from './src/screens/NextFocusNominationScreen';
@@ -31,6 +30,7 @@ import { ProgressTrackingPromptScreen } from './src/screens/ProgressTrackingProm
 import { ProgressTrackingSetupScreen } from './src/screens/ProgressTrackingSetupScreen';
 import { ReserveScreen } from './src/screens/ReserveScreen';
 import { RestartRecoveryScreen } from './src/screens/RestartRecoveryScreen';
+import { SettingsScreen } from './src/screens/SettingsScreen';
 import { TimeChangeScreen } from './src/screens/TimeChangeScreen';
 
 const Stack = createNativeStackNavigator();
@@ -102,11 +102,6 @@ export default function App() {
                                 options={{ title: copy.navigation.focusCoreTitle, headerLargeTitle: false }}
                             />
                             <Stack.Screen
-                                name="FocusBookPicker"
-                                component={FocusBookPickerScreen}
-                                options={{ title: copy.navigation.focusBookPickerTitle }}
-                            />
-                            <Stack.Screen
                                 name="ActiveSession"
                                 component={ActiveSessionScreen}
                                 options={{ title: copy.navigation.activeSessionTitle }}
@@ -130,6 +125,16 @@ export default function App() {
                                 name="TimeChange"
                                 component={TimeChangeScreen}
                                 options={{ title: copy.navigation.timeChangeTitle }}
+                            />
+                            <Stack.Screen
+                                name="NotificationSettings"
+                                component={SettingsScreen}
+                                options={{ title: copy.navigation.settingsTitle }}
+                            />
+                            <Stack.Screen
+                                name="Settings"
+                                component={SettingsScreen}
+                                options={{ title: copy.navigation.settingsTitle }}
                             />
                             <Stack.Screen
                                 name="ProgressTrackingPrompt"

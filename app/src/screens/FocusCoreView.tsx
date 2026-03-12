@@ -22,6 +22,7 @@ const TEXT = '#2C2C2C';
 export type FocusCoreViewProps = {
     book: BookDTO | null;
     plan: DailyExecutionPlanDTO | null;
+    hasSelectedBook: boolean;
     loading: boolean;
     initStatus: 'booting' | 'ready' | 'error';
     canManualChange: boolean;
@@ -32,6 +33,7 @@ export type FocusCoreViewProps = {
     intentCopy: string;
     startingMode: SessionMode | null;
     onPressChangeBook: () => void;
+    onPressResolveBook: () => void;
     onPressPrimaryCTA: () => void;
     onPressSecondaryCTA: () => void;
     onPressRehabCTA: () => void;
@@ -40,6 +42,7 @@ export type FocusCoreViewProps = {
 export function FocusCoreView({
     book,
     plan,
+    hasSelectedBook,
     loading,
     initStatus,
     canManualChange,
@@ -50,6 +53,7 @@ export function FocusCoreView({
     intentCopy,
     startingMode,
     onPressChangeBook,
+    onPressResolveBook,
     onPressPrimaryCTA,
     onPressSecondaryCTA,
     onPressRehabCTA,
@@ -61,81 +65,101 @@ export function FocusCoreView({
             contentContainerStyle={styles.container}
             keyboardShouldPersistTaps="handled"
         >
-            <View testID="focus-core-screen">
-                <Text style={styles.headerMessage}>{copy.focusCore.headerMessage}</Text>
+            <View testID="focus-core-screen" style={styles.screenBody}>
+                <View>
+                    <Text style={styles.headerMessage}>{copy.focusCore.headerMessage}</Text>
 
-                <View style={styles.card}>
-                    <View style={styles.coverWrap}>
-                        {book?.thumbnailUrl ? (
-                            <Image
-                                source={{ uri: book.thumbnailUrl }}
-                                style={styles.cover}
-                                resizeMode="cover"
-                            />
-                        ) : (
-                            <View style={styles.coverPlaceholder}>
-                                <Text style={styles.coverPlaceholderText} numberOfLines={3}>
-                                    {book?.title ?? copy.focusCore.coverFallbackTitle}
+                    <View style={styles.card}>
+                        <View style={styles.coverWrap}>
+                            {book?.thumbnailUrl ? (
+                                <Image
+                                    source={{ uri: book.thumbnailUrl }}
+                                    style={styles.cover}
+                                    resizeMode="cover"
+                                />
+                            ) : (
+                                <View style={styles.coverPlaceholder}>
+                                    <Text style={styles.coverPlaceholderText} numberOfLines={3}>
+                                        {book?.title ?? copy.focusCore.coverFallbackTitle}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+
+                        <View style={styles.progressTrack}>
+                            <View style={[styles.progressFill, { width: `${Math.round(progressRatio * 100)}%` }]} />
+                        </View>
+
+                        {book?.title ? (
+                            <>
+                                <Text testID="focus-core-book-title" style={styles.bookTitle} numberOfLines={2}>
+                                    {book.title}
                                 </Text>
-                            </View>
-                        )}
+                                {book.author ? (
+                                    <Text style={styles.bookAuthor} numberOfLines={1}>
+                                        {book.author}
+                                    </Text>
+                                ) : null}
+                            </>
+                        ) : null}
+
+                        {hasSelectedBook && plan && canManualChange ? (
+                            <TouchableOpacity testID="focus-core-change-book" style={styles.ghostLink} onPress={onPressChangeBook}>
+                                <Text style={styles.ghostLinkText}>{copy.focusCore.changeBookLink}</Text>
+                            </TouchableOpacity>
+                        ) : null}
                     </View>
-
-                    <View style={styles.progressTrack}>
-                        <View style={[styles.progressFill, { width: `${Math.round(progressRatio * 100)}%` }]} />
-                    </View>
-
-                    {book?.title ? (
-                        <>
-                            <Text testID="focus-core-book-title" style={styles.bookTitle} numberOfLines={2}>
-                                {book.title}
-                            </Text>
-                            {book.author ? (
-                                <Text style={styles.bookAuthor} numberOfLines={1}>
-                                    {book.author}
-                                </Text>
-                            ) : null}
-                        </>
-                    ) : null}
-
-                    {plan && canManualChange ? (
-                        <TouchableOpacity testID="focus-core-change-book" style={styles.ghostLink} onPress={onPressChangeBook}>
-                            <Text style={styles.ghostLinkText}>{copy.focusCore.changeBookLink}</Text>
-                        </TouchableOpacity>
-                    ) : null}
                 </View>
 
                 <View style={styles.menu}>
                     <Text style={styles.intentCopy}>{intentCopy}</Text>
-
-                    <TouchableOpacity
-                        testID="focus-core-primary-cta"
-                        style={[styles.mainBtn, startingMode ? styles.btnDisabled : null]}
-                        onPress={onPressPrimaryCTA}
-                        disabled={startingMode !== null || loading || !plan}
-                    >
-                        <Text style={styles.mainBtnText}>{sessionModeLabel(mainMode)}</Text>
-                    </TouchableOpacity>
-
-                    {subMode ? (
-                        <TouchableOpacity
-                            testID="focus-core-secondary-cta"
-                            style={[styles.subBtn, startingMode ? styles.btnDisabled : null]}
-                            onPress={onPressSecondaryCTA}
-                            disabled={startingMode !== null || loading || !plan}
-                        >
-                            <Text style={styles.subBtnText}>{sessionModeLabel(subMode)}</Text>
-                        </TouchableOpacity>
+                    {!hasSelectedBook ? (
+                        <>
+                            <Text testID="focus-core-no-book-warning" style={styles.warningText}>
+                                {copy.focusCore.noBookSelected}
+                            </Text>
+                            <TouchableOpacity
+                                testID="focus-core-resolve-book"
+                                style={styles.resolveLink}
+                                onPress={onPressResolveBook}
+                            >
+                                <Text style={styles.resolveLinkText}>{copy.focusCore.resolveBookLink}</Text>
+                            </TouchableOpacity>
+                        </>
                     ) : null}
-                    {rehabMode ? (
-                        <TouchableOpacity
-                            testID="focus-core-rehab-cta"
-                            style={[styles.subBtn, startingMode ? styles.btnDisabled : null]}
-                            onPress={onPressRehabCTA}
-                            disabled={startingMode !== null || loading || !plan}
-                        >
-                            <Text style={styles.subBtnText}>{sessionModeLabel(rehabMode)}</Text>
-                        </TouchableOpacity>
+
+                    {hasSelectedBook ? (
+                        <>
+                            <TouchableOpacity
+                                testID="focus-core-primary-cta"
+                                style={[styles.mainBtn, startingMode ? styles.btnDisabled : null]}
+                                onPress={onPressPrimaryCTA}
+                                disabled={startingMode !== null || loading || !plan || !hasSelectedBook}
+                            >
+                                <Text style={styles.mainBtnText}>{sessionModeLabel(mainMode)}</Text>
+                            </TouchableOpacity>
+
+                            {subMode ? (
+                                <TouchableOpacity
+                                    testID="focus-core-secondary-cta"
+                                    style={[styles.subBtn, startingMode ? styles.btnDisabled : null]}
+                                    onPress={onPressSecondaryCTA}
+                                    disabled={startingMode !== null || loading || !plan || !hasSelectedBook}
+                                >
+                                    <Text style={styles.subBtnText}>{sessionModeLabel(subMode)}</Text>
+                                </TouchableOpacity>
+                            ) : null}
+                            {rehabMode ? (
+                                <TouchableOpacity
+                                    testID="focus-core-rehab-cta"
+                                    style={[styles.subBtn, startingMode ? styles.btnDisabled : null]}
+                                    onPress={onPressRehabCTA}
+                                    disabled={startingMode !== null || loading || !plan || !hasSelectedBook}
+                                >
+                                    <Text style={styles.subBtnText}>{sessionModeLabel(rehabMode)}</Text>
+                                </TouchableOpacity>
+                            ) : null}
+                        </>
                     ) : null}
 
                     {loading || initStatus === 'booting' ? (
@@ -166,6 +190,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
         paddingTop: 18,
         paddingBottom: 24,
+    },
+    screenBody: {
+        flex: 1,
+        justifyContent: 'space-between',
     },
     headerMessage: {
         color: '#6B7280',
@@ -224,6 +252,9 @@ const styles = StyleSheet.create({
     ghostLinkText: { color: '#6B7280', fontSize: 13, textDecorationLine: 'underline' },
     menu: { marginTop: 18 },
     intentCopy: { color: TEXT, fontSize: 14, lineHeight: 22, marginBottom: 14 },
+    warningText: { color: '#B91C1C', fontSize: 13, lineHeight: 20, marginBottom: 8 },
+    resolveLink: { alignSelf: 'flex-start', paddingVertical: 4, marginBottom: 8 },
+    resolveLinkText: { color: '#6B7280', fontSize: 13, textDecorationLine: 'underline' },
     mainBtn: {
         backgroundColor: AMBER,
         borderRadius: 20,
