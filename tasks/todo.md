@@ -1,5 +1,56 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-13: TEST_PLAN再基準化 + 未完了クローズ
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `TEST_PLAN.md` を現行実装ベースへ更新（完了/N/A/運用完了の明記 + 完了エビデンス追加）
+- [x] `app-check.yml` を `check` + `e2e-ios` の2ジョブへ更新（Detox artifact収集を含む）
+- [x] `cd app && npm run check` を実行し、`exit code 0` を確認する
+- [ ] `cd app && npm run e2e:test:ios` を実行し、`exit code 0` かつ failed 0 を確認する
+  - [x] 事前ビルドなし実行: `exit code 1`（バイナリ未生成）
+  - [x] `cd app && npm run e2e:build:ios`: `exit code 0`
+  - [ ] 再実行: `exit code 1`（32 suites 中 3 suites fail: `restart-recovery`, `onboarding-flow`, `focus-book-picker`）
+  - [ ] 失敗3スイート再実行: `exit code 1`（`onboarding-flow` は pass、`restart-recovery`/`focus-book-picker` は再現）
+
+## 2026-03-13: surface:os SF-01/02 失敗収束（続行）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `SurfaceOS01/02` 失敗時に `app.debugDescription` を failure message に出す
+- [x] 失敗ログから現在画面を確定し、`surface_snapshot` 遷移条件の原因を特定する
+- [x] 必要最小限の修正を適用し、`cd app && npm run e2e:capture:surface:os` が `exit code 0` になるまで再検証する
+  - [x] `cd app && npm run e2e:capture:surface:os`（exit code 0, `SurfaceOSPlacementUITests` 5 tests / failure 0）
+
+## 2026-03-13: XCUIビルド失敗修正（ExpoImagePicker / ExpoModulesCore 不整合）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] 原因を依存関係で確定する（`expo-image-picker` が Expo SDK と整合しているか）
+- [x] `package.json` の `expo-image-picker` を SDK 同梱推奨版へ修正する
+- [x] `npm install` と `pod install` を再実行して Pods を再生成する
+- [x] XCUI short を再実行してビルド通過を確認し、結果（exit code / failure件数）を記録する
+  - [x] `cd app && npm install`（exit code 0）
+  - [x] `cd app/ios && pod install`（exit code 0）
+  - [x] `cd app && npm run e2e:xcui:permission:short` 初回（exit code 65, build fail: `addUIInterruptionMonitor` scope）
+  - [x] `cd app && npm run e2e:xcui:permission:short` 2回目（exit code 65, 3 tests 中 2 fail）
+  - [x] `cd app && npm run e2e:xcui:permission:short` 3回目（exit code 65, 3 tests 中 1 fail）
+  - [x] `cd app && npm run e2e:xcui:permission:short` 最終（exit code 0, 3 tests passed / failed 0）
+
+## 2026-03-13: XCUI 次フェーズ実行（permission full + surface-os）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `cd app && npm run e2e:xcui:permission:full` を実行し、8ケースの成否を記録する
+- [x] 失敗があれば `.xcresult` から原因を特定して修正する
+- [x] `cd app && npm run e2e:capture:surface:os` を実行し、Widget/Intent 実OS配置スクショ生成を確認する
+- [x] 最終結果（exit code / pass-fail / 生成物）を記録する
+  - [x] `cd app && npm run e2e:capture:surface:os`（exit code 0, 5 tests passed / failed 0, artifacts: `artifacts/surface-os/2026-03-13T08-43-09Z`）
+
+## 2026-03-13: Surface Snapshot 起動引数ルート安定化
+
+- [x] `e2e_surface_snapshot` の起動引数経路を確認し、失敗点を特定する
+- [x] 初回コールドスタートでも `e2e_*` 引数を取りこぼさないようブリッジ取得を修正する
+- [x] `cd app && npm run e2e:capture:surface:os` を再実行して SF-01/02 を再検証する（複数回実行、毎回 exit code 65）
+- [x] 生成物と終了コードを記録して todo をクローズする
+  - [x] 収束後: `SurfaceOS01/02/03/04/05` すべて pass（exit code 0）
+
 ## 2026-03-13: リファクタリング6フェーズ実行計画（Navigation/Hook/Theme/Bridge/View分離/小整理）
 
 - [x] `tasks/lessons.md` を確認してから着手する
@@ -609,3 +660,41 @@
 - [x] P1対応: `plan.state === due` 時にホーム本体を `null` にしない（空画面回避）
 - [x] P2対応: `本を変える` 導線で手動変更回数カウントの契約を維持（`FocusBookPicker` 経由へ戻す）
 - [x] 回帰確認: `npm run typecheck` と `npm test`
+
+## 2026-03-13: TEST_PLAN.md 完遂（condescending-merkle）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [ ] 対象差分の棚卸し（既存E2E/スナップショット/ユニットとの重複確認）
+- [ ] Phase 1: 現行テスト実行（`npm run test`, `npm run typecheck`, `npm run e2e:build:ios`, `npm run e2e:test:ios`）
+- [ ] Phase 3: 不足 `testID` の補完（Reserve/TimeChange/FocusBookPicker/RestartRecovery）
+- [ ] Phase 2: 未カバーE2E 4ファイル追加（reserve/time-change/focus-book-picker/restart-recovery）
+- [ ] Phase 4: スナップショット基盤の不足分整備（targets/suites/capture導線）
+- [ ] Phase 5: 不足ユニットテスト追加（TimeChange/Reserve）
+- [ ] Phase 6: CI統合（必要差分が残る場合のみ workflow 更新）
+- [ ] 追加・既存テストの実行結果をログと終了コード付きで記録
+- [ ] セルフレビュー（回帰・命名規則・運用整合）
+
+### 進捗更新（2026-03-13 14:26 JST）
+
+- [x] Phase 1: `npm run test` / `npm run typecheck` / `npm run e2e:build:ios` 実施
+- [x] 既存失敗の一部修正: `onboarding-flow`, `addbook-snapshots` のtestID追従
+- [x] Phase 3: `Reserve` / `TimeChange` / `RestartRecovery` の testID 補完（実装）
+- [x] Phase 2: 新規E2E 4ファイル追加（`reserve-flow`, `time-change`, `focus-book-picker`, `restart-recovery`）
+- [x] Phase 5: ユニットテスト追加（`ReserveScreen.test.ts`, `TimeChangeScreen.test.ts`）
+- [ ] Phase 2/4 の最終収束確認（Detox `waitForActive` 長時間ハングにより未完了）
+- [ ] Phase 6: CI統合（今回未着手）
+
+## 2026-03-13: Detox + XCUITest 再計画 実装（通知8ケース + surface-os capture）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] Detox起動の既定権限を `notifications=NO` へ統一
+- [x] XCUI `NotificationPermissionUITests` 追加（8ケース）
+- [x] XCUI `SurfaceOSPlacementUITests` 追加（widget/intent capture導線）
+- [x] `scripts/capture-surface-os.sh` 追加
+- [x] `package.json` scripts 更新（`e2e:capture:surface:os`, `e2e:capture:docs` 統合）
+- [x] 実行手順書へハング復旧手順を追記
+- [x] 検証実行（typecheck + unit + XCUI script dry run相当）
+- [x] 結果と未解決事項を記録
+  - [x] `cd app && npm run test`（exit code 0, 42 files / 118 tests passed）
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm run e2e:xcui:permission:short`（exit code 0, `appUITests target not found; skipping`）

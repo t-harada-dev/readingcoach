@@ -28,6 +28,17 @@ npm run e2e:artifacts:prune
 - `artifacts/` 配下を新しい順で 10 件だけ残し、古い run を削除
 - `e2e:test:ios` / `e2e:capture:flows` / `e2e:capture:docs` 実行時にも自動で実行
 
+### `waitForActive` ハング時の復旧手順
+
+```bash
+xcrun simctl terminate booted com.anonymous.app || true
+xcrun simctl shutdown booted || true
+xcrun simctl boot "iPhone 17 Pro Max"
+```
+
+- 上記実行後に対象スイートを個別実行し、最後に `npm run e2e:test:ios` を再実行
+- 通知許可ポップアップ検証は Detox ではなく XCUI 側を使用する
+
 ### ビルド
 
 ```bash
@@ -46,7 +57,7 @@ npm run e2e:test:ios
 # target / manifest 整合チェック
 npm run e2e:snapshot:manifest:check
 
-# SC(Detox) + SF(native capture)
+# SC(Detox) + SF(native capture) + surface-os(widget/intent)
 npm run e2e:capture:docs
 
 # docs/screen-spec/assets へ正本同期
@@ -57,6 +68,23 @@ npm run docs:screen-spec:refresh
 
 ```bash
 npm run e2e:capture:flows
+```
+
+### native surface（OS配置キャプチャ）
+
+```bash
+npm run e2e:capture:sf:native
+npm run e2e:capture:surface:os
+```
+
+### XCUI（通知権限）
+
+```bash
+# PR向け短縮セット（1,2,3）
+npm run e2e:xcui:permission:short
+
+# Nightly / release 前の全8ケース
+npm run e2e:xcui:permission:full
 ```
 
 ### デバッグログ付き実行

@@ -52,7 +52,11 @@ export function LibraryView({ books, onPressAddBook, onPressBook }: LibraryViewP
                   <Text style={styles.bookMeta}>{item.pageCount} ページ</Text>
                 ) : null}
               </View>
-              {item.isFocus ? <Text style={styles.focusBadge}>{copy.library.focusBadge}</Text> : null}
+              {item.isFocus ? (
+                <Text testID={`library-book-selected-label-${item.id}`} style={styles.focusBadge}>
+                  {copy.library.focusBadge}
+                </Text>
+              ) : null}
             </TouchableOpacity>
           )}
         />

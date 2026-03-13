@@ -2,8 +2,8 @@ import XCTest
 
 enum InterruptionHandling {
   @discardableResult
-  static func installSystemAlertMonitor() -> NSObjectProtocol {
-    addUIInterruptionMonitor(withDescription: "System Alerts") { alert in
+  static func installSystemAlertMonitor(on testCase: XCTestCase) -> NSObjectProtocol {
+    testCase.addUIInterruptionMonitor(withDescription: "System Alerts") { alert in
       let allow = alert.buttons["Allow"]
       if allow.exists {
         allow.tap()

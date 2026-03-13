@@ -7,15 +7,7 @@ import { runUpdateDailyTargetTimeUseCase } from '../useCases/UpdateDailyTargetTi
 import { appTheme } from '../theme/layout';
 import type { ScreenProps } from '../navigation/types';
 import { useAsyncEffect } from '../hooks/useAsyncEffect';
-
-function normalizeTimeField(raw: string, max: number): number | null {
-  if (raw.trim().length === 0) return null;
-  const value = Number(raw);
-  if (!Number.isFinite(value)) return null;
-  const normalized = Math.floor(value);
-  if (normalized < 0 || normalized > max) return null;
-  return normalized;
-}
+import { normalizeTimeField, TIME_CHANGE_PRESETS } from './timeChangeHelpers';
 
 export function TimeChangeScreen({ navigation }: ScreenProps<'TimeChange'>) {
   const [hourInput, setHourInput] = useState('22');
@@ -49,7 +41,7 @@ export function TimeChangeScreen({ navigation }: ScreenProps<'TimeChange'>) {
   };
 
   return (
-    <View style={styles.container}>
+    <View testID="time-change-screen" style={styles.container}>
       <Text style={styles.title}>{copy.timeChange.title}</Text>
       <Text style={styles.subtitle}>{copy.timeChange.subtitle}</Text>
 
@@ -79,6 +71,21 @@ export function TimeChangeScreen({ navigation }: ScreenProps<'TimeChange'>) {
         </View>
       </View>
       <Text style={styles.hint}>{copy.timeChange.hint}</Text>
+      <View style={styles.presets}>
+        {TIME_CHANGE_PRESETS.map((preset) => (
+          <SessionCTAButton
+            key={preset.label}
+            testID={`time-change-preset-${preset.hour}`}
+            tone="secondary"
+            label={preset.label}
+            onPress={() => {
+              setHourInput(String(preset.hour));
+              setMinuteInput(String(preset.minute).padStart(2, '0'));
+            }}
+            disabled={busy}
+          />
+        ))}
+      </View>
 
       <View style={styles.actions}>
         <SessionCTAButton
@@ -158,6 +165,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     marginTop: 8,
+  },
+  presets: {
+    marginTop: 12,
+    gap: 8,
   },
   actions: {
     marginTop: 'auto',

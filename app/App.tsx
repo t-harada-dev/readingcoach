@@ -35,10 +35,20 @@ import { NotificationSettingsScreen } from './src/screens/NotificationSettingsSc
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { isSurfaceSnapshotId, SurfaceSnapshotScreen } from './src/screens/SurfaceSnapshotScreen';
 import { TimeChangeScreen } from './src/screens/TimeChangeScreen';
-import type { RootStackParamList } from './src/navigation/types';
+import type { RootStackParamList, SurfaceSnapshotId } from './src/navigation/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
+function parseSurfaceSnapshotId(raw: string | null): SurfaceSnapshotId | null {
+    if (!raw) return null;
+    const normalized = raw.trim().toUpperCase();
+    if (isSurfaceSnapshotId(normalized)) return normalized;
+    const compact = normalized.match(/^SF[-_]?0([1-9])$/);
+    if (!compact) return null;
+    const converted = `SF-0${compact[1]}` as SurfaceSnapshotId;
+    return isSurfaceSnapshotId(converted) ? converted : null;
+}
 
 function InitialLaunchCoordinator({
     navigationRef,
@@ -69,19 +79,44 @@ function InitialLaunchCoordinator({
 
                 const enabled = enabledArg === '1';
                 const autoOpen = autoOpenArg === '1';
+                const snapshotId = parseSurfaceSnapshotId(surfaceSnapshot);
                 onCatalogFlags(enabled, autoOpen);
 
-                if (isSurfaceSnapshotId(surfaceSnapshot)) {
+                if (snapshotId) {
                     requestAnimationFrame(() => {
                         if (!navigationRef.isReady()) return;
-                        navigationRef.navigate('SurfaceSnapshot', { snapshotId: surfaceSnapshot });
+                        navigationRef.reset({
+                            index: 0,
+                            routes: [{ name: 'SurfaceSnapshot', params: { snapshotId } }],
+                        });
                     });
                     return;
                 }
 
-                if (openScreen === 'settings') {
+                if (
+                    openScreen === 'settings' ||
+                    openScreen === 'time_change' ||
+                    openScreen === 'reserve' ||
+                    openScreen === 'surface_snapshot'
+                ) {
                     requestAnimationFrame(() => {
                         if (!navigationRef.isReady()) return;
+                        if (openScreen === 'surface_snapshot') {
+                            if (!snapshotId) return;
+                            navigationRef.reset({
+                                index: 0,
+                                routes: [{ name: 'SurfaceSnapshot', params: { snapshotId } }],
+                            });
+                            return;
+                        }
+                        if (openScreen === 'time_change') {
+                            navigationRef.navigate('TimeChange');
+                            return;
+                        }
+                        if (openScreen === 'reserve') {
+                            navigationRef.navigate('Reserve');
+                            return;
+                        }
                         navigationRef.navigate('Settings');
                     });
                     return;

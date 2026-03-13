@@ -96,8 +96,18 @@ export function SurfaceSnapshotScreen({ route }: ScreenProps<'SurfaceSnapshot'>)
           {spec.ctaTertiary ? <Text style={styles.action}>{spec.ctaTertiary}</Text> : null}
         </View>
       </View>
-      <View testID={`surface-snapshot-ready-${snapshotId}`} />
-      <View testID="surface-snapshot-ready" />
+      <View
+        accessible
+        accessibilityLabel={`surface-snapshot-ready-${snapshotId}`}
+        testID={`surface-snapshot-ready-${snapshotId}`}
+        style={styles.readyMarker}
+      />
+      <View
+        accessible
+        accessibilityLabel="surface-snapshot-ready"
+        testID="surface-snapshot-ready"
+        style={styles.readyMarker}
+      />
     </View>
   );
 }
@@ -159,5 +169,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#F59E0B',
     borderColor: '#E08A00',
     color: '#FFFFFF',
+  },
+  readyMarker: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    right: 0,
+    bottom: 0,
+    opacity: 0.01,
   },
 });
