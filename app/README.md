@@ -30,3 +30,16 @@ cd app
 ```
 
 初回は `scripts/bootstrap-node.sh` が `.tools/` に Node を展開し、その後 `npm ci` と `npm run check`（test + typecheck）を実行する。
+
+## E2E（小画面 iPhone）
+
+小画面想定の E2E は launchArgs ではなく Detox の `device.type` を切り替えて実行する。
+
+```bash
+cd app
+npm run e2e:build:ios
+npm run e2e:test:ios:small
+```
+
+- 通常サイズ: `npm run e2e:test:ios`（`ios.sim.debug`）
+- 小画面: `npm run e2e:test:ios:small`（`ios.sim.small` = `iPhone SE (3rd generation)`）

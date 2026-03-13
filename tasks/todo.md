@@ -1,5 +1,28 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-13: 小画面iPhone E2Eセットアップ（ローカル専用）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] Detox 設定に小画面デバイス（`iPhone SE (3rd generation)`）を追加
+- [x] 小画面実行用 npm script（`e2e:test:ios:small`）を追加
+- [x] README に実行手順と `launchArgs` 非依存（`device.type` 切替）を明記
+- [x] 検証実行
+  - [x] `cd app && npx detox test -c ios.sim.small --listTests`（exit code 0）
+  - [x] `cd app && npm run e2e:build:ios`（exit code 0, BUILD SUCCEEDED）
+  - [x] `cd app && npm run e2e:test:ios:small`（exit code 0）
+
+## 2026-03-13: TEST_PLAN.md 完遂（未収束E2Eの収束 + エビデンス更新）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `TEST_PLAN.md` の完了条件を満たすための差分を特定（E2E失敗要因・CI要件・N/A整合）
+- [x] `restart-recovery` / `focus-book-picker` / `onboarding-flow` 周辺の実態を再確認し、現行スイートで `npm run e2e:test:ios` が安定実行されることを確認
+- [x] CI ワークフローを `check` + `e2e-ios` 必須運用へ更新
+- [x] 検証実行
+  - [x] `cd app && npm run check`（exit code 0, Vitest 30 files / 79 tests pass）
+  - [x] `cd app && npm run e2e:build:ios`（exit code 0, BUILD SUCCEEDED）
+  - [x] `cd app && npm run e2e:test:ios`（exit code 0, 17 suites / 50 tests failed 0）
+- [x] `TEST_PLAN.md` を実測値で更新し、未収束リスクを再評価してクローズ
+
 ## 2026-03-11: Batch 5 SUR-01〜10 実装（Surface / Widget / Notification / App Intents）
 
 - [x] 既存実装調査（launchArgs / e2e_state / reconcile / notification response）を完了し、最小変更方針を確定
