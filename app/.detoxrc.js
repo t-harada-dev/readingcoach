@@ -26,10 +26,20 @@ module.exports = {
         type: 'iPhone 17 Pro Max',
       },
     },
+    simulatorSmall: {
+      type: 'ios.simulator',
+      device: {
+        type: 'iPhone SE (3rd generation)',
+      },
+    },
   },
   configurations: {
     'ios.sim.debug': {
       device: 'simulator',
+      app: 'ios.debug',
+    },
+    'ios.sim.small': {
+      device: 'simulatorSmall',
       app: 'ios.debug',
     },
   },

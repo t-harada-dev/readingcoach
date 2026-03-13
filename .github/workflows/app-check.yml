@@ -45,6 +45,9 @@ jobs:
       - name: Install dependencies
         working-directory: app
         run: npm ci
+      - name: Install CocoaPods
+        working-directory: app/ios
+        run: pod install
       - name: Build iOS app for Detox
         working-directory: app
         run: npm run e2e:build:ios
