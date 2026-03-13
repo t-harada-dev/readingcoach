@@ -57,7 +57,8 @@ describe('SettingsScreen', () => {
   it('読書時間保存/通知有効化/戻るのCTAを表示する', () => {
     renderToStaticMarkup(
       React.createElement(SettingsScreen, {
-        navigation: { goBack: vi.fn() },
+        navigation: { goBack: vi.fn() } as any,
+        route: {} as any,
       })
     );
 
@@ -69,7 +70,8 @@ describe('SettingsScreen', () => {
   it('通知有効化で permission と settings 保存を呼ぶ', async () => {
     renderToStaticMarkup(
       React.createElement(SettingsScreen, {
-        navigation: { goBack: vi.fn() },
+        navigation: { goBack: vi.fn() } as any,
+        route: {} as any,
       })
     );
 
@@ -84,8 +86,8 @@ describe('SettingsScreen', () => {
   it('通知無効状態では無効化ボタンから通知取消を実行する', async () => {
     renderToStaticMarkup(
       React.createElement(SettingsScreen, {
-        navigation: { goBack: vi.fn() },
-        route: { params: { forceNotificationsEnabled: true } },
+        navigation: { goBack: vi.fn() } as any,
+        route: { params: { forceNotificationsEnabled: true } } as any,
       })
     );
 
@@ -100,7 +102,8 @@ describe('SettingsScreen', () => {
   it('読書時間保存で時刻更新ユースケースを呼ぶ', async () => {
     renderToStaticMarkup(
       React.createElement(SettingsScreen, {
-        navigation: { goBack: vi.fn() },
+        navigation: { goBack: vi.fn() } as any,
+        route: {} as any,
       })
     );
 

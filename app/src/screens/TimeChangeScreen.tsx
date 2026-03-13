@@ -5,6 +5,8 @@ import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
 import { runUpdateDailyTargetTimeUseCase } from '../useCases/UpdateDailyTargetTimeUseCase';
 import { appTheme } from '../theme/layout';
+import type { ScreenProps } from '../navigation/types';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
 
 function normalizeTimeField(raw: string, max: number): number | null {
   if (raw.trim().length === 0) return null;
@@ -15,24 +17,18 @@ function normalizeTimeField(raw: string, max: number): number | null {
   return normalized;
 }
 
-export function TimeChangeScreen({ navigation }: any) {
+export function TimeChangeScreen({ navigation }: ScreenProps<'TimeChange'>) {
   const [hourInput, setHourInput] = useState('22');
   const [minuteInput, setMinuteInput] = useState('00');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const settings = await persistenceBridge.getSettings();
-      if (!alive || !settings) return;
-      const hour = Math.floor(settings.dailyTargetTime / 60);
-      const minute = settings.dailyTargetTime % 60;
-      setHourInput(String(hour));
-      setMinuteInput(String(minute).padStart(2, '0'));
-    })();
-    return () => {
-      alive = false;
-    };
+  useAsyncEffect(async (signal) => {
+    const settings = await persistenceBridge.getSettings();
+    if (!signal.alive || !settings) return;
+    const hour = Math.floor(settings.dailyTargetTime / 60);
+    const minute = settings.dailyTargetTime % 60;
+    setHourInput(String(hour));
+    setMinuteInput(String(minute).padStart(2, '0'));
   }, []);
 
   const parsedHour = normalizeTimeField(hourInput, 23);

@@ -1,4 +1,4 @@
-import type { LibraryItem } from '../../../screens/LibraryView';
+import type { LibraryItem } from '../../../navigation/types';
 import { fixtureBooks } from './books';
 
 export const fixtureLibraryItems: LibraryItem[] = [

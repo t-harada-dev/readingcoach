@@ -31,19 +31,21 @@ import { ProgressTrackingPromptScreen } from './src/screens/ProgressTrackingProm
 import { ProgressTrackingSetupScreen } from './src/screens/ProgressTrackingSetupScreen';
 import { ReserveScreen } from './src/screens/ReserveScreen';
 import { RestartRecoveryScreen } from './src/screens/RestartRecoveryScreen';
+import { NotificationSettingsScreen } from './src/screens/NotificationSettingsScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { isSurfaceSnapshotId, SurfaceSnapshotScreen } from './src/screens/SurfaceSnapshotScreen';
 import { TimeChangeScreen } from './src/screens/TimeChangeScreen';
+import type { RootStackParamList } from './src/navigation/types';
 
-const Stack = createNativeStackNavigator();
-const navigationRef = createNavigationContainerRef();
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 function InitialLaunchCoordinator({
     navigationRef,
     navigationReady,
     onCatalogFlags,
 }: {
-    navigationRef: NavigationContainerRefWithCurrent<any>;
+    navigationRef: NavigationContainerRefWithCurrent<RootStackParamList>;
     navigationReady: boolean;
     onCatalogFlags: (enabled: boolean, autoOpen: boolean) => void;
 }) {
@@ -72,7 +74,7 @@ function InitialLaunchCoordinator({
                 if (isSurfaceSnapshotId(surfaceSnapshot)) {
                     requestAnimationFrame(() => {
                         if (!navigationRef.isReady()) return;
-                        (navigationRef as any).navigate('SurfaceSnapshot', { snapshotId: surfaceSnapshot });
+                        navigationRef.navigate('SurfaceSnapshot', { snapshotId: surfaceSnapshot });
                     });
                     return;
                 }
@@ -80,7 +82,7 @@ function InitialLaunchCoordinator({
                 if (openScreen === 'settings') {
                     requestAnimationFrame(() => {
                         if (!navigationRef.isReady()) return;
-                        navigationRef.navigate('Settings' as never);
+                        navigationRef.navigate('Settings');
                     });
                     return;
                 }
@@ -88,7 +90,7 @@ function InitialLaunchCoordinator({
                 if (enabled && autoOpen) {
                     requestAnimationFrame(() => {
                         if (!navigationRef.isReady()) return;
-                        navigationRef.navigate('DevScreenCatalog' as never);
+                        navigationRef.navigate('DevScreenCatalog');
                     });
                 }
             } catch {
@@ -193,7 +195,7 @@ export default function App() {
                             />
                             <Stack.Screen
                                 name="NotificationSettings"
-                                component={SettingsScreen}
+                                component={NotificationSettingsScreen}
                                 options={{ title: copy.navigation.settingsTitle }}
                             />
                             <Stack.Screen
@@ -277,7 +279,7 @@ export default function App() {
                         <ScreenCatalogLauncher
                             onPress={() => {
                                 if (!navigationRef.isReady()) return;
-                                navigationRef.navigate('DevScreenCatalog' as never);
+                                navigationRef.navigate('DevScreenCatalog');
                             }}
                         />
                     ) : null}

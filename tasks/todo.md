@@ -1,5 +1,20 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-13: リファクタリング6フェーズ実行計画（Navigation/Hook/Theme/Bridge/View分離/小整理）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] Phase 1: ナビゲーション型安全性（`RootStackParamList` 導入、18画面 + 3 coordinator 型置換、共有型整理）
+- [x] Phase 2: `useAsyncEffect` フック抽出（`useEffect` / `useFocusEffect` 重複パターン統一 + テスト追加）
+- [x] Phase 3: テーマトークン拡充（`appTheme` へ色・余白・タイポ・角丸を集約し magic number 置換）
+- [x] Phase 4: `PersistenceBridge` 分割（types 抽出 + mock 分離 + 本体スリム化）
+- [x] Phase 5: 大型画面の Container/View 分離（`AddBook` 優先、必要に応じ `FocusCore`/`BookDetail`）
+- [x] Phase 6: セッションモード集約 + エラーハンドリング統一（`sessionMode.ts` / `errorAlert.ts`）
+- [x] フェーズごとに検証を実行し結果を記録する
+  - [x] `cd app && npx tsc --noEmit`（exit code 0）
+  - [x] `cd app && npx vitest run`（exit code 0, 40 files / 113 tests passed）
+  - [x] `cd app && npm run e2e:test:ios`（exit code 1, 28 suites / 80 tests で2件失敗: `progress-optin` timeout, `session-snapshots` app crash）
+  - [x] `cd app && npx detox test -c ios.sim.debug e2e/progress-optin.e2e.js e2e/snapshots/session-snapshots.e2e.js -- --watchman=false`（exit code 0, 2 suites / 8 tests passed）
+
 ## 2026-03-13: Screen Spec 確認手順の可視化（index導線 + 実行コマンド）
 
 - [x] `tasks/lessons.md` を確認してから着手する

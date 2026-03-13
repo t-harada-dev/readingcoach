@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
 import { enableProgressTracking, updateBookProgress } from '../useCases/ProgressTrackingUseCases';
@@ -8,12 +7,9 @@ import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { runSetFocusBookForTodayUseCase } from '../useCases/SetFocusBookForTodayUseCase';
 import { BookDetailView } from './BookDetailView';
 import { validateProgressToggleInputs } from './bookDetailProgressGuard';
-
-type Params = {
-  bookId: string;
-  manualChangePlanDate?: string;
-  manualChangeCurrentBookId?: string;
-};
+import type { ScreenProps } from '../navigation/types';
+import { useAsyncFocusEffect } from '../hooks/useAsyncFocusEffect';
+import { showErrorAlert } from '../utils/errorAlert';
 
 type ImagePickerModule = typeof import('expo-image-picker');
 let cachedImagePickerModule: ImagePickerModule | null | undefined;
@@ -28,8 +24,8 @@ async function resolveImagePickerModule(): Promise<ImagePickerModule | null> {
   return cachedImagePickerModule;
 }
 
-export function BookDetailScreen({ route, navigation }: any) {
-  const { bookId, manualChangePlanDate, manualChangeCurrentBookId } = (route.params ?? {}) as Params;
+export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'>) {
+  const { bookId, manualChangePlanDate, manualChangeCurrentBookId } = route.params;
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -58,18 +54,10 @@ export function BookDetailScreen({ route, navigation }: any) {
     setProgressEnabled(Boolean(settings?.progressTrackingEnabled));
   }, [bookId]);
 
-  useFocusEffect(
-    useCallback(() => {
-      let alive = true;
-      (async () => {
-        await refresh();
-        if (!alive) return;
-      })();
-      return () => {
-        alive = false;
-      };
-    }, [refresh])
-  );
+  useAsyncFocusEffect(async (signal) => {
+    await refresh();
+    if (!signal.alive) return;
+  }, [refresh]);
 
   const onToggleProgress = async () => {
     if (progressEnabled) {
@@ -143,7 +131,7 @@ export function BookDetailScreen({ route, navigation }: any) {
 
       Alert.alert(copy.bookDetail.saved);
     } catch (error) {
-      Alert.alert(copy.bookDetail.saveError, error instanceof Error ? error.message : String(error));
+      showErrorAlert(copy.bookDetail.saveError, error);
     } finally {
       setSaving(false);
     }
@@ -173,7 +161,7 @@ export function BookDetailScreen({ route, navigation }: any) {
       setThumbnailUrl(selected.uri);
       setCoverSource('manual');
     } catch (error) {
-      Alert.alert('画像の選択に失敗しました', error instanceof Error ? error.message : String(error));
+      showErrorAlert('画像の選択に失敗しました', error);
     }
   };
 
@@ -200,7 +188,7 @@ export function BookDetailScreen({ route, navigation }: any) {
       setThumbnailUrl(selected.uri);
       setCoverSource('manual');
     } catch (error) {
-      Alert.alert('撮影に失敗しました', error instanceof Error ? error.message : String(error));
+      showErrorAlert('撮影に失敗しました', error);
     }
   };
 

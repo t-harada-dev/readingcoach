@@ -3,6 +3,8 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { cancelScheduled, requestPermission } from '../notifications';
 import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
+import type { ScreenProps } from '../navigation/types';
+import { appTheme } from '../theme/layout';
 
 async function resolvePermission(): Promise<boolean> {
   const mock = await persistenceBridge.getLaunchArg('e2e_notification_permission');
@@ -11,9 +13,9 @@ async function resolvePermission(): Promise<boolean> {
   return requestPermission();
 }
 
-export function OnboardingNotificationScreen({ navigation, route }: any) {
+export function OnboardingNotificationScreen({ navigation, route }: ScreenProps<'OnboardingNotification'>) {
   const [busy, setBusy] = useState(false);
-  const forcedNotificationsEnabled = route?.params?.forceNotificationsEnabled;
+  const forcedNotificationsEnabled = route.params?.forceNotificationsEnabled;
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     typeof forcedNotificationsEnabled === 'boolean' ? forcedNotificationsEnabled : false
   );
@@ -137,17 +139,17 @@ export function OnboardingNotificationScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    backgroundColor: '#FDFCF8',
+    padding: appTheme.spacing.xl,
+    backgroundColor: appTheme.colors.screenBackground,
   },
   title: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 8,
   },
   sub: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 14,
     marginBottom: 10,
   },
@@ -156,7 +158,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   benefitItem: {
-    color: '#4B5563',
+    color: appTheme.colors.textSecondary,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -165,13 +167,13 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   primary: {
-    borderRadius: 14,
-    backgroundColor: '#D48A3E',
+    borderRadius: appTheme.borderRadius.lg,
+    backgroundColor: appTheme.colors.accent,
     paddingVertical: 14,
     alignItems: 'center',
   },
   primaryText: {
-    color: '#FFFFFF',
+    color: appTheme.colors.textInverse,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -179,16 +181,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   secondary: {
-    borderRadius: 14,
+    borderRadius: appTheme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
+    borderColor: appTheme.colors.borderStrong,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: appTheme.colors.surface,
     marginTop: 10,
   },
   secondaryText: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 16,
     fontWeight: '700',
   },

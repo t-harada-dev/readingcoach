@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 
 import { persistenceBridge, type BookDTO, type DailyExecutionPlanDTO } from '../bridge/PersistenceBridge';
 import { dailyPerformanceMentorQuote } from '../config/copy';
@@ -11,6 +10,8 @@ import { runStartSessionUseCase, type SessionMode } from '../useCases/StartSessi
 import { resolvePrimaryStartModeByMissedDays } from '../useCases/ResolveNotificationStartModeUseCase';
 import { resolveFocusCoreScreenPolicy } from './screenPolicy';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import type { ScreenProps } from '../navigation/types';
+import { useAsyncFocusEffect } from '../hooks/useAsyncFocusEffect';
 import { FocusCoreView, type FocusCoreViewProps } from './FocusCoreView';
 
 function progressRatioForPlan(plan: DailyExecutionPlanDTO | null): number {
@@ -37,7 +38,7 @@ function tomorrowDateISO(base: Date): string {
     return toLocalISODateString(d);
 }
 
-export function FocusCoreScreen({ navigation, route }: any) {
+export function FocusCoreScreen({ navigation, route }: ScreenProps<'FocusCore'>) {
     const init = useAppInit();
 
     const [plan, setPlan] = useState<DailyExecutionPlanDTO | null>(null);
@@ -93,18 +94,10 @@ export function FocusCoreScreen({ navigation, route }: any) {
         }
     }, [init.status]);
 
-    useFocusEffect(
-        useCallback(() => {
-            let alive = true;
-            void (async () => {
-                if (!alive) return;
-                await refresh();
-            })();
-            return () => {
-                alive = false;
-            };
-        }, [refresh])
-    );
+    useAsyncFocusEffect(async (signal) => {
+        if (!signal.alive) return;
+        await refresh();
+    }, [refresh]);
 
     const onPressChangeBook = () => {
         if (!plan || !canManualChange) return;

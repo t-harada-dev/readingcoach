@@ -1,15 +1,14 @@
 import React, { useCallback, useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
+import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { toLocalISODateString } from '../date';
 import { LibraryView } from './LibraryView';
+import type { LibraryItem, ScreenProps } from '../navigation/types';
+import { useAsyncFocusEffect } from '../hooks/useAsyncFocusEffect';
 
-type LibraryItem = BookDTO & { isFocus: boolean };
-
-export function LibraryScreen({ navigation, route }: any) {
+export function LibraryScreen({ navigation, route }: ScreenProps<'Library'>) {
   const [books, setBooks] = useState<LibraryItem[]>([]);
-  const manualChangePlanDate = route?.params?.manualChangePlanDate as string | undefined;
-  const manualChangeCurrentBookId = route?.params?.manualChangeCurrentBookId as string | undefined;
+  const manualChangePlanDate = route.params?.manualChangePlanDate;
+  const manualChangeCurrentBookId = route.params?.manualChangeCurrentBookId;
 
   const refresh = useCallback(async () => {
     const today = toLocalISODateString(new Date());
@@ -24,18 +23,10 @@ export function LibraryScreen({ navigation, route }: any) {
     setBooks(rows);
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      let alive = true;
-      (async () => {
-        await refresh();
-        if (!alive) return;
-      })();
-      return () => {
-        alive = false;
-      };
-    }, [refresh])
-  );
+  useAsyncFocusEffect(async (signal) => {
+    await refresh();
+    if (!signal.alive) return;
+  }, [refresh]);
 
   return (
     <LibraryView

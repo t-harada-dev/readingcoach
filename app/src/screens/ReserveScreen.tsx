@@ -1,30 +1,25 @@
 import React, { useState } from 'react';
-import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { copy } from '../config/copy';
 import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
 import { requestPermission, scheduleReadingReminder } from '../notifications';
 import { toLocalISODateString } from '../date';
+import type { ScreenProps } from '../navigation/types';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
 
 const PRESETS = copy.reserve.presets;
 
-export function ReserveScreen({ navigation }: { navigation: { goBack: () => void } }) {
+export function ReserveScreen({ navigation }: ScreenProps<'Reserve'>) {
   const [books, setBooks] = useState<BookDTO[]>([]);
   const [bookId, setBookId] = useState<string | null>(null);
   const [hour, setHour] = useState(21);
   const [minute, setMinute] = useState(0);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const list = await persistenceBridge.getBooks();
-      if (!alive) return;
-      setBooks(list);
-      if (list[0]) setBookId(list[0].id);
-    })();
-    return () => {
-      alive = false;
-    };
+  useAsyncEffect(async (signal) => {
+    const list = await persistenceBridge.getBooks();
+    if (!signal.alive) return;
+    setBooks(list);
+    if (list[0]) setBookId(list[0].id);
   }, []);
 
   const onConfirm = async () => {

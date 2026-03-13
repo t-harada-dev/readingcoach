@@ -1,16 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-
-type SurfaceSnapshotId =
-  | 'SF-01'
-  | 'SF-02'
-  | 'SF-03'
-  | 'SF-04'
-  | 'SF-05'
-  | 'SF-06'
-  | 'SF-07'
-  | 'SF-08'
-  | 'SF-09';
+import type { ScreenProps, SurfaceSnapshotId } from '../navigation/types';
 
 type SnapshotSpec = {
   title: string;
@@ -87,8 +77,8 @@ export function isSurfaceSnapshotId(value: string | null | undefined): value is 
   return Object.prototype.hasOwnProperty.call(SPECS, value);
 }
 
-export function SurfaceSnapshotScreen({ route }: any) {
-  const requestedSnapshotId = typeof route?.params?.snapshotId === 'string' ? route.params.snapshotId : null;
+export function SurfaceSnapshotScreen({ route }: ScreenProps<'SurfaceSnapshot'>) {
+  const requestedSnapshotId = typeof route.params?.snapshotId === 'string' ? route.params.snapshotId : null;
   const snapshotId = isSurfaceSnapshotId(requestedSnapshotId) ? requestedSnapshotId : 'SF-01';
   const spec = SPECS[snapshotId];
 

@@ -7,12 +7,13 @@ import { SessionCTAButton } from '../components/SessionCTAButton';
 import { copy } from '../config/copy';
 import { dueActionOrder } from './screenPolicy';
 import { appTheme } from '../theme/layout';
+import type { SessionMode } from '../useCases/StartSessionUseCase';
 
 type DueActionMode = 'normal_15m' | 'ignition_1m' | 'rescue_5m';
 
 export type DueActionSheetViewProps = {
     busy: boolean;
-    defaultMode: 'normal_15m' | 'ignition_1m';
+    defaultMode: Exclude<SessionMode, 'rehab_3m'>;
     hasSelectedBook: boolean;
     bookTitle: string;
     bookAuthor?: string;
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'flex-end',
-        backgroundColor: '#1D1D1D',
+        backgroundColor: appTheme.colors.textPrimary,
     },
     backgroundImage: {
         ...StyleSheet.absoluteFillObject,
@@ -147,26 +148,26 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     title: {
-        color: '#2C2C2C',
+        color: appTheme.colors.textPrimary,
         fontSize: 18,
         fontWeight: '700',
     },
     subtitle: {
-        color: '#6B7280',
+        color: appTheme.colors.textMuted,
         fontSize: 13,
         marginTop: 6,
         marginBottom: 12,
     },
     warningText: {
-        color: '#B91C1C',
+        color: appTheme.colors.danger,
         fontSize: 13,
         marginBottom: 8,
     },
     bookContextRow: {
-        borderRadius: 14,
+        borderRadius: appTheme.borderRadius.lg,
         borderWidth: 1,
-        borderColor: 'rgba(44,44,44,0.08)',
-        backgroundColor: '#FFFFFF',
+        borderColor: appTheme.colors.border,
+        backgroundColor: appTheme.colors.surface,
         padding: 10,
         marginBottom: 8,
         flexDirection: 'row',
@@ -182,12 +183,12 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     bookTitle: {
-        color: '#2C2C2C',
+        color: appTheme.colors.textPrimary,
         fontSize: 14,
         fontWeight: '700',
     },
     bookAuthor: {
-        color: '#6B7280',
+        color: appTheme.colors.textMuted,
         fontSize: 12,
         marginTop: 4,
     },

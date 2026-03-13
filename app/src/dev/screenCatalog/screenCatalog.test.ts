@@ -62,7 +62,8 @@ describe('screen catalog', () => {
     it('renders the catalog list with screen ids and titles', () => {
         const markup = renderToStaticMarkup(
             React.createElement(ScreenCatalogScreen, {
-                navigation: { navigate: vi.fn() },
+                navigation: { navigate: vi.fn() } as any,
+                route: {} as any,
             })
         );
 

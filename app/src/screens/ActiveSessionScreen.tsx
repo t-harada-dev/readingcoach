@@ -2,12 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { runCompleteSessionUseCase } from '../useCases/CompleteSessionUseCase';
 import type { SessionMode } from '../useCases/StartSessionUseCase';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
+import type { ScreenProps } from '../navigation/types';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
 import { ActiveSessionView } from './ActiveSessionView';
 
-export function ActiveSessionScreen({
-  navigation,
-  route,
-}: any) {
+export function ActiveSessionScreen({ navigation, route }: ScreenProps<'ActiveSession'>) {
   const {
     planId,
     sessionId,
@@ -47,18 +46,12 @@ export function ActiveSessionScreen({
   const remainingSeconds = Math.max(0, Math.ceil((endTimeMs - referenceNow) / 1000));
   const done = !paused && remainingSeconds <= 0;
 
-  useEffect(() => {
-    let alive = true;
+  useAsyncEffect(async (signal) => {
     if (!bookId) return;
-    void (async () => {
-      const book = await persistenceBridge.getBook(bookId);
-      if (!alive) return;
-      setBookCoverUri(book?.thumbnailUrl);
-      setBookCoverSource(book?.coverSource ?? (book?.thumbnailUrl ? 'google_books' : 'placeholder'));
-    })();
-    return () => {
-      alive = false;
-    };
+    const book = await persistenceBridge.getBook(bookId);
+    if (!signal.alive) return;
+    setBookCoverUri(book?.thumbnailUrl);
+    setBookCoverSource(book?.coverSource ?? (book?.thumbnailUrl ? 'google_books' : 'placeholder'));
   }, [bookId]);
 
   useEffect(() => {

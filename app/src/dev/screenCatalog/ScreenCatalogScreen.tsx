@@ -2,11 +2,12 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../theme/layout';
+import type { ScreenProps } from '../../navigation/types';
 import { DevNotice } from './components/DevNotice';
 import { ScreenCard } from './components/ScreenCard';
 import { screenRegistry } from './screenRegistry';
 
-export function ScreenCatalogScreen({ navigation }: any) {
+export function ScreenCatalogScreen({ navigation }: ScreenProps<'DevScreenCatalog'>) {
     return (
         <ScrollView testID="screen-catalog-screen" style={styles.screen} contentContainerStyle={styles.content}>
             <DevNotice />

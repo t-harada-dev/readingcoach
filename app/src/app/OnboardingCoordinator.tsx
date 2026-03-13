@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import type { NavigationContainerRefWithCurrent } from '@react-navigation/native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
+import type { RootStackParamList } from '../navigation/types';
 
 type Props = {
-  navigationRef: NavigationContainerRefWithCurrent<any>;
+  navigationRef: NavigationContainerRefWithCurrent<RootStackParamList>;
   navigationReady: boolean;
 };
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BookCoverImage } from '../components/BookCoverImage';
 import { copy } from '../config/copy';
+import { appTheme } from '../theme/layout';
 
 export type BookDetailViewProps = {
   title: string;
@@ -96,7 +97,7 @@ export function BookDetailView({
           onValueChange={onPressToggleProgress}
           disabled={saving}
           trackColor={{ false: '#C7CED8', true: '#F0C58C' }}
-          thumbColor={progressEnabled ? '#D48A3E' : '#FFFFFF'}
+          thumbColor={progressEnabled ? appTheme.colors.accent : appTheme.colors.surface}
         />
       </View>
 
@@ -153,45 +154,45 @@ export function BookDetailView({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
+    backgroundColor: appTheme.colors.screenBackground,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 16,
     paddingBottom: 28,
   },
   subtitle: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     marginBottom: 12,
   },
   cover: {
     width: 140,
     height: 190,
-    borderRadius: 12,
+    borderRadius: appTheme.borderRadius.md,
     marginBottom: 12,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: appTheme.colors.surfaceMuted,
   },
   label: {
-    color: '#4B5563',
+    color: appTheme.colors.textSecondary,
     fontSize: 13,
     marginBottom: 6,
     marginTop: 6,
   },
   input: {
-    borderRadius: 12,
+    borderRadius: appTheme.borderRadius.md,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.borderStrong,
+    backgroundColor: appTheme.colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 15,
   },
   helpText: {
-    borderRadius: 12,
+    borderRadius: appTheme.borderRadius.md,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.10)',
-    backgroundColor: '#FFFFFF',
-    color: '#6B7280',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.surface,
+    color: appTheme.colors.textMuted,
     fontSize: 12,
     paddingHorizontal: 12,
     paddingVertical: 11,
@@ -199,10 +200,10 @@ const styles = StyleSheet.create({
   settingValueRow: {
     marginTop: 2,
     marginBottom: 8,
-    borderRadius: 12,
+    borderRadius: appTheme.borderRadius.md,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.borderStrong,
+    backgroundColor: appTheme.colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 8,
     flexDirection: 'row',
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   settingValue: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -220,35 +221,35 @@ const styles = StyleSheet.create({
   },
   coverSectionCard: {
     marginTop: 2,
-    borderRadius: 14,
+    borderRadius: appTheme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.10)',
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.surface,
     padding: 12,
   },
   primaryButton: {
     marginTop: 16,
-    borderRadius: 16,
-    backgroundColor: '#D48A3E',
+    borderRadius: appTheme.borderRadius.lg,
+    backgroundColor: appTheme.colors.accent,
     paddingVertical: 13,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: appTheme.colors.textInverse,
     fontSize: 15,
     fontWeight: '700',
   },
   secondaryButton: {
     marginTop: 10,
-    borderRadius: 16,
+    borderRadius: appTheme.borderRadius.lg,
     borderWidth: 1,
     borderColor: 'rgba(212, 138, 62, 0.45)',
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: appTheme.colors.surface,
   },
   secondaryButtonText: {
-    color: '#D48A3E',
+    color: appTheme.colors.accent,
     fontSize: 14,
     fontWeight: '700',
   },
