@@ -14,7 +14,7 @@ describe('screenPolicy', () => {
     expect(policy.screenId).toBe('SC-06');
     expect(policy.primaryMode).toBe('ignition_1m');
     expect(policy.secondaryMode).toBe('rescue_5m');
-    expect(policy.rehabMode).toBe('rehab_3m');
+    expect(policy.rehabMode).toBeNull();
   });
 
   it('SC-07: 7日以上未達は再開専用導線', () => {

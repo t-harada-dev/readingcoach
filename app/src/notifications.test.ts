@@ -27,6 +27,12 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 
 vi.mock('expo-notifications', () => notificationsMock);
 
+vi.mock('./bridge/PersistenceBridge', () => ({
+  persistenceBridge: {
+    getSettings: vi.fn(async () => ({ notificationsEnabled: true })),
+  },
+}));
+
 import { cancelScheduledForPlan, scheduleReadingReminder } from './notifications';
 
 describe('notifications', () => {

@@ -7,10 +7,10 @@ import { runResolveNotificationStartModeUseCase } from '../useCases/ResolveNotif
 import { runStartSessionUseCase, type EntryPoint, type SessionMode } from '../useCases/StartSessionUseCase';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
-import { useAppInit } from '../appInit';
 
 type Props = {
   navigationRef: NavigationContainerRefWithCurrent<any>;
+  navigationReady: boolean;
 };
 
 type SurfaceSource = 'notification_response' | 'widget_render' | 'app_intent';
@@ -26,24 +26,28 @@ function toAction(raw?: string | null): SurfaceAction | null {
   return null;
 }
 
+function toMode(raw?: string | null): SessionMode | null {
+  if (raw === 'normal_15m' || raw === 'rescue_5m' || raw === 'rehab_3m' || raw === 'ignition_1m') return raw;
+  return null;
+}
+
 function toEntryPoint(source: SurfaceSource): EntryPoint {
   if (source === 'notification_response') return 'notification';
   if (source === 'widget_render') return 'widget';
   return 'app';
 }
 
-export function SurfaceTriggerCoordinator({ navigationRef }: Props) {
-  const init = useAppInit();
+export function SurfaceTriggerCoordinator({ navigationRef, navigationReady }: Props) {
   const consumedRef = useRef(false);
 
   useEffect(() => {
-    if (init.status !== 'ready') return;
-    if (!navigationRef.isReady()) return;
+    if (!navigationReady) return;
     if (consumedRef.current) return;
 
-    consumedRef.current = true;
-
     (async () => {
+      if (consumedRef.current) return;
+      consumedRef.current = true;
+
       const source = toSource(await persistenceBridge.getLaunchArg('e2e_surface_source'));
       const action = toAction(await persistenceBridge.getLaunchArg('e2e_surface_action'));
       if (!source || !action) return;
@@ -61,8 +65,11 @@ export function SurfaceTriggerCoordinator({ navigationRef }: Props) {
         return;
       }
 
+      const forcedMode = toMode(await persistenceBridge.getLaunchArg('e2e_force_start_mode'));
       const mode: SessionMode =
-        action === 'start_5m' ? 'rescue_5m' : await runResolveNotificationStartModeUseCase(plan.planId);
+        action === 'start_5m'
+          ? 'rescue_5m'
+          : forcedMode ?? (await runResolveNotificationStartModeUseCase(plan.planId));
 
       try {
         const started = await runStartSessionUseCase({
@@ -79,7 +86,7 @@ export function SurfaceTriggerCoordinator({ navigationRef }: Props) {
         }
       }
     })();
-  }, [init.status, navigationRef]);
+  }, [navigationReady, navigationRef]);
 
   return null;
 }

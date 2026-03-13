@@ -5,6 +5,21 @@ typealias RCTPromiseRejectBlock = (String?, String?, Error?) -> Void
 
 @objc(PersistenceBridge)
 final class PersistenceBridge: NSObject {
+  private func readLaunchArgValue(_ key: String) -> String? {
+    let args = ProcessInfo.processInfo.arguments
+    let flag = "-\(key)"
+    if let idx = args.firstIndex(of: flag), idx + 1 < args.count {
+      return args[idx + 1]
+    }
+    if let value = UserDefaults.standard.string(forKey: key) {
+      return value
+    }
+    if let value = UserDefaults.standard.object(forKey: key) as? NSNumber {
+      return value.stringValue
+    }
+    return nil
+  }
+
   private func withStore(
     _ resolve: @escaping RCTPromiseResolveBlock,
     _ reject: @escaping RCTPromiseRejectBlock,
@@ -36,13 +51,8 @@ final class PersistenceBridge: NSObject {
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    let args = ProcessInfo.processInfo.arguments
-    let flag = "-\(key)"
-    guard let idx = args.firstIndex(of: flag), idx + 1 < args.count else {
-      resolve(nil)
-      return
-    }
-    resolve(args[idx + 1])
+    _ = reject
+    resolve(readLaunchArgValue(key))
   }
 
   @objc(getSettings:rejecter:)

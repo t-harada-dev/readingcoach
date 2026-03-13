@@ -29,9 +29,14 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
 
   const onConfirm = async () => {
     if (!bookId) return;
-    const ok = await requestPermission();
-    if (!ok) {
-      // 許可されなくても予約は保存（通知だけ飛ばない）
+    const settings = await persistenceBridge.getSettings();
+    const notificationsEnabled = settings?.notificationsEnabled !== false;
+
+    if (notificationsEnabled) {
+      const ok = await requestPermission();
+      if (!ok) {
+        // 許可されなくても予約は保存（通知だけ飛ばない）
+      }
     }
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -46,7 +51,7 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
     });
     const book = books.find((b) => b.id === bookId);
     const savedPlan = await persistenceBridge.getPlanForDate(planDate);
-    if (book) {
+    if (book && notificationsEnabled) {
       await scheduleReadingReminder(tomorrow, book.title, { planId: savedPlan?.planId });
     }
     navigation.goBack();

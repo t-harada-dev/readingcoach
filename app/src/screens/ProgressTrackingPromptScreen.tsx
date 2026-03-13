@@ -5,15 +5,35 @@ import { skipProgressTrackingPrompt } from '../useCases/ProgressTrackingUseCases
 
 export function ProgressTrackingPromptScreen({ navigation, route }: any) {
   const [busy, setBusy] = useState(false);
+  const closePrompt = () => {
+    if (typeof navigation.canGoBack === 'function' && navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    if (typeof navigation.dismiss === 'function') {
+      navigation.dismiss();
+    }
+  };
 
   const onSkip = async () => {
     if (busy) return;
     setBusy(true);
+    closePrompt();
+    let settled = false;
     try {
-      await skipProgressTrackingPrompt();
-      navigation.goBack();
+      await Promise.race<void>([
+        skipProgressTrackingPrompt(),
+        new Promise<void>((resolve) =>
+          setTimeout(() => {
+            if (settled) return;
+            resolve();
+          }, 5000)
+        ),
+      ]);
+    } catch {
+      // Persist is best-effort. Users must be able to return to completion even on failure.
     } finally {
-      setBusy(false);
+      settled = true;
     }
   };
 

@@ -21,6 +21,9 @@ struct SaveSettingsParams: DictionaryDecodable {
   let defaultDuration: Int
   let retryLimit: Int
   let dayRolloverHour: Int
+  let progressTrackingEnabled: Bool?
+  let progressPromptShown: Bool?
+  let notificationsEnabled: Bool?
 }
 
 @available(iOS 17.0, *)

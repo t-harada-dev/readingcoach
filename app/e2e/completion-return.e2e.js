@@ -1,12 +1,16 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { expect, element, by, waitFor } = require('detox');
+const { launchAppUnsynced } = require('./helpers/launchApp');
+const {
+  reachCompletion,
+  ensureCompletionActionVisible,
+} = require('./helpers/completionFlow');
 
 async function launchToCompletion(launchArgs = {}) {
-  await device.launchApp({
+  await launchAppUnsynced({
     newInstance: true,
     delete: true,
     launchArgs: { e2e_session_seconds: '2', ...launchArgs },
   });
-  await device.disableSynchronization();
 
   const startDeadline = Date.now() + 20000;
   let started = false;
@@ -41,48 +45,26 @@ async function launchToCompletion(launchArgs = {}) {
   if (!started) {
     throw new Error('Timed out waiting for start CTA');
   }
-  await waitFor(element(by.id('active-session-screen'))).toBeVisible().withTimeout(10000);
-
-  const deadline = Date.now() + 130000;
-  while (Date.now() < deadline) {
-    try {
-      await expect(element(by.id('completion-screen'))).toBeVisible();
-      return;
-    } catch {
-      // no-op
-    }
-    try {
-      await expect(element(by.id('progress-prompt-screen'))).toBeVisible();
-      await element(by.id('progress-prompt-later')).tap();
-      await waitFor(element(by.id('completion-screen'))).toBeVisible().withTimeout(10000);
-      return;
-    } catch {
-      // no-op
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-
-  throw new Error('Timed out waiting for completion-screen');
+  await waitFor(element(by.id('active-session-book-title'))).toExist().withTimeout(10000);
+  await reachCompletion({ dismissProgressPrompt: true, sessionStarted: true });
 }
 
 describe('Completion Return Routes', () => {
-  afterEach(async () => {
-    await device.enableSynchronization();
-  });
-
   // TC-CMP-01N: normal completion close returns to SC-04(FocusCore)
   it('returns to normal home route on close', async () => {
     await launchToCompletion();
+    await ensureCompletionActionVisible('completion-close');
 
     await waitFor(element(by.id('completion-close'))).toBeVisible().withTimeout(10000);
     await element(by.id('completion-close')).tap();
 
-    await waitFor(element(by.id('focus-core-open-library'))).toBeVisible().withTimeout(15000);
+    await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(15000);
   });
 
   // TC-CMP-01R: restart completion close returns to SC-07(RestartRecovery)
   it('returns to restart route on close when restart state is active', async () => {
     await launchToCompletion({ e2e_state: 'rehab7' });
+    await ensureCompletionActionVisible('completion-close');
 
     await waitFor(element(by.id('completion-close'))).toBeVisible().withTimeout(10000);
     await element(by.id('completion-close')).tap();

@@ -1,4 +1,4 @@
-import { persistenceBridge } from '../bridge/PersistenceBridge';
+import { saveSettingsWithDefaults } from './SaveSettingsWithDefaults';
 
 type Params = {
   hour: number;
@@ -19,16 +19,10 @@ function validateTime(params: Params): void {
 
 export async function runUpdateDailyTargetTimeUseCase(params: Params): Promise<number> {
   validateTime(params);
-  const current = await persistenceBridge.getSettings();
   const dailyTargetTime = params.hour * 60 + params.minute;
 
-  await persistenceBridge.saveSettings({
+  await saveSettingsWithDefaults({
     dailyTargetTime,
-    defaultDuration: current?.defaultDuration ?? 15,
-    retryLimit: current?.retryLimit ?? 1,
-    dayRolloverHour: current?.dayRolloverHour ?? 4,
-    progressTrackingEnabled: current?.progressTrackingEnabled ?? false,
-    progressPromptShown: current?.progressPromptShown ?? false,
   });
 
   return dailyTargetTime;

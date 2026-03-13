@@ -17,6 +17,10 @@ vi.mock('../components/SessionCTAButton', () => ({
   },
 }));
 
+vi.mock('../components/BookCoverImage', () => ({
+  BookCoverImage: () => React.createElement('img'),
+}));
+
 vi.mock('../bridge/PersistenceBridge', () => ({
   persistenceBridge: {
     getPlanForDate: vi.fn(async () => ({
@@ -67,22 +71,21 @@ describe('RestartRecoveryScreen', () => {
     );
     expect(ctaCalls.map((c) => c.label)).toEqual([
       '1分だけ読んでみる',
-      'ライブラリを開く',
       '時間を変える',
-      '今日はやめる',
+      '本を変える',
     ]);
   });
 
-  it('「今日はやめる」で FocusCore に skipRestartOnce=true で戻る', async () => {
+  it('「本を変える」で Library に遷移する', async () => {
     const navigate = vi.fn();
     renderToStaticMarkup(
       React.createElement(RestartRecoveryScreen, {
         navigation: { replace: vi.fn(), navigate },
-        route: { params: { planId: 'p1' } },
+        route: { params: { planId: 'p1', planDate: '2026-03-10', bookId: 'b1' } },
       })
     );
 
-    await ctaCalls[3]?.onPress();
-    expect(navigate).toHaveBeenCalledWith('FocusCore', { skipRestartOnce: true });
+    await ctaCalls[2]?.onPress();
+    expect(navigate).toHaveBeenCalledWith('Library');
   });
 });

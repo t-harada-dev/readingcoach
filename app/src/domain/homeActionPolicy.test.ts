@@ -17,12 +17,12 @@ describe('resolveHomeActionPlan', () => {
     expect(plan.secondaryMode).toBe('rescue_5m');
   });
 
-  it('3日以上未達では1分主導線、5分副導線、3分Rehab提案を返す', () => {
+  it('3日以上未達では1分主導線、5分副導線を返す', () => {
     const plan = resolveHomeActionPlan({ continuousMissedDays: 3 });
     expect(plan.surface).toBe('rehab');
     expect(plan.primaryMode).toBe('ignition_1m');
     expect(plan.secondaryMode).toBe('rescue_5m');
-    expect(plan.rehabMode).toBe('rehab_3m');
+    expect(plan.rehabMode).toBeNull();
   });
 
   it('7日以上未達では再開専用導線に切り替える', () => {
@@ -33,4 +33,3 @@ describe('resolveHomeActionPlan', () => {
     expect(plan.rehabMode).toBeNull();
   });
 });
-

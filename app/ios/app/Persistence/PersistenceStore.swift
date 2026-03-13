@@ -45,6 +45,7 @@ private struct E2EInjectedPlanState {
   let state: String?
   let retryCount: Int?
   let overrideBookId: String?
+  let forceHeavyDay: Bool?
 }
 
 @available(iOS 17.0, *)
@@ -65,6 +66,7 @@ final class PersistenceStore {
   private let context: ModelContext
   private let isoFormatter: ISO8601DateFormatter
   private var e2eStartFailureConsumed = false
+  private var e2eSaveBookFailureConsumed = false
 
   private init() throws {
     let schema = Schema([
@@ -97,13 +99,25 @@ final class PersistenceStore {
       existing.defaultDuration = params.defaultDuration
       existing.retryLimit = params.retryLimit
       existing.dayRolloverHour = params.dayRolloverHour
+      if let progressTrackingEnabled = params.progressTrackingEnabled {
+        existing.progressTrackingEnabled = progressTrackingEnabled
+      }
+      if let progressPromptShown = params.progressPromptShown {
+        existing.progressPromptShown = progressPromptShown
+      }
+      if let notificationsEnabled = params.notificationsEnabled {
+        existing.notificationsEnabled = notificationsEnabled
+      }
     } else {
       context.insert(
         SettingsEntity(
           dailyTargetTime: params.dailyTargetTime,
           defaultDuration: params.defaultDuration,
           retryLimit: params.retryLimit,
-          dayRolloverHour: params.dayRolloverHour
+          dayRolloverHour: params.dayRolloverHour,
+          progressTrackingEnabled: params.progressTrackingEnabled,
+          progressPromptShown: params.progressPromptShown,
+          notificationsEnabled: params.notificationsEnabled
         )
       )
     }
@@ -121,6 +135,10 @@ final class PersistenceStore {
   }
 
   func saveBook(_ params: SaveBookParams) throws {
+    if e2eFailSaveBookOnceFromLaunchArgs() {
+      throw PersistenceError.unsupported("E2E injected saveBook failure")
+    }
+
     let bookId = params.id
     let descriptor = FetchDescriptor<BookEntity>(predicate: #Predicate { $0.id == bookId })
     if let existing = try context.fetch(descriptor).first {
@@ -327,6 +345,11 @@ final class PersistenceStore {
         todayPlan?.startedAt = nil
       }
     }
+    if injected?.forceHeavyDay == true {
+      todayPlan?.state = "scheduled"
+      todayPlan?.result = "attempted"
+      todayPlan?.startedAt = nil
+    }
     if let overrideBookId = injected?.overrideBookId {
       todayPlan?.bookId = overrideBookId
     }
@@ -348,29 +371,28 @@ final class PersistenceStore {
   }
 
   private func injectedPlanStateFromLaunchArgs() -> E2EInjectedPlanState? {
-    let args = ProcessInfo.processInfo.arguments
-    guard let idx = args.firstIndex(of: "-e2e_state"), idx + 1 < args.count else {
+    guard let state = launchArgValue("e2e_state")?.lowercased() else {
       return nil
     }
-
-    let state = args[idx + 1].lowercased()
     switch state {
     case "rehab3":
-      return E2EInjectedPlanState(missedDays: 3, state: nil, retryCount: nil, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 3, state: nil, retryCount: nil, overrideBookId: nil, forceHeavyDay: nil)
     case "rehab7":
-      return E2EInjectedPlanState(missedDays: 7, state: nil, retryCount: nil, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 7, state: nil, retryCount: nil, overrideBookId: nil, forceHeavyDay: nil)
+    case "heavy_day":
+      return E2EInjectedPlanState(missedDays: 0, state: "scheduled", retryCount: nil, overrideBookId: "__MISSING_BOOK__", forceHeavyDay: true)
     case "due_normal":
-      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 0, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 0, overrideBookId: nil, forceHeavyDay: nil)
     case "due_rehab3":
-      return E2EInjectedPlanState(missedDays: 3, state: "due", retryCount: 0, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 3, state: "due", retryCount: 0, overrideBookId: nil, forceHeavyDay: nil)
     case "due_restart7":
-      return E2EInjectedPlanState(missedDays: 7, state: "due", retryCount: 0, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 7, state: "due", retryCount: 0, overrideBookId: nil, forceHeavyDay: nil)
     case "deferred_retry_pending":
-      return E2EInjectedPlanState(missedDays: 0, state: "deferred", retryCount: 0, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 0, state: "deferred", retryCount: 0, overrideBookId: nil, forceHeavyDay: nil)
     case "retry_fired_once":
-      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 1, overrideBookId: nil)
+      return E2EInjectedPlanState(missedDays: 0, state: "due", retryCount: 1, overrideBookId: nil, forceHeavyDay: nil)
     case "book_missing":
-      return E2EInjectedPlanState(missedDays: 0, state: nil, retryCount: nil, overrideBookId: "__MISSING_BOOK__")
+      return E2EInjectedPlanState(missedDays: 0, state: nil, retryCount: nil, overrideBookId: "__MISSING_BOOK__", forceHeavyDay: nil)
     default:
       return nil
     }
@@ -380,11 +402,10 @@ final class PersistenceStore {
     if e2eStartFailureConsumed {
       return false
     }
-    let args = ProcessInfo.processInfo.arguments
-    guard let idx = args.firstIndex(of: "-e2e_fail_start_once"), idx + 1 < args.count else {
+    guard let raw = launchArgValue("e2e_fail_start_once") else {
       return false
     }
-    let enabled = args[idx + 1] == "1"
+    let enabled = raw == "1"
     if enabled {
       e2eStartFailureConsumed = true
     }
@@ -392,11 +413,37 @@ final class PersistenceStore {
   }
 
   private func e2eSessionSecondsFromLaunchArgs() -> Int? {
-    let args = ProcessInfo.processInfo.arguments
-    guard let idx = args.firstIndex(of: "-e2e_session_seconds"), idx + 1 < args.count else {
-      return nil
+    guard let raw = launchArgValue("e2e_session_seconds") else { return nil }
+    return Int(raw)
+  }
+
+  private func e2eFailSaveBookOnceFromLaunchArgs() -> Bool {
+    if e2eSaveBookFailureConsumed {
+      return false
     }
-    return Int(args[idx + 1])
+    guard let raw = launchArgValue("e2e_fail_save_book_once") else {
+      return false
+    }
+    let enabled = raw == "1"
+    if enabled {
+      e2eSaveBookFailureConsumed = true
+    }
+    return enabled
+  }
+
+  private func launchArgValue(_ key: String) -> String? {
+    let args = ProcessInfo.processInfo.arguments
+    let flag = "-\(key)"
+    if let idx = args.firstIndex(of: flag), idx + 1 < args.count {
+      return args[idx + 1]
+    }
+    if let value = UserDefaults.standard.string(forKey: key) {
+      return value
+    }
+    if let value = UserDefaults.standard.object(forKey: key) as? NSNumber {
+      return value.stringValue
+    }
+    return nil
   }
 
   private func ensureSeededIfNeeded() throws {
@@ -429,6 +476,26 @@ final class PersistenceStore {
           status: "queued"
         )
       )
+    }
+
+    if launchArgValue("e2e_progress_tracking_enabled") == "1" {
+      let settingsDescriptor = FetchDescriptor<SettingsEntity>()
+      if let settings = try context.fetch(settingsDescriptor).first {
+        settings.progressTrackingEnabled = true
+        settings.progressPromptShown = true
+      } else {
+        context.insert(
+          SettingsEntity(
+            dailyTargetTime: 21 * 60,
+            defaultDuration: 15,
+            retryLimit: 1,
+            dayRolloverHour: 4,
+            progressTrackingEnabled: true,
+            progressPromptShown: true,
+            notificationsEnabled: true
+          )
+        )
+      }
     }
 
     if context.hasChanges {

@@ -124,28 +124,41 @@ final class SettingsEntity {
   var defaultDuration: Int
   var retryLimit: Int
   var dayRolloverHour: Int
+  var progressTrackingEnabled: Bool?
+  var progressPromptShown: Bool?
+  var notificationsEnabled: Bool?
 
   init(
     id: String = "default",
     dailyTargetTime: Int,
     defaultDuration: Int,
     retryLimit: Int,
-    dayRolloverHour: Int
+    dayRolloverHour: Int,
+    progressTrackingEnabled: Bool? = nil,
+    progressPromptShown: Bool? = nil,
+    notificationsEnabled: Bool? = nil
   ) {
     self.id = id
     self.dailyTargetTime = dailyTargetTime
     self.defaultDuration = defaultDuration
     self.retryLimit = retryLimit
     self.dayRolloverHour = dayRolloverHour
+    self.progressTrackingEnabled = progressTrackingEnabled
+    self.progressPromptShown = progressPromptShown
+    self.notificationsEnabled = notificationsEnabled
   }
 
   func toDTO() -> [String: Any] {
-    [
+    var dto: [String: Any] = [
       "dailyTargetTime": dailyTargetTime,
       "defaultDuration": defaultDuration,
       "retryLimit": retryLimit,
       "dayRolloverHour": dayRolloverHour,
     ]
+    dto["progressTrackingEnabled"] = progressTrackingEnabled
+    dto["progressPromptShown"] = progressPromptShown
+    dto["notificationsEnabled"] = notificationsEnabled
+    return dto
   }
 }
 

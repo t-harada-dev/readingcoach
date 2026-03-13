@@ -23,6 +23,7 @@
 ## Vitest + React Native
 
 1. **`vitest` の `environment: node` で画面コンポーネントを直接読むと Flow 構文で失敗する**: `react-native` 本体の parse error（`Expected 'from', got 'typeOf'`）が出る。画面テストは runner を分離（jsdom + rn 対応設定 or jest）してから入れる。
+2. **`vitest.config.ts` の `include` パターンを先に確認する**: このリポジトリは `src/**/*.test.ts` 固定のため、`.test.tsx` を追加しても実行対象に入らない。新規テストは `.test.ts` で作成するか、include を更新する。
 
 ## 通知アクションの開始モード
 
@@ -38,3 +39,48 @@
 1. **PASS 報告の条件を固定する**: 「exit code 0」かつ「失敗スイート/失敗ケース 0」を確認できない限り、PASS と断定しない。
 2. **ログが最優先**: 手元実行ログと報告が食い違う場合は、ログ側を正として即時訂正する。
 3. **不確実性を明示する**: 実行出力が欠落・省略されている場合は「未確認」として扱い、成功扱いにしない。
+
+## シェル実装の移植性（macOS / BSD）
+
+1. **`awk` の `match(..., ..., array)` 依存を避ける**: macOS 標準 `awk` では非互換になるケースがあるため、`sub` / `index` ベースで抽出する。
+2. **ローカルの標準ツール前提で検証する**: Linux/GNU 前提の one-liner は導入前に `bash -n` と実行環境（BSD awk/sed）で最小実行確認する。
+
+## Detox E2E と manifest 参照
+
+1. **E2E は JSON 参照が安定**: Detox/Jest 実行系では TS モジュールの読み込み差異が出やすい。E2E 入力データは `.json` を直接 `require` する方が安定する。
+2. **正本を複数にしない**: TS ラッパーは許容するが、E2E 側の参照先は固定し、同期責務を明確にして不整合を防ぐ。
+
+## ログ保存と終了コード
+
+1. **`tee` 付き debug script では `pipefail` を必須化**: `cmd | tee` だけだと失敗が `exit 0` に見える。`set -o pipefail` を先に有効化して、実コマンドの失敗を正しく返す。
+
+## Screen Catalog と自動スクショ運用
+
+1. **Screen Catalog は手動レビュー専用に保つ**: catalog を自動スクショ基盤の正本にすると、デバッグ用途と回帰証跡用途が混ざって保守が難しくなる。
+2. **自動スクショは flow 別Detox + 補完 launchArgs で管理する**: 到達困難画面のみ `e2e_state` 注入で補完し、`snapshotTargets` でカバレッジを固定する。
+
+## スコープ制御（snapshot）
+
+1. **ユーザーが求める対象数を超えて拡張しない**: 全UI化は強い前提変更なので、明示依頼がなければ優先画面セット（今回なら10画面）を維持する。
+
+## Expo ネイティブ依存の導入直後（E2E）
+
+1. **`expo-*` を画面で top-level import すると未組込ビルドで起動クラッシュする**: `expo-image-picker` のような optional 機能は遅延 import + unavailable fallback を入れ、Detox 用既存ビルドでも起動可能に保つ。
+
+## Detox 同期OFF起動の適用範囲
+
+1. **`detoxEnableSynchronization=0` は全スイート一律適用にしない**: `due-action-sheet` / `home.session-start` ではタップ不可・モーダル遷移の不安定化が再現したため、起動helperは共通化しつつ suite ごとに synced/unsynced を選ぶ。
+
+## Detox タップ安定化（ScrollView）
+
+1. **`toExist()` だけでタップしない**: ScrollView 内の要素は存在していても画面外にあることがあり、`View is not hittable` につながる。`toBeVisible()` と必要最小限の `scroll()` をセットで使う。
+
+## FocusCore の導線回帰防止
+
+1. **モーダル表示中でも親画面を `null` で潰さない**: `presentation: 'modal'` を使う画面で親を空描画にすると、戻る操作で空画面に落ちる経路が発生する。
+2. **導線変更時は副作用契約を追従確認する**: 画面遷移先を差し替えるときは、旧導線で実行されていたカウンタ更新（例: manual focus change count）を失っていないかを必ず確認する。
+
+## SF Native キャプチャ（xcodebuild）
+
+1. **CocoaPods 構成では `xcodebuild` を `-workspace` 優先で実行する**: `-project` で app 単体ビルドすると Expo/Pods の modulemap 不足で失敗しやすい。
+2. **`e2e:capture:docs` の失敗切り分けは flow と sf:native を分離して確認する**: flow 側の Detox fail と sf:native 側の build/simctl fail は原因が異なるため、先に失敗フェーズを確定してから修正する。

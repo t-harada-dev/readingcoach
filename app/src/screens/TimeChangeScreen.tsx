@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
 import { runUpdateDailyTargetTimeUseCase } from '../useCases/UpdateDailyTargetTimeUseCase';
 import { appTheme } from '../theme/layout';
 
-type Preset = { label: string; hour: number; minute: number };
-
-const PRESETS: Preset[] = [
-  { label: '7:00', hour: 7, minute: 0 },
-  { label: '12:00', hour: 12, minute: 0 },
-  { label: '21:00', hour: 21, minute: 0 },
-  { label: '22:00', hour: 22, minute: 0 },
-];
+function normalizeTimeField(raw: string, max: number): number | null {
+  if (raw.trim().length === 0) return null;
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return null;
+  const normalized = Math.floor(value);
+  if (normalized < 0 || normalized > max) return null;
+  return normalized;
+}
 
 export function TimeChangeScreen({ navigation }: any) {
-  const [hour, setHour] = useState(22);
-  const [minute, setMinute] = useState(0);
+  const [hourInput, setHourInput] = useState('22');
+  const [minuteInput, setMinuteInput] = useState('00');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -25,16 +25,24 @@ export function TimeChangeScreen({ navigation }: any) {
     (async () => {
       const settings = await persistenceBridge.getSettings();
       if (!alive || !settings) return;
-      setHour(Math.floor(settings.dailyTargetTime / 60));
-      setMinute(settings.dailyTargetTime % 60);
+      const hour = Math.floor(settings.dailyTargetTime / 60);
+      const minute = settings.dailyTargetTime % 60;
+      setHourInput(String(hour));
+      setMinuteInput(String(minute).padStart(2, '0'));
     })();
     return () => {
       alive = false;
     };
   }, []);
 
+  const parsedHour = normalizeTimeField(hourInput, 23);
+  const parsedMinute = normalizeTimeField(minuteInput, 59);
+  const hasValidTime = parsedHour !== null && parsedMinute !== null;
+
   const onConfirm = async () => {
-    if (busy) return;
+    const hour = normalizeTimeField(hourInput, 23);
+    const minute = normalizeTimeField(minuteInput, 59);
+    if (busy || hour === null || minute === null) return;
     setBusy(true);
     try {
       await runUpdateDailyTargetTimeUseCase({ hour, minute });
@@ -49,34 +57,48 @@ export function TimeChangeScreen({ navigation }: any) {
       <Text style={styles.title}>{copy.timeChange.title}</Text>
       <Text style={styles.subtitle}>{copy.timeChange.subtitle}</Text>
 
-      <View style={styles.presetRow}>
-        {PRESETS.map((preset) => {
-          const selected = preset.hour === hour && preset.minute === minute;
-          return (
-            <SessionCTAButton
-              key={preset.label}
-              tone={selected ? 'primary' : 'secondary'}
-              label={preset.label}
-              onPress={() => {
-                setHour(preset.hour);
-                setMinute(preset.minute);
-              }}
-              disabled={busy}
-            />
-          );
-        })}
+      <View testID="time-change-input" style={styles.timeInputRow}>
+        <View style={styles.timeInputBlock}>
+          <Text style={styles.inputLabel}>{copy.timeChange.labelHour}</Text>
+          <TextInput
+            testID="time-change-hour-input"
+            style={styles.timeInput}
+            value={hourInput}
+            onChangeText={setHourInput}
+            keyboardType="number-pad"
+            maxLength={2}
+          />
+        </View>
+        <Text style={styles.colon}>:</Text>
+        <View style={styles.timeInputBlock}>
+          <Text style={styles.inputLabel}>{copy.timeChange.labelMinute}</Text>
+          <TextInput
+            testID="time-change-minute-input"
+            style={styles.timeInput}
+            value={minuteInput}
+            onChangeText={setMinuteInput}
+            keyboardType="number-pad"
+            maxLength={2}
+          />
+        </View>
       </View>
-      <Text style={styles.selectedTime}>
-        {String(hour).padStart(2, '0')}:{String(minute).padStart(2, '0')}
-      </Text>
       <Text style={styles.hint}>{copy.timeChange.hint}</Text>
 
-      <SessionCTAButton
-        tone="primary"
-        label={copy.timeChange.ctaConfirm}
-        onPress={onConfirm}
-        disabled={busy}
-      />
+      <View style={styles.actions}>
+        <SessionCTAButton
+          tone="ghost"
+          label={copy.timeChange.ctaOpenNotificationSettings}
+          onPress={() => navigation.navigate('Settings')}
+          disabled={busy}
+        />
+        <SessionCTAButton
+          testID="time-change-confirm"
+          tone="primary"
+          label={copy.timeChange.ctaConfirm}
+          onPress={onConfirm}
+          disabled={busy || !hasValidTime}
+        />
+      </View>
     </View>
   );
 }
@@ -100,23 +122,48 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     fontSize: 16,
     marginTop: 8,
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  presetRow: {
+  timeInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
     gap: 8,
   },
-  selectedTime: {
+  timeInputBlock: {
+    alignItems: 'center',
+  },
+  inputLabel: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  timeInput: {
+    width: 96,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(44,44,44,0.12)',
+    backgroundColor: '#FFFFFF',
     color: '#2C2C2C',
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
-    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  colon: {
+    color: '#2C2C2C',
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 14,
   },
   hint: {
     color: '#6B7280',
     fontSize: 13,
     textAlign: 'center',
     marginTop: 8,
-    marginBottom: 24,
+  },
+  actions: {
+    marginTop: 'auto',
   },
 });

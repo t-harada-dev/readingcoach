@@ -1,7 +1,13 @@
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { toLocalISODateString } from '../date';
+import { incrementManualFocusChangeCount } from '../manualFocusChange';
 
-export async function runSetFocusBookForTodayUseCase(bookId: string): Promise<void> {
+type SetFocusBookOptions = {
+  manualChangePlanDate?: string;
+  manualChangeCurrentBookId?: string;
+};
+
+export async function runSetFocusBookForTodayUseCase(bookId: string, options?: SetFocusBookOptions): Promise<void> {
   const today = toLocalISODateString(new Date());
   const existing = await persistenceBridge.getPlanForDate(today);
 
@@ -13,5 +19,12 @@ export async function runSetFocusBookForTodayUseCase(bookId: string): Promise<vo
     state: existing?.state ?? 'scheduled',
     result: existing?.result ?? 'attempted',
   });
-}
 
+  if (
+    options?.manualChangePlanDate &&
+    options.manualChangeCurrentBookId &&
+    options.manualChangeCurrentBookId !== bookId
+  ) {
+    await incrementManualFocusChangeCount(options.manualChangePlanDate);
+  }
+}

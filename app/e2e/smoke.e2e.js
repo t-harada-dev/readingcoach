@@ -1,17 +1,13 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { element, by, waitFor } = require('detox');
+const { launchAppUnsynced } = require('./helpers/launchApp');
 
 describe('Smoke', () => {
   beforeAll(async () => {
-    await device.launchApp({ newInstance: true });
-    await device.disableSynchronization();
-  });
-
-  afterAll(async () => {
-    await device.enableSynchronization();
+    await launchAppUnsynced({ newInstance: true });
   });
 
   it('launches app', async () => {
-    await waitFor(element(by.id('focus-core-open-library')))
+    await waitFor(element(by.id('focus-core-change-book')))
       .toBeVisible()
       .withTimeout(10000);
   });

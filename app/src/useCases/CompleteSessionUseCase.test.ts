@@ -32,7 +32,7 @@ describe('runCompleteSessionUseCase', () => {
       '2026-03-10T10:00:00.000Z'
     );
     expect(result.result).toBe('hard_success');
-    expect(result.feedback.title).toBe('今日も前進しました');
+    expect(result.feedback.title).toBe('今日のセッションを完了しました');
   });
 
   it('ignition_1m は prep_success で progress を返さない', async () => {

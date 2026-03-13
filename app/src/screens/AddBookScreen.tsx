@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Alert,
   StyleSheet,
@@ -14,6 +15,25 @@ import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { runBookSearchUseCase, type BookSearchCandidate } from '../useCases/BookSearchUseCase';
 
 type FlowState = 'search' | 'candidate' | 'manual';
+type SavePayload = {
+  title: string;
+  author?: string;
+  googleBooksId?: string;
+  pageCount?: number;
+  thumbnailUrl?: string;
+  coverSource?: 'manual' | 'google_books' | 'placeholder';
+};
+
+function normalizePageCount(raw: string): number | undefined {
+  const parsed = Number(raw);
+  if (raw.trim().length === 0) return undefined;
+  if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
+  return Math.floor(parsed);
+}
+
+function toErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 export function AddBookScreen({ navigation, route }: any) {
   const isOnboarding = route?.name === 'OnboardingAddBook' || route?.params?.onboarding === true;
@@ -29,6 +49,20 @@ export function AddBookScreen({ navigation, route }: any) {
   const [flow, setFlow] = useState<FlowState>('search');
   const [candidates, setCandidates] = useState<BookSearchCandidate[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<BookSearchCandidate | null>(null);
+  const [hasExistingBooks, setHasExistingBooks] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    if (!isOnboarding) return () => { alive = false; };
+    (async () => {
+      const books = await persistenceBridge.getBooks();
+      if (!alive) return;
+      setHasExistingBooks(books.length > 0);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [isOnboarding]);
 
   const finishAfterSave = () => {
     if (isOnboarding) {
@@ -38,52 +72,61 @@ export function AddBookScreen({ navigation, route }: any) {
     navigation.goBack();
   };
 
-  const saveBook = async (payload: {
-    title: string;
-    author?: string;
-    pageCount?: number;
-    thumbnailUrl?: string;
-  }) => {
+  const saveBook = async (payload: SavePayload) => {
     await persistenceBridge.saveBook({
       id: `book_${Date.now()}`,
       title: payload.title,
       author: payload.author,
+      googleBooksId: payload.googleBooksId,
       pageCount: payload.pageCount,
       thumbnailUrl: payload.thumbnailUrl,
+      coverSource: payload.coverSource,
       format: 'paper',
       status: 'active',
     });
   };
 
-  const onSave = async () => {
-    const t = title.trim();
-    if (!t) return;
-    const parsedPageCount = Number(pageCount);
-    const normalizedPageCount =
-      pageCount.trim().length > 0 && Number.isFinite(parsedPageCount) && parsedPageCount > 0
-        ? Math.floor(parsedPageCount)
-        : undefined;
+  const persistAndFinish = async (
+    payload: SavePayload,
+    options: { clearManualInputs?: boolean } = {}
+  ) => {
+    const { clearManualInputs = false } = options;
     try {
       setSaving(true);
-      await saveBook({
-        title: t,
-        author: author.trim() || undefined,
-        pageCount: normalizedPageCount,
-        thumbnailUrl: thumbnailUrl.trim() || undefined,
-      });
-      setTitle('');
-      setAuthor('');
-      setPageCount('');
-      setThumbnailUrl('');
+      await saveBook(payload);
+      if (clearManualInputs) {
+        setTitle('');
+        setAuthor('');
+        setPageCount('');
+        setThumbnailUrl('');
+      }
       finishAfterSave();
     } catch (e) {
-      Alert.alert('保存に失敗しました', e instanceof Error ? e.message : String(e));
+      Alert.alert('保存に失敗しました', toErrorMessage(e));
     } finally {
       setSaving(false);
     }
   };
 
+  const onSave = async () => {
+    Keyboard.dismiss();
+    const normalizedTitle = title.trim();
+    if (!normalizedTitle) return;
+
+    await persistAndFinish(
+      {
+        title: normalizedTitle,
+        author: author.trim() || undefined,
+        pageCount: normalizePageCount(pageCount),
+        thumbnailUrl: thumbnailUrl.trim() || undefined,
+        coverSource: thumbnailUrl.trim() ? 'manual' : 'placeholder',
+      },
+      { clearManualInputs: true }
+    );
+  };
+
   const onSearchSubmit = async () => {
+    Keyboard.dismiss();
     const q = query.trim();
     if (!q || saving) return;
     setSaving(true);
@@ -104,25 +147,27 @@ export function AddBookScreen({ navigation, route }: any) {
   };
 
   const onSaveCandidate = async () => {
+    Keyboard.dismiss();
     if (!selectedCandidate || saving) return;
-    setSaving(true);
-    try {
-      await saveBook({
+    await persistAndFinish({
         title: selectedCandidate.title,
         author: selectedCandidate.author,
+        googleBooksId: selectedCandidate.googleBooksId,
         pageCount: selectedCandidate.pageCount,
         thumbnailUrl: selectedCandidate.thumbnailUrl,
+        coverSource: selectedCandidate.thumbnailUrl ? 'google_books' : 'placeholder',
       });
-      finishAfterSave();
-    } catch (e) {
-      Alert.alert('保存に失敗しました', e instanceof Error ? e.message : String(e));
-    } finally {
-      setSaving(false);
-    }
   };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {isOnboarding ? (
+        <Text style={styles.onboardingTitle}>
+          {hasExistingBooks ? '本を追加する' : 'これから読む本について教えてください'}
+        </Text>
+      ) : (
+        <Text style={styles.screenTitle}>本を追加する</Text>
+      )}
       {flow === 'search' ? (
         <View testID={searchScreenTestId}>
           <Text style={styles.label}>書籍を検索</Text>
@@ -150,7 +195,10 @@ export function AddBookScreen({ navigation, route }: any) {
           <TouchableOpacity
             testID={`${searchPrefix}-search-empty-fallback`}
             style={styles.linkBtn}
-            onPress={() => setFlow('manual')}
+            onPress={() => {
+              Keyboard.dismiss();
+              setFlow('manual');
+            }}
           >
             <Text style={styles.linkText}>見つからないので手入力する</Text>
           </TouchableOpacity>
@@ -166,72 +214,84 @@ export function AddBookScreen({ navigation, route }: any) {
               style={[styles.bookRow, selectedCandidate?.stableId === candidate.stableId && styles.bookRowSelected]}
               onPress={() => setSelectedCandidate(candidate)}
             >
-              <Text style={styles.bookTitle}>{candidate.title}</Text>
-              {candidate.author ? <Text style={styles.bookAuthor}>{candidate.author}</Text> : null}
+              <View style={styles.bookRowMain}>
+                <Text style={styles.bookTitle}>{candidate.title}</Text>
+                {candidate.author ? <Text style={styles.bookAuthor}>{candidate.author}</Text> : null}
+              </View>
+              {selectedCandidate?.stableId === candidate.stableId ? (
+                <Text style={styles.bookSelectedBadge}>この本を読んでいます</Text>
+              ) : null}
             </TouchableOpacity>
           ))}
           <TouchableOpacity
             testID="add-book-candidate-save"
-            style={[styles.cta, (!selectedCandidate || saving) && styles.ctaDisabled]}
-            onPress={onSaveCandidate}
-            disabled={!selectedCandidate || saving}
+            style={[styles.cta, saving && styles.ctaDisabled]}
+            onPress={selectedCandidate ? onSaveCandidate : () => setFlow('search')}
+            disabled={saving}
           >
-            <Text style={styles.ctaText}>この本を追加</Text>
+            <Text style={styles.ctaText}>{selectedCandidate ? 'この本を追加する' : '戻る'}</Text>
           </TouchableOpacity>
         </View>
       ) : null}
 
       {flow === 'manual' ? (
-        <View testID={`${manualPrefix}-manual-entry`}>
+        <View testID={`${manualPrefix}-manual-entry`} style={styles.manualScreen}>
           <View testID="add-book-manual-screen" />
-          <Text style={styles.label}>{copy.addBook.labelTitle}</Text>
-      <TextInput
-        testID="add-book-manual-title"
-        style={styles.input}
-        value={title}
-        onChangeText={setTitle}
-        placeholder={copy.addBook.placeholderTitle}
-        placeholderTextColor="#666"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <Text style={styles.label}>{copy.addBook.labelAuthorOptional}</Text>
-      <TextInput
-        testID="add-book-manual-author"
-        style={styles.input}
-        value={author}
-        onChangeText={setAuthor}
-        placeholder={copy.addBook.placeholderAuthor}
-        placeholderTextColor="#666"
-        autoCapitalize="none"
-      />
-      <Text style={styles.label}>{copy.addBook.labelPageCountOptional}</Text>
-      <TextInput
-        testID="add-book-manual-page-count"
-        style={styles.input}
-        value={pageCount}
-        onChangeText={setPageCount}
-        placeholder={copy.addBook.placeholderPageCount}
-        placeholderTextColor="#9CA3AF"
-        keyboardType="numeric"
-      />
-      <Text style={styles.optionalLabel}>{copy.addBook.labelCoverUrlOptional}</Text>
-      <TextInput
-        style={styles.input}
-        value={thumbnailUrl}
-        onChangeText={setThumbnailUrl}
-        placeholder={copy.addBook.placeholderCoverUrl}
-        placeholderTextColor="#9CA3AF"
-        autoCapitalize="none"
-      />
-      <TouchableOpacity
-        testID="add-book-manual-save"
-        style={[styles.cta, (!title.trim() || saving) && styles.ctaDisabled]}
-        onPress={onSave}
-        disabled={!title.trim() || saving}
-      >
-        <Text style={styles.ctaText}>{copy.addBook.ctaAddAndBack}</Text>
-      </TouchableOpacity>
+          <View>
+            <Text style={styles.label}>{copy.addBook.labelTitle}</Text>
+            <TextInput
+              testID="add-book-manual-title"
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder={copy.addBook.placeholderTitle}
+              placeholderTextColor="#666"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <Text style={styles.label}>{copy.addBook.labelAuthorOptional}</Text>
+            <TextInput
+              testID="add-book-manual-author"
+              style={styles.input}
+              value={author}
+              onChangeText={setAuthor}
+              placeholder={copy.addBook.placeholderAuthor}
+              placeholderTextColor="#666"
+              autoCapitalize="none"
+            />
+            <Text style={styles.label}>{copy.addBook.labelPageCountOptional}</Text>
+            <TextInput
+              testID="add-book-manual-page-count"
+              style={styles.input}
+              value={pageCount}
+              onChangeText={setPageCount}
+              placeholder={copy.addBook.placeholderPageCount}
+              placeholderTextColor="#9CA3AF"
+              keyboardType="numeric"
+            />
+
+            <View style={styles.coverGroup}>
+              <Text style={styles.optionalLabel}>{copy.addBook.labelCoverUrlOptional}</Text>
+              <TextInput
+                style={styles.input}
+                value={thumbnailUrl}
+                onChangeText={setThumbnailUrl}
+                placeholder={copy.addBook.placeholderCoverUrl}
+                placeholderTextColor="#9CA3AF"
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+          <View style={styles.manualActions}>
+            <TouchableOpacity
+              testID="add-book-manual-save"
+              style={[styles.cta, (!title.trim() || saving) && styles.ctaDisabled]}
+              onPress={onSave}
+              disabled={!title.trim() || saving}
+            >
+              <Text style={styles.ctaText}>{copy.addBook.ctaAddAndBack}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : null}
     </KeyboardAvoidingView>
@@ -250,11 +310,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 8,
   },
+  onboardingTitle: {
+    color: '#2C2C2C',
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 24,
+  },
+  screenTitle: {
+    color: '#2C2C2C',
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 16,
+  },
   optionalLabel: {
     color: '#6B7280',
     fontSize: 12,
     marginBottom: 8,
-    marginTop: 8,
   },
   input: {
     backgroundColor: '#FFFFFF',
@@ -277,6 +348,23 @@ const styles = StyleSheet.create({
   ctaText: { color: '#fff', fontSize: 18, fontWeight: '600' },
   linkBtn: { marginTop: 12, alignSelf: 'center', paddingVertical: 6 },
   linkText: { color: '#6B7280', fontSize: 13, textDecorationLine: 'underline' },
+  manualScreen: {
+    flex: 1,
+  },
+  coverGroup: {
+    marginTop: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(44,44,44,0.10)',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 6,
+  },
+  manualActions: {
+    marginTop: 'auto',
+    paddingBottom: 4,
+  },
   bookRow: {
     borderWidth: 1,
     borderColor: 'rgba(44,44,44,0.12)',
@@ -284,11 +372,22 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
     backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   bookRowSelected: {
     borderColor: '#D48A3E',
     backgroundColor: 'rgba(212,138,62,0.10)',
   },
+  bookRowMain: {
+    flex: 1,
+    paddingRight: 8,
+  },
   bookTitle: { color: '#2C2C2C', fontSize: 15, fontWeight: '700' },
   bookAuthor: { color: '#6B7280', fontSize: 13, marginTop: 4 },
+  bookSelectedBadge: {
+    color: '#D48A3E',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 });

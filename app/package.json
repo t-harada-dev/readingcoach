@@ -14,8 +14,18 @@
     "check:sandbox": "./scripts/check-sandbox.sh",
     "test:ui": "jest",
     "test:ui:watch": "jest --watch",
+    "e2e:artifacts:prune": "./scripts/prune-detox-artifacts.sh artifacts 10",
     "e2e:build:ios": "detox build -c ios.sim.debug",
-    "e2e:test:ios": "detox test -c ios.sim.debug --cleanup"
+    "e2e:build:ios:debug": "/bin/zsh -lc \"set -o pipefail; npm run e2e:build:ios 2>&1 | tee /tmp/e2e-build-ios.log\"",
+    "e2e:test:ios": "npm run e2e:artifacts:prune && detox test -c ios.sim.debug --cleanup",
+    "e2e:capture:flows": "npm run e2e:artifacts:prune && detox test -c ios.sim.debug e2e/snapshots/*.e2e.js -- --watchman=false",
+    "e2e:capture:sf:native": "./scripts/capture-surface-native.sh",
+    "e2e:capture:docs": "npm run e2e:capture:flows && npm run e2e:capture:sf:native",
+    "e2e:capture:flows:debug": "npm run e2e:artifacts:prune && /bin/zsh -lc \"set -o pipefail; npx detox test -c ios.sim.debug e2e/snapshots/*.e2e.js --loglevel trace --record-logs all --take-screenshots all -- --watchman=false 2>&1 | tee /tmp/e2e-flow-snapshots.log\"",
+    "e2e:snapshot:manifest:check": "node ./scripts/check-ui-snapshot-manifest.js",
+    "docs:screen-spec:sync-metadata": "node ./scripts/sync-screen-spec-metadata.js",
+    "docs:screen-spec:refresh": "node ./scripts/refresh-screen-spec-assets.js",
+    "docs:screen-spec:preview": "./scripts/serve-screen-spec.sh"
   },
   "engines": {
     "node": ">=20.19.4 <23"
@@ -25,6 +35,7 @@
     "@react-navigation/native": "^7.1.33",
     "@react-navigation/native-stack": "^7.14.4",
     "expo": "~55.0.5",
+    "expo-image-picker": "~17.0.8",
     "expo-notifications": "~55.0.11",
     "expo-status-bar": "~55.0.4",
     "react": "19.2.0",

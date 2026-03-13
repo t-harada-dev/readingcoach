@@ -1,23 +1,42 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
 import { enableProgressTracking, updateBookProgress } from '../useCases/ProgressTrackingUseCases';
+import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { runSetFocusBookForTodayUseCase } from '../useCases/SetFocusBookForTodayUseCase';
+import { BookDetailView } from './BookDetailView';
+import { validateProgressToggleInputs } from './bookDetailProgressGuard';
 
 type Params = {
   bookId: string;
+  manualChangePlanDate?: string;
+  manualChangeCurrentBookId?: string;
 };
 
+type ImagePickerModule = typeof import('expo-image-picker');
+let cachedImagePickerModule: ImagePickerModule | null | undefined;
+
+async function resolveImagePickerModule(): Promise<ImagePickerModule | null> {
+  if (cachedImagePickerModule !== undefined) return cachedImagePickerModule;
+  try {
+    cachedImagePickerModule = await import('expo-image-picker');
+  } catch {
+    cachedImagePickerModule = null;
+  }
+  return cachedImagePickerModule;
+}
+
 export function BookDetailScreen({ route, navigation }: any) {
-  const { bookId } = (route.params ?? {}) as Params;
+  const { bookId, manualChangePlanDate, manualChangeCurrentBookId } = (route.params ?? {}) as Params;
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [pageCount, setPageCount] = useState('');
   const [currentPage, setCurrentPage] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [coverSource, setCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
   const [progressEnabled, setProgressEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -35,6 +54,7 @@ export function BookDetailScreen({ route, navigation }: any) {
     setPageCount(book.pageCount ? String(book.pageCount) : '');
     setCurrentPage(book.currentPage ? String(book.currentPage) : '');
     setThumbnailUrl(book.thumbnailUrl ?? '');
+    setCoverSource(book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'));
     setProgressEnabled(Boolean(settings?.progressTrackingEnabled));
   }, [bookId]);
 
@@ -53,16 +73,33 @@ export function BookDetailScreen({ route, navigation }: any) {
 
   const onToggleProgress = async () => {
     if (progressEnabled) {
-      const current = await persistenceBridge.getSettings();
-      await persistenceBridge.saveSettings({
-        dailyTargetTime: current?.dailyTargetTime ?? 21 * 60,
-        defaultDuration: current?.defaultDuration ?? 15,
-        retryLimit: current?.retryLimit ?? 1,
-        dayRolloverHour: current?.dayRolloverHour ?? 4,
+      await saveSettingsWithDefaults({
         progressTrackingEnabled: false,
         progressPromptShown: true,
       });
       setProgressEnabled(false);
+      return;
+    }
+
+    const guard = validateProgressToggleInputs(pageCount, currentPage);
+    if (!guard.ok) {
+      const message = (() => {
+        switch (guard.reason) {
+          case 'missing_page_count':
+            return copy.bookDetail.progressGuardMissingPageCount;
+          case 'invalid_page_count':
+            return copy.bookDetail.progressGuardInvalidPageCount;
+          case 'missing_current_page':
+            return copy.bookDetail.progressGuardMissingCurrentPage;
+          case 'invalid_current_page':
+            return copy.bookDetail.progressGuardInvalidCurrentPage;
+          case 'current_exceeds_page_count':
+            return copy.bookDetail.progressGuardCurrentExceedsPageCount;
+          default:
+            return copy.bookDetail.progressGuardMissingPageCount;
+        }
+      })();
+      Alert.alert(copy.bookDetail.progressGuardTitle, message);
       return;
     }
 
@@ -92,6 +129,7 @@ export function BookDetailScreen({ route, navigation }: any) {
         author: author.trim() || undefined,
         pageCount: normalizedPageCount,
         thumbnailUrl: thumbnailUrl.trim() || undefined,
+        coverSource: thumbnailUrl.trim().length > 0 ? coverSource : 'placeholder',
       });
 
       if (progressEnabled) {
@@ -111,11 +149,69 @@ export function BookDetailScreen({ route, navigation }: any) {
     }
   };
 
+  const pickImageFromLibrary = async () => {
+    if (saving) return;
+    try {
+      const imagePicker = await resolveImagePickerModule();
+      if (!imagePicker) {
+        Alert.alert('画像機能を利用できません', 'このビルドでは画像選択機能が無効です。');
+        return;
+      }
+      const permission = await imagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('権限が必要です', '写真ライブラリへのアクセスを許可してください。');
+        return;
+      }
+      const result = await imagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const selected = result.assets[0];
+      if (!selected?.uri) return;
+      setThumbnailUrl(selected.uri);
+      setCoverSource('manual');
+    } catch (error) {
+      Alert.alert('画像の選択に失敗しました', error instanceof Error ? error.message : String(error));
+    }
+  };
+
+  const takePhoto = async () => {
+    if (saving) return;
+    try {
+      const imagePicker = await resolveImagePickerModule();
+      if (!imagePicker) {
+        Alert.alert('画像機能を利用できません', 'このビルドではカメラ機能が無効です。');
+        return;
+      }
+      const permission = await imagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('権限が必要です', 'カメラへのアクセスを許可してください。');
+        return;
+      }
+      const result = await imagePicker.launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const selected = result.assets[0];
+      if (!selected?.uri) return;
+      setThumbnailUrl(selected.uri);
+      setCoverSource('manual');
+    } catch (error) {
+      Alert.alert('撮影に失敗しました', error instanceof Error ? error.message : String(error));
+    }
+  };
+
   const onSetFocusBook = async () => {
     if (saving) return;
     setSaving(true);
     try {
-      await runSetFocusBookForTodayUseCase(bookId);
+      await runSetFocusBookForTodayUseCase(bookId, {
+        manualChangePlanDate,
+        manualChangeCurrentBookId,
+      });
       navigation.navigate('FocusCore');
     } finally {
       setSaving(false);
@@ -123,154 +219,39 @@ export function BookDetailScreen({ route, navigation }: any) {
   };
 
   return (
-    <ScrollView testID="book-detail-screen" contentContainerStyle={styles.container}>
-      <Text style={styles.subtitle}>{copy.bookDetail.subtitle}</Text>
-
-      {thumbnailUrl.trim().length > 0 ? (
-        <Image source={{ uri: thumbnailUrl }} style={styles.cover} resizeMode="cover" />
-      ) : null}
-
-      <Text style={styles.label}>{copy.bookDetail.labelTitle}</Text>
-      <TextInput testID="book-detail-title" style={styles.input} value={title} onChangeText={setTitle} placeholder="本のタイトル" />
-
-      <Text style={styles.label}>{copy.bookDetail.labelAuthor}</Text>
-      <TextInput testID="book-detail-author" style={styles.input} value={author} onChangeText={setAuthor} placeholder="著者名" />
-
-      <Text style={styles.label}>{copy.bookDetail.labelPageCount}</Text>
-      <TextInput
-        testID="book-detail-page-count"
-        style={styles.input}
-        value={pageCount}
-        onChangeText={setPageCount}
-        keyboardType="numeric"
-        placeholder="例: 320"
-      />
-
-      <Text style={styles.label}>{copy.bookDetail.labelCoverUrl}</Text>
-      <TextInput
-        style={styles.input}
-        value={thumbnailUrl}
-        onChangeText={setThumbnailUrl}
-        placeholder="https://..."
-        autoCapitalize="none"
-      />
-
-      <View style={styles.progressSection}>
-        <TouchableOpacity
-          testID="book-detail-progress-toggle"
-          style={styles.secondaryButton}
-          onPress={onToggleProgress}
-          disabled={saving}
-        >
-          <Text
-            testID={progressEnabled ? 'book-detail-disable-progress' : 'book-detail-enable-progress'}
-            style={styles.secondaryButtonText}
-          >
-            {progressEnabled ? copy.bookDetail.ctaDisableProgress : copy.bookDetail.ctaEnableProgress}
-          </Text>
-        </TouchableOpacity>
-        {progressEnabled ? (
-          <>
-            <Text style={styles.label}>{copy.bookDetail.labelCurrentPage}</Text>
-            <TextInput
-              testID="book-detail-current-page"
-              style={styles.input}
-              value={currentPage}
-              onChangeText={setCurrentPage}
-              keyboardType="numeric"
-              placeholder="例: 120"
-            />
-          </>
-        ) : (
-          <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text>
-        )}
-      </View>
-
-      <TouchableOpacity testID="book-detail-save" style={[styles.primaryButton, !canSave && styles.disabled]} onPress={onSave} disabled={!canSave}>
-        <Text style={styles.primaryButtonText}>{copy.bookDetail.ctaSave}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        testID="book-detail-focus"
-        style={[styles.secondaryButton, saving && styles.disabled]}
-        onPress={onSetFocusBook}
-        disabled={saving}
-      >
-        <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaSetFocusBook}</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    <BookDetailView
+      title={title}
+      author={author}
+      pageCount={pageCount}
+      currentPage={currentPage}
+      thumbnailUrl={thumbnailUrl}
+      coverSource={coverSource}
+      progressEnabled={progressEnabled}
+      saving={saving}
+      canSave={canSave}
+      onChangeTitle={setTitle}
+      onChangeAuthor={setAuthor}
+      onChangePageCount={setPageCount}
+      onChangeCurrentPage={setCurrentPage}
+      onPressTakePhoto={() => {
+        void takePhoto();
+      }}
+      onPressPickFromLibrary={() => {
+        void pickImageFromLibrary();
+      }}
+      onPressRemoveCover={() => {
+        setThumbnailUrl('');
+        setCoverSource('placeholder');
+      }}
+      onPressToggleProgress={() => {
+        void onToggleProgress();
+      }}
+      onPressSave={() => {
+        void onSave();
+      }}
+      onPressSetFocusBook={() => {
+        void onSetFocusBook();
+      }}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
-    paddingTop: 16,
-    paddingBottom: 28,
-  },
-  subtitle: {
-    color: '#6B7280',
-    fontSize: 13,
-    marginBottom: 12,
-  },
-  cover: {
-    width: 140,
-    height: 190,
-    borderRadius: 12,
-    marginBottom: 12,
-    backgroundColor: '#E5E7EB',
-  },
-  label: {
-    color: '#4B5563',
-    fontSize: 13,
-    marginBottom: 6,
-    marginTop: 6,
-  },
-  input: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: '#2C2C2C',
-    fontSize: 15,
-  },
-  progressSection: {
-    marginTop: 10,
-  },
-  helpText: {
-    color: '#6B7280',
-    fontSize: 12,
-    marginTop: 8,
-  },
-  primaryButton: {
-    marginTop: 16,
-    borderRadius: 16,
-    backgroundColor: '#D48A3E',
-    paddingVertical: 13,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    marginTop: 10,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 138, 62, 0.45)',
-    paddingVertical: 12,
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  secondaryButtonText: {
-    color: '#D48A3E',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  disabled: {
-    opacity: 0.55,
-  },
-});
