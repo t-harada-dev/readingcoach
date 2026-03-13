@@ -1,30 +1,36 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { persistenceBridge } from '../bridge/PersistenceBridge';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { copy } from '../config/copy';
+import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
+import type { ScreenProps } from '../navigation/types';
+import { appTheme } from '../theme/layout';
 
-const PRESETS = [
-  { label: '07:00', h: 7, m: 0 },
-  { label: '12:00', h: 12, m: 0 },
-  { label: '21:00', h: 21, m: 0 },
-];
+function normalizeTimeField(raw: string, max: number): number | null {
+  if (raw.trim().length === 0) return null;
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return null;
+  const normalized = Math.floor(value);
+  if (normalized < 0 || normalized > max) return null;
+  return normalized;
+}
 
-export function OnboardingTimeScreen({ navigation }: any) {
-  const [hour, setHour] = useState(21);
-  const [minute, setMinute] = useState(0);
+export function OnboardingTimeScreen({ navigation }: ScreenProps<'OnboardingTime'>) {
+  const [hourInput, setHourInput] = useState('21');
+  const [minuteInput, setMinuteInput] = useState('00');
   const [saving, setSaving] = useState(false);
 
+  const parsedHour = normalizeTimeField(hourInput, 23);
+  const parsedMinute = normalizeTimeField(minuteInput, 59);
+  const hasValidTime = parsedHour !== null && parsedMinute !== null;
+
   const onSave = async () => {
-    if (saving) return;
+    const hour = normalizeTimeField(hourInput, 23);
+    const minute = normalizeTimeField(minuteInput, 59);
+    if (saving || hour === null || minute === null) return;
     setSaving(true);
     try {
-      const current = await persistenceBridge.getSettings();
-      await persistenceBridge.saveSettings({
+      await saveSettingsWithDefaults({
         dailyTargetTime: hour * 60 + minute,
-        defaultDuration: current?.defaultDuration ?? 15,
-        retryLimit: current?.retryLimit ?? 1,
-        dayRolloverHour: current?.dayRolloverHour ?? 4,
-        progressTrackingEnabled: current?.progressTrackingEnabled ?? false,
-        progressPromptShown: current?.progressPromptShown ?? false,
       });
       navigation.replace('OnboardingNotification');
     } finally {
@@ -34,28 +40,40 @@ export function OnboardingTimeScreen({ navigation }: any) {
 
   return (
     <View testID="onboarding-time-screen" style={styles.container}>
-      <Text style={styles.title}>読む時間を決める</Text>
-      <View testID="onboarding-time-picker" style={styles.presetRow}>
-        {PRESETS.map((preset) => (
-          <TouchableOpacity
-            key={preset.label}
-            style={[styles.preset, hour === preset.h && minute === preset.m ? styles.presetSelected : null]}
-            onPress={() => {
-              setHour(preset.h);
-              setMinute(preset.m);
-            }}
-          >
-            <Text style={styles.presetText}>{preset.label}</Text>
-          </TouchableOpacity>
-        ))}
+      <Text style={styles.title}>{copy.onboardingTime.title}</Text>
+      <Text style={styles.subtitle}>{copy.onboardingTime.subtitle}</Text>
+      <View testID="onboarding-time-picker" style={styles.timeInputRow}>
+        <View style={styles.timeInputBlock}>
+          <Text style={styles.inputLabel}>{copy.onboardingTime.labelHour}</Text>
+          <TextInput
+            testID="onboarding-time-hour-input"
+            style={styles.timeInput}
+            value={hourInput}
+            onChangeText={setHourInput}
+            keyboardType="number-pad"
+            maxLength={2}
+          />
+        </View>
+        <Text style={styles.colon}>:</Text>
+        <View style={styles.timeInputBlock}>
+          <Text style={styles.inputLabel}>{copy.onboardingTime.labelMinute}</Text>
+          <TextInput
+            testID="onboarding-time-minute-input"
+            style={styles.timeInput}
+            value={minuteInput}
+            onChangeText={setMinuteInput}
+            keyboardType="number-pad"
+            maxLength={2}
+          />
+        </View>
       </View>
       <TouchableOpacity
         testID="onboarding-time-save"
-        style={[styles.cta, saving ? styles.disabled : null]}
+        style={[styles.cta, (saving || !hasValidTime) ? styles.disabled : null]}
         onPress={onSave}
-        disabled={saving}
+        disabled={saving || !hasValidTime}
       >
-        <Text style={styles.ctaText}>この時刻で保存</Text>
+        <Text style={styles.ctaText}>{copy.onboardingTime.ctaSave}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -64,45 +82,62 @@ export function OnboardingTimeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    backgroundColor: '#FDFCF8',
+    padding: appTheme.spacing.xl,
+    backgroundColor: appTheme.colors.screenBackground,
   },
   title: {
-    color: '#2C2C2C',
-    fontSize: 22,
+    color: appTheme.colors.textPrimary,
+    fontSize: 26,
     fontWeight: '700',
-    marginBottom: 16,
   },
-  presetRow: {
+  subtitle: {
+    color: appTheme.colors.textMuted,
+    fontSize: 14,
+    marginTop: 8,
+    marginBottom: 18,
+  },
+  timeInputRow: {
     flexDirection: 'row',
-    gap: 10,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 8,
   },
-  preset: {
+  timeInputBlock: {
+    alignItems: 'center',
+  },
+  inputLabel: {
+    color: appTheme.colors.textMuted,
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  timeInput: {
+    width: 96,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.borderStrong,
+    borderRadius: appTheme.borderRadius.lg,
+    backgroundColor: appTheme.colors.surface,
+    color: appTheme.colors.textPrimary,
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
   },
-  presetSelected: {
-    borderColor: '#D48A3E',
-    backgroundColor: 'rgba(212,138,62,0.10)',
-  },
-  presetText: {
-    color: '#2C2C2C',
-    fontSize: 15,
-    fontWeight: '600',
+  colon: {
+    color: appTheme.colors.textPrimary,
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 14,
   },
   cta: {
-    marginTop: 20,
-    borderRadius: 14,
-    backgroundColor: '#D48A3E',
+    marginTop: 'auto',
+    borderRadius: appTheme.borderRadius.lg,
+    backgroundColor: appTheme.colors.accent,
     paddingVertical: 14,
     alignItems: 'center',
   },
   ctaText: {
-    color: '#FFFFFF',
+    color: appTheme.colors.textInverse,
     fontSize: 16,
     fontWeight: '700',
   },

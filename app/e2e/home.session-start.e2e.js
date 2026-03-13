@@ -1,13 +1,9 @@
-const { device, expect, element, by, waitFor } = require('detox');
+const { expect, element, by, waitFor } = require('detox');
+const { launchAppSynced } = require('./helpers/launchApp');
 
 describe('Home Session Start', () => {
   beforeEach(async () => {
-    await device.launchApp({ newInstance: true });
-    await device.disableSynchronization();
-  });
-
-  afterEach(async () => {
-    await device.enableSynchronization();
+    await launchAppSynced({ newInstance: true });
   });
 
   // TC-HOME-01: SC-04 主CTA(15分) -> SC-12

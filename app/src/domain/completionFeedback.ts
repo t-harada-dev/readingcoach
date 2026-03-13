@@ -44,13 +44,13 @@ export function buildCompletionFeedback(input: CompletionFeedbackInput): Complet
   switch (input.result) {
     case 'hard_success':
       return {
-        title: '今日も前進しました',
+        title: '今日のセッションを完了しました',
         message: `${input.bookTitle} を読み進めました`,
         progressRatio,
       };
     case 'soft_success':
       return {
-        title: '5分でも前に進みました',
+        title: '今日のセッションを完了しました',
         message: '小さな前進を積み上げています',
         progressRatio,
       };
@@ -69,4 +69,3 @@ function resolveProgressRatio(input: CompletionFeedbackInput): number | null {
   if (!input.currentPage || !input.pageCount || input.pageCount <= 0) return null;
   return Math.max(0, Math.min(1, input.currentPage / input.pageCount));
 }
-

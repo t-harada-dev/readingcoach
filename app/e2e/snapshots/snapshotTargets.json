@@ -1,0 +1,194 @@
+[
+  {
+    "screenId": "SC-01",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "onboarding"
+  },
+  {
+    "screenId": "SC-02",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "onboarding"
+  },
+  {
+    "screenId": "SC-03",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "onboarding"
+  },
+  {
+    "screenId": "SC-04",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-05",
+    "scenario": "heavy_day",
+    "captureSource": "injected",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-06",
+    "scenario": "rehab",
+    "captureSource": "injected",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-07",
+    "scenario": "long_absence",
+    "captureSource": "injected",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-09",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "addbook"
+  },
+  {
+    "screenId": "SC-10",
+    "scenario": "timeout_or_error",
+    "captureSource": "injected",
+    "suite": "addbook"
+  },
+  {
+    "screenId": "SC-11",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "addbook"
+  },
+  {
+    "screenId": "SC-12",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "session"
+  },
+  {
+    "screenId": "SC-13",
+    "scenario": "rehab",
+    "captureSource": "injected",
+    "suite": "session"
+  },
+  {
+    "screenId": "SC-14",
+    "scenario": "rehab",
+    "captureSource": "injected",
+    "suite": "session"
+  },
+  {
+    "screenId": "SC-15",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "completion"
+  },
+  {
+    "screenId": "SC-16",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "completion"
+  },
+  {
+    "screenId": "SC-17",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "completion"
+  },
+  {
+    "screenId": "SC-18",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "completion"
+  },
+  {
+    "screenId": "SC-19",
+    "scenario": "finished_book",
+    "captureSource": "flow",
+    "suite": "completion"
+  },
+  {
+    "screenId": "SC-20",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "library"
+  },
+  {
+    "screenId": "SC-21",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "library"
+  },
+  {
+    "screenId": "SC-22",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "settings"
+  },
+  {
+    "screenId": "SC-23",
+    "scenario": "due",
+    "captureSource": "injected",
+    "suite": "home"
+  },
+  {
+    "screenId": "SC-24",
+    "scenario": "normal",
+    "captureSource": "flow",
+    "suite": "session"
+  },
+  {
+    "screenId": "SF-01",
+    "scenario": "normal",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  },
+  {
+    "screenId": "SF-02",
+    "scenario": "rehab",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  },
+  {
+    "screenId": "SF-03",
+    "scenario": "normal",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  },
+  {
+    "screenId": "SF-04",
+    "scenario": "rehab",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  },
+  {
+    "screenId": "SF-05",
+    "scenario": "normal",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  },
+  {
+    "screenId": "SF-06",
+    "scenario": "rehab",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  },
+  {
+    "screenId": "SF-07",
+    "scenario": "rehab",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  },
+  {
+    "screenId": "SF-08",
+    "scenario": "normal",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  },
+  {
+    "screenId": "SF-09",
+    "scenario": "normal",
+    "captureSource": "native_ui",
+    "suite": "surface-native"
+  }
+]

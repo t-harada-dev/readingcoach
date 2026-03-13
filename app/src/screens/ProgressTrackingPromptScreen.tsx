@@ -2,18 +2,40 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { skipProgressTrackingPrompt } from '../useCases/ProgressTrackingUseCases';
+import type { ScreenProps } from '../navigation/types';
 
-export function ProgressTrackingPromptScreen({ navigation, route }: any) {
+export function ProgressTrackingPromptScreen({ navigation, route }: ScreenProps<'ProgressTrackingPrompt'>) {
   const [busy, setBusy] = useState(false);
+  const closePrompt = () => {
+    if (typeof navigation.canGoBack === 'function' && navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    const modalNav = navigation as ScreenProps<'ProgressTrackingPrompt'>['navigation'] & { dismiss?: () => void };
+    if (typeof modalNav.dismiss === 'function') {
+      modalNav.dismiss();
+    }
+  };
 
   const onSkip = async () => {
     if (busy) return;
     setBusy(true);
+    closePrompt();
+    let settled = false;
     try {
-      await skipProgressTrackingPrompt();
-      navigation.goBack();
+      await Promise.race<void>([
+        skipProgressTrackingPrompt(),
+        new Promise<void>((resolve) =>
+          setTimeout(() => {
+            if (settled) return;
+            resolve();
+          }, 5000)
+        ),
+      ]);
+    } catch {
+      // Persist is best-effort. Users must be able to return to completion even on failure.
     } finally {
-      setBusy(false);
+      settled = true;
     }
   };
 

@@ -3,9 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const ctaCalls: Array<{ label: string; onPress: () => void | Promise<void> }> = [];
+const saveBookMock = vi.hoisted(() => vi.fn(async () => {}));
+const getSettingsMock = vi.hoisted(() => vi.fn(async () => null));
 
 vi.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles },
+  Text: ({ children }: { children: React.ReactNode }) => React.createElement('span', null, children),
   View: ({ children }: { children: React.ReactNode }) => React.createElement('div', null, children),
 }));
 
@@ -22,8 +25,8 @@ vi.mock('../components/SessionCTAButton', () => ({
 
 vi.mock('../bridge/PersistenceBridge', () => ({
   persistenceBridge: {
-    getSettings: vi.fn(async () => null),
-    saveBook: vi.fn(async () => {}),
+    getSettings: getSettingsMock,
+    saveBook: saveBookMock,
   },
 }));
 
@@ -42,6 +45,8 @@ describe('CompletionScreen', () => {
   beforeEach(() => {
     ctaCalls.length = 0;
     vi.clearAllMocks();
+    getSettingsMock.mockResolvedValue(null);
+    saveBookMock.mockResolvedValue(undefined);
     startMock.mockResolvedValue({
       sessionId: 's1',
       startedAt: '2026-03-10T10:00:00.000Z',
@@ -54,7 +59,7 @@ describe('CompletionScreen', () => {
   it('SC-15 の CTA 順序（5分/15分/読了/閉じる）を維持する', () => {
     renderToStaticMarkup(
       React.createElement(CompletionScreen, {
-        navigation: { replace: vi.fn(), navigate: vi.fn() },
+        navigation: { replace: vi.fn(), navigate: vi.fn() } as any,
         route: {
           params: {
             planId: 'p1',
@@ -63,18 +68,18 @@ describe('CompletionScreen', () => {
             result: 'soft_success',
             elapsedSeconds: 300,
           },
-        },
+        } as any,
       })
     );
 
-    expect(ctaCalls.map((c) => c.label)).toEqual(['もう 5 分やる', 'もう 15 分やる', '読了した', '閉じる / ホームへ戻る']);
+    expect(ctaCalls.map((c) => c.label)).toEqual(['もう 5 分やる', 'もう 15 分やる', '読み終わった', '閉じる / ホームへ戻る']);
   });
 
   it('先頭CTAで rescue_5m 開始になる', async () => {
     const replace = vi.fn();
     renderToStaticMarkup(
       React.createElement(CompletionScreen, {
-        navigation: { replace, navigate: vi.fn() },
+        navigation: { replace, navigate: vi.fn() } as any,
         route: {
           params: {
             planId: 'p1',
@@ -83,7 +88,7 @@ describe('CompletionScreen', () => {
             result: 'soft_success',
             elapsedSeconds: 300,
           },
-        },
+        } as any,
       })
     );
 
@@ -94,5 +99,39 @@ describe('CompletionScreen', () => {
       entryPoint: 'app',
     });
     expect(replace).toHaveBeenCalled();
+  });
+
+  it('読了保存失敗後に再試行でき、成功時に NextFocus へ遷移する', async () => {
+    const navigate = vi.fn();
+    saveBookMock
+      .mockRejectedValueOnce(new Error('injected save failure'))
+      .mockResolvedValueOnce(undefined);
+
+    renderToStaticMarkup(
+      React.createElement(CompletionScreen, {
+        navigation: { replace: vi.fn(), navigate } as any,
+        route: {
+          params: {
+            planId: 'p1',
+            bookId: 'b1',
+            bookTitle: 'Book',
+            result: 'soft_success',
+            elapsedSeconds: 300,
+          },
+        } as any,
+      })
+    );
+
+    const finished = ctaCalls.find((c) => c.label === '読み終わった');
+    expect(finished).toBeTruthy();
+
+    await finished?.onPress();
+    expect(navigate).not.toHaveBeenCalledWith('NextFocusNomination', expect.anything());
+
+    await finished?.onPress();
+    expect(navigate).toHaveBeenCalledWith('NextFocusNomination', {
+      completedBookId: 'b1',
+    });
+    expect(saveBookMock).toHaveBeenCalledTimes(2);
   });
 });

@@ -37,8 +37,9 @@ describe('StartSessionUseCase integration', () => {
 
   // TC-ACT-07: 同一planの多重開始は同一activeを再利用し、二重作成しない
   it('coalesces concurrent starts for same plan and returns one active session', async () => {
-    let resolveStart!: (v: { sessionId: string; startedAt: string; bookTitle: string }) => void;
-    const startPromise = new Promise<{ sessionId: string; startedAt: string; bookTitle: string }>((resolve) => {
+    type StartSessionResult = { sessionId: string; startedAt: string; bookTitle: string };
+    let resolveStart!: (v: StartSessionResult) => void;
+    const startPromise = new Promise<StartSessionResult>((resolve) => {
       resolveStart = resolve;
     });
     bridgeMock.startSession.mockReturnValue(startPromise);

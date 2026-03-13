@@ -1,8 +1,58 @@
 export const appTheme = {
   colors: {
     screenBackground: '#FDFCF8',
+    textPrimary: '#2C2C2C',
+    textSecondary: '#4B5563',
+    textMuted: '#6B7280',
+    textInverse: '#FFFFFF',
+    accent: '#D48A3E',
+    accentSoft: 'rgba(212,138,62,0.10)',
+    accentSoftStrong: 'rgba(212,138,62,0.18)',
+    surface: '#FFFFFF',
+    surfaceMuted: '#E5E7EB',
+    border: 'rgba(44,44,44,0.10)',
+    borderStrong: 'rgba(44,44,44,0.12)',
+    danger: '#B91C1C',
+    warningText: '#8A5A21',
+    darkBackground: '#0f0f0f',
+    darkSurface: '#333333',
+    darkText: '#FFFFFF',
+    darkMuted: '#888888',
+    success: '#22c55e',
   },
   spacing: {
     screenPaddingHorizontal: 22,
+    screenPaddingVertical: 24,
+    cardPadding: 12,
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+  },
+  typography: {
+    title: {
+      fontSize: 26,
+      fontWeight: '700',
+    },
+    subtitle: {
+      fontSize: 14,
+      fontWeight: '400',
+    },
+    body: {
+      fontSize: 16,
+      fontWeight: '400',
+    },
+    caption: {
+      fontSize: 12,
+      fontWeight: '400',
+    },
+  },
+  borderRadius: {
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 18,
+    pill: 999,
   },
 } as const;

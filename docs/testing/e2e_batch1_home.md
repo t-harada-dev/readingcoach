@@ -16,7 +16,7 @@
 - 元仕様ID: HOME-04
 - 前提: normal state
 - 入口: SC-04 通常ホーム
-- 操作: ライブラリを開く
+- 操作: 本を変える
 - 期待:
   - SC-20 が表示される
   - ホームから補助管理へ遷移できる
@@ -82,14 +82,13 @@
 - 自動化: 可（state injection 必須）
 - 優先度: 高
 
-### TC-HOME-07
-- 元仕様ID: HOME-07
+### TC-REHAB-01
+- 元仕様ID: REHAB-01
 - 前提: continuous_missed_days = 3
 - 入口: SC-06 Rehabホーム
-- 操作: 3分再開
+- 操作: 画面表示を確認
 - 期待:
-  - SC-13 が表示される
-  - 3分は Rehab バナー導線である
+  - `3分再開` CTA が表示されない
 - 自動化: 可（state injection 必須）
 - 優先度: 中
 
@@ -131,7 +130,6 @@
 - focus-core-secondary-cta
 - focus-core-rehab-cta
 - focus-core-change-book
-- focus-core-open-library
 - restart-recovery-screen
 - restart-recovery-primary-cta
 - restart-recovery-open-library

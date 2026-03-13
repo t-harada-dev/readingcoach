@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { NavigationContainerRefWithCurrent } from '@react-navigation/native';
 import { useAppInit } from '../appInit';
+import { persistenceBridge } from '../bridge/PersistenceBridge';
 import {
   routeActionId,
   subscribeNotificationResponse,
@@ -13,9 +14,10 @@ import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
 import { resolveDueActionScreenId } from '../domain/entryRoutePolicy';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
 import { runResolveSurfaceStartPlanUseCase } from '../useCases/StaleSurfaceStartUseCase';
+import type { RootStackParamList } from '../navigation/types';
 
 type Props = {
-  navigationRef: NavigationContainerRefWithCurrent<any>;
+  navigationRef: NavigationContainerRefWithCurrent<RootStackParamList>;
 };
 
 export function NotificationResponseCoordinator({ navigationRef }: Props) {
@@ -25,6 +27,8 @@ export function NotificationResponseCoordinator({ navigationRef }: Props) {
     if (init.status !== 'ready') return;
 
     const unsub = subscribeNotificationResponse(async (payload) => {
+      if (await persistenceBridge.getLaunchArg('e2e_surface_snapshot')) return;
+
       const action = routeActionId(payload.actionId);
       const planId = payload.planId;
       if (!planId) return;

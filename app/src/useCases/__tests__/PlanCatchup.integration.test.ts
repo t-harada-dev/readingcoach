@@ -33,7 +33,7 @@ describe('PlanCatchup integration', () => {
 
   // TC-ABN-10: 04:00またぎ前の catch-up で前日 finalize + 業務日 plan 補完
   it('finalizes previous day and creates business-date plan before 04:00', async () => {
-    setClockForTests(new FakeClock('2026-03-11T03:30:00+09:00'));
+    setClockForTests(new FakeClock('2026-03-11T03:30:00'));
 
     bridgeMock.getPlanForDate.mockImplementation(async (date: string) => {
       if (date === '2026-03-09') {
@@ -64,7 +64,7 @@ describe('PlanCatchup integration', () => {
 
   // TC-ABN-09: 当日plan欠損時は補完生成して主導線を維持
   it('creates business-date plan when missing', async () => {
-    setClockForTests(new FakeClock('2026-03-11T10:00:00+09:00'));
+    setClockForTests(new FakeClock('2026-03-11T10:00:00'));
     bridgeMock.getPlanForDate.mockResolvedValue(null);
 
     const result = await runPlanCatchupUseCase();

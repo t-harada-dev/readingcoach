@@ -1,6 +1,22 @@
 import { persistenceBridge, type ReconcileResult, type TriggerSource } from '../bridge/PersistenceBridge';
 import { notificationBridge } from '../bridge/NotificationBridge';
 
+async function runBestEffort(
+  task: () => Promise<void>,
+  timeoutMs = 3000
+): Promise<void> {
+  try {
+    await Promise.race([
+      task(),
+      new Promise<void>((resolve) => {
+        setTimeout(resolve, timeoutMs);
+      }),
+    ]);
+  } catch {
+    // Notification sync must not block reconcile-based flows.
+  }
+}
+
 /**
  * 論理仕様書 9.2 / 11.2: reconcile_plans
  * 発火点: app launch / foreground / notification response / widget / App Intents / background task
@@ -19,7 +35,7 @@ export async function runReconcilePlansUseCase(
   const referenceDateISO = referenceDate.toISOString();
   const result = await persistenceBridge.reconcilePlans(referenceDateISO, triggerSource);
 
-  await notificationBridge.resyncAfterReconcile();
+  await runBestEffort(() => notificationBridge.resyncAfterReconcile());
   return result;
 }
 
@@ -29,6 +45,6 @@ export async function runReconcilePlansUseCase(
  */
 export async function runReconcileThenNotifyReady(triggerSource: TriggerSource): Promise<ReconcileResult> {
   const result = await runReconcilePlansUseCase(triggerSource);
-  await notificationBridge.ready();
+  await runBestEffort(() => notificationBridge.ready());
   return result;
 }

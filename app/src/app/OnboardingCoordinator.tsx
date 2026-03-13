@@ -1,23 +1,25 @@
 import { useEffect, useRef } from 'react';
 import type { NavigationContainerRefWithCurrent } from '@react-navigation/native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
-import { useAppInit } from '../appInit';
+import type { RootStackParamList } from '../navigation/types';
 
 type Props = {
-  navigationRef: NavigationContainerRefWithCurrent<any>;
+  navigationRef: NavigationContainerRefWithCurrent<RootStackParamList>;
+  navigationReady: boolean;
 };
 
-export function OnboardingCoordinator({ navigationRef }: Props) {
-  const init = useAppInit();
+export function OnboardingCoordinator({ navigationRef, navigationReady }: Props) {
   const consumedRef = useRef(false);
 
   useEffect(() => {
-    if (init.status !== 'ready') return;
-    if (!navigationRef.isReady()) return;
+    if (!navigationReady) return;
     if (consumedRef.current) return;
-    consumedRef.current = true;
 
     (async () => {
+      if (consumedRef.current) return;
+      consumedRef.current = true;
+      if (await persistenceBridge.getLaunchArg('e2e_surface_snapshot')) return;
+
       const forceOnboarding = (await persistenceBridge.getLaunchArg('e2e_onboarding')) === '1';
       const forcedStage = await persistenceBridge.getLaunchArg('e2e_onboarding_stage');
       if (!forceOnboarding) return;
@@ -40,7 +42,7 @@ export function OnboardingCoordinator({ navigationRef }: Props) {
         routes: [{ name: 'OnboardingAddBook', params: { onboarding: true } }],
       });
     })();
-  }, [init.status, navigationRef]);
+  }, [navigationReady, navigationRef]);
 
   return null;
 }

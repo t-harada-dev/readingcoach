@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Screen Specs Index</title>
+    <style>
+      :root {
+        --bg: #f5f3ed;
+        --panel: #ffffff;
+        --text: #2c2c2c;
+        --sub: #5f6673;
+        --line: #dad7cc;
+        --accent: #c7742f;
+        --warn: #9a5f11;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+        background: linear-gradient(180deg, #f7f5ee 0%, #f2efe4 100%);
+        color: var(--text);
+      }
+
+      header {
+        border-bottom: 1px solid var(--line);
+        background: #fffcf5;
+        padding: 14px 18px;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      header p {
+        margin: 6px 0 0;
+        font-size: 12px;
+        color: var(--sub);
+      }
+      .header-links {
+        margin-top: 8px;
+        font-size: 12px;
+      }
+      .header-links code {
+        background: #f4efe4;
+        border: 1px solid #ded5c2;
+        padding: 1px 5px;
+        border-radius: 6px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 14px;
+        padding: 14px;
+        min-height: calc(100vh - 72px);
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+
+      .left {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .controls {
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+        display: grid;
+        gap: 8px;
+      }
+
+      .controls input,
+      .controls select {
+        width: 100%;
+        border: 1px solid #cbc7bb;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 13px;
+        background: #fff;
+        color: var(--text);
+      }
+
+      .list {
+        overflow: auto;
+        padding: 8px;
+      }
+
+      .item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background: transparent;
+        cursor: pointer;
+        margin-bottom: 6px;
+      }
+
+      .item:hover { border-color: #dbd4c3; background: #fbf8ef; }
+      .item.active { border-color: var(--accent); background: #fff6ea; }
+
+      .item-id {
+        font-size: 11px;
+        color: var(--sub);
+        margin-bottom: 4px;
+      }
+
+      .item-title {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .item-meta {
+        margin-top: 5px;
+        font-size: 11px;
+        color: var(--sub);
+      }
+
+      .right {
+        padding: 14px;
+        display: grid;
+        gap: 12px;
+        align-content: start;
+      }
+
+      .badge {
+        display: inline-block;
+        border-radius: 999px;
+        font-size: 11px;
+        padding: 3px 8px;
+        border: 1px solid #d2ccb8;
+        margin-right: 6px;
+      }
+
+      .badge.archive {
+        color: var(--warn);
+        border-color: #dfc7a0;
+        background: #fff5e6;
+      }
+
+      .img-wrap {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #faf8f1;
+        padding: 10px;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .meta {
+        font-size: 12px;
+        color: var(--sub);
+        line-height: 1.5;
+      }
+
+      .raw {
+        margin: 0;
+        white-space: pre-wrap;
+        font-size: 12px;
+        line-height: 1.5;
+        max-height: 280px;
+        overflow: auto;
+        background: #f8f7f2;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+      }
+
+      a { color: #1f5b94; }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Screen Definition Index</h1>
+      <p>Entry point for SC/SF definitions and production-equivalent screenshots.</p>
+      <div class="header-links">
+        <a href="verification.md" target="_blank" rel="noreferrer">確認手順（inline definition表示の確認方法）</a>
+        <span> / </span>
+        <code>cd app && npm run docs:screen-spec:preview</code>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel left">
+        <div class="controls">
+          <input id="q" type="search" placeholder="Search by ID or title" />
+          <select id="typeFilter">
+            <option value="all">All Types</option>
+            <option value="screen">Screen</option>
+            <option value="surface">Surface</option>
+          </select>
+          <select id="statusFilter">
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+        <div id="list" class="list"></div>
+      </section>
+
+      <section class="panel right">
+        <div id="detail">Loading...</div>
+      </section>
+    </main>
+
+    <script src="data/screen-index.js"></script>
+    <script>
+      const state = {
+        data: null,
+        selectedId: null,
+        query: "",
+        type: "all",
+        status: "all",
+      };
+
+      const listEl = document.getElementById("list");
+      const detailEl = document.getElementById("detail");
+      const qEl = document.getElementById("q");
+      const typeEl = document.getElementById("typeFilter");
+      const statusEl = document.getElementById("statusFilter");
+
+      function filteredEntries() {
+        if (!state.data) return [];
+        return state.data.entries.filter((item) => {
+          const hitQuery = !state.query || `${item.id} ${item.title}`.toLowerCase().includes(state.query);
+          const hitType = state.type === "all" || item.type === state.type;
+          const hitStatus = state.status === "all" || item.status === state.status;
+          return hitQuery && hitType && hitStatus;
+        });
+      }
+
+      function selectByHash() {
+        const hash = decodeURIComponent(location.hash.replace(/^#/, ""));
+        if (!hash) return false;
+        const exists = state.data?.entries.some((e) => e.id === hash);
+        if (exists) {
+          state.selectedId = hash;
+          return true;
+        }
+        return false;
+      }
+
+      function renderList() {
+        const entries = filteredEntries();
+        if (entries.length === 0) {
+          listEl.innerHTML = "<p style='padding:8px;color:#5f6673;font-size:12px'>No entries</p>";
+          return;
+        }
+
+        const html = entries
+          .map((item) => {
+            const active = item.id === state.selectedId ? "active" : "";
+            const archiveTag = item.status === "archived" ? " / archived" : "";
+            return `
+              <button class="item ${active}" data-id="${item.id}">
+                <div class="item-id">${item.id}</div>
+                <div class="item-title">${item.title}</div>
+                <div class="item-meta">${item.type}${archiveTag}</div>
+              </button>
+            `;
+          })
+          .join("");
+
+        listEl.innerHTML = html;
+        listEl.querySelectorAll(".item").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-id");
+            state.selectedId = id;
+            location.hash = encodeURIComponent(id);
+            render();
+          });
+        });
+      }
+
+      async function renderDetail() {
+        if (!state.data) {
+          detailEl.textContent = "No data";
+          return;
+        }
+
+        let entry = state.data.entries.find((e) => e.id === state.selectedId);
+        if (!entry) entry = filteredEntries()[0] || state.data.entries[0];
+        if (!entry) {
+          detailEl.textContent = "No entries";
+          return;
+        }
+
+        state.selectedId = entry.id;
+
+        let markdown = "(definition preview not loaded)";
+        if (location.protocol === "file:") {
+          markdown = "(definition preview is disabled on file://. Open verification.md and run local preview server.)";
+        } else {
+          try {
+            const res = await fetch(entry.definitionPath);
+            if (res.ok) markdown = await res.text();
+          } catch {
+            markdown = "(definition fetch failed)";
+          }
+        }
+
+        detailEl.innerHTML = `
+          <div>
+            <h2 style="margin:0 0 6px">${entry.id} ${entry.title}</h2>
+            <span class="badge">${entry.type}</span>
+            <span class="badge ${entry.status === "archived" ? "archive" : ""}">${entry.status}</span>
+          </div>
+          <div class="img-wrap">
+            <img src="${entry.imagePath}" alt="${entry.id}" onerror="this.replaceWith(document.createTextNode('Image not found: ${entry.imagePath}'))" />
+          </div>
+          <div class="meta">
+            <div><b>captureId:</b> ${entry.captureId}</div>
+            <div><b>captureMode:</b> ${entry.captureMode}</div>
+            <div><b>sourceRef:</b> ${entry.sourceRef}</div>
+            <div><b>definition:</b> <a href="${entry.definitionPath}" target="_blank" rel="noreferrer">${entry.definitionPath}</a></div>
+          </div>
+          <pre class="raw">${markdown.replace(/</g, "&lt;")}</pre>
+        `;
+      }
+
+      async function render() {
+        renderList();
+        await renderDetail();
+      }
+
+      async function loadIndexData() {
+        const embedded = window.__SCREEN_SPEC_INDEX__;
+        if (embedded && Array.isArray(embedded.entries)) {
+          return embedded;
+        }
+        const res = await fetch("data/screen-index.json");
+        if (!res.ok) throw new Error(`index fetch failed: ${res.status}`);
+        return res.json();
+      }
+
+      async function init() {
+        state.data = await loadIndexData();
+        if (!selectByHash()) {
+          const first = state.data.entries[0];
+          state.selectedId = first ? first.id : null;
+        }
+        await render();
+      }
+
+      qEl.addEventListener("input", async () => {
+        state.query = qEl.value.trim().toLowerCase();
+        await render();
+      });
+
+      typeEl.addEventListener("change", async () => {
+        state.type = typeEl.value;
+        await render();
+      });
+
+      statusEl.addEventListener("change", async () => {
+        state.status = statusEl.value;
+        await render();
+      });
+
+      window.addEventListener("hashchange", async () => {
+        if (selectByHash()) await render();
+      });
+
+      init().catch((error) => {
+        detailEl.textContent = `Failed to load index: ${error?.message ?? error}`;
+      });
+    </script>
+  </body>
+</html>

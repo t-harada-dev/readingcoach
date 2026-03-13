@@ -1,60 +1,57 @@
 import React, { useState } from 'react';
-import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { copy } from '../config/copy';
 import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
 import { requestPermission, scheduleReadingReminder } from '../notifications';
-import { toLocalISODateString } from '../date';
+import type { ScreenProps } from '../navigation/types';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
+import { buildReserveSchedule } from './reserveHelpers';
 
 const PRESETS = copy.reserve.presets;
 
-export function ReserveScreen({ navigation }: { navigation: { goBack: () => void } }) {
+export function ReserveScreen({ navigation }: ScreenProps<'Reserve'>) {
   const [books, setBooks] = useState<BookDTO[]>([]);
   const [bookId, setBookId] = useState<string | null>(null);
   const [hour, setHour] = useState(21);
   const [minute, setMinute] = useState(0);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const list = await persistenceBridge.getBooks();
-      if (!alive) return;
-      setBooks(list);
-      if (list[0]) setBookId(list[0].id);
-    })();
-    return () => {
-      alive = false;
-    };
+  useAsyncEffect(async (signal) => {
+    const list = await persistenceBridge.getBooks();
+    if (!signal.alive) return;
+    setBooks(list);
+    if (list[0]) setBookId(list[0].id);
   }, []);
 
   const onConfirm = async () => {
     if (!bookId) return;
-    const ok = await requestPermission();
-    if (!ok) {
-      // 許可されなくても予約は保存（通知だけ飛ばない）
+    const settings = await persistenceBridge.getSettings();
+    const notificationsEnabled = settings?.notificationsEnabled !== false;
+
+    if (notificationsEnabled) {
+      const ok = await requestPermission();
+      if (!ok) {
+        // 許可されなくても予約は保存（通知だけ飛ばない）
+      }
     }
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(hour, minute, 0, 0);
-    const planDate = toLocalISODateString(tomorrow);
+    const { scheduledAt, planDate } = buildReserveSchedule(new Date(), hour, minute);
     await persistenceBridge.upsertPlan({
       planDate,
       bookId,
-      scheduledAt: tomorrow.toISOString(),
+      scheduledAt: scheduledAt.toISOString(),
       state: 'scheduled',
       result: 'attempted',
     });
     const book = books.find((b) => b.id === bookId);
     const savedPlan = await persistenceBridge.getPlanForDate(planDate);
-    if (book) {
-      await scheduleReadingReminder(tomorrow, book.title, { planId: savedPlan?.planId });
+    if (book && notificationsEnabled) {
+      await scheduleReadingReminder(scheduledAt, book.title, { planId: savedPlan?.planId });
     }
     navigation.goBack();
   };
 
   if (books.length === 0) {
     return (
-      <View style={styles.container}>
+      <View testID="reserve-empty-state" style={styles.container}>
         <Text style={styles.empty}>{copy.reserve.emptyAddBookFirst}</Text>
         <TouchableOpacity style={styles.link} onPress={() => navigation.goBack()}>
           <Text style={styles.linkText}>{copy.reserve.back}</Text>
@@ -64,12 +61,13 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
   }
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+    <ScrollView testID="reserve-screen" style={styles.scroll} contentContainerStyle={styles.container}>
       <Text style={styles.label}>{copy.reserve.labelTomorrowBook}</Text>
-      <View style={styles.bookList}>
+      <View testID="reserve-book-select" style={styles.bookList}>
         {books.map((b) => (
           <TouchableOpacity
             key={b.id}
+            testID={`reserve-book-row-${b.id}`}
             style={[styles.bookRow, bookId === b.id && styles.bookRowSelected]}
             onPress={() => setBookId(b.id)}
           >
@@ -84,6 +82,7 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
         {PRESETS.map((p) => (
           <TouchableOpacity
             key={p.label}
+            testID={`reserve-time-preset-${p.h}-${p.m}`}
             style={[styles.presetBtn, hour === p.h && minute === p.m && styles.presetSelected]}
             onPress={() => {
               setHour(p.h);
@@ -99,6 +98,7 @@ export function ReserveScreen({ navigation }: { navigation: { goBack: () => void
       </Text>
 
       <TouchableOpacity
+        testID="reserve-confirm"
         style={[styles.cta, !bookId && styles.ctaDisabled]}
         onPress={onConfirm}
         disabled={!bookId}

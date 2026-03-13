@@ -22,7 +22,7 @@ describe('buildCompletionFeedback', () => {
       result: 'hard_success',
       bookTitle: 'テスト本',
     });
-    expect(feedback.title).toBe('今日も前進しました');
+    expect(feedback.title).toBe('今日のセッションを完了しました');
     expect(feedback.progressRatio).toBeNull();
   });
 
@@ -59,4 +59,3 @@ describe('buildCompletionFeedback', () => {
     expect(feedback.progressRatio).toBeNull();
   });
 });
-

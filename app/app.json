@@ -14,7 +14,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSSupportsLiveActivities": true
+        "NSSupportsLiveActivities": true,
+        "NSCameraUsageDescription": "表紙画像を撮影して本の情報に設定するためにカメラを使用します。",
+        "NSPhotoLibraryUsageDescription": "表紙画像を端末から選択して本の情報に設定するために写真ライブラリを使用します。"
       },
       "bundleIdentifier": "com.anonymous.app"
     },

@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { copy } from './config/copy';
+import { persistenceBridge } from './bridge/PersistenceBridge';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -75,6 +76,11 @@ export async function scheduleReadingReminder(
   bookTitle: string,
   options?: ScheduleOptions
 ): Promise<string | null> {
+  const settings = await persistenceBridge.getSettings();
+  if (settings?.notificationsEnabled === false) {
+    return null;
+  }
+
   if (options?.planId) {
     await cancelScheduledForPlan(options.planId);
   }

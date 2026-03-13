@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { appTheme } from '../theme/layout';
 
 type Tone = 'primary' | 'secondary' | 'ghost';
 
@@ -27,20 +28,20 @@ export function SessionCTAButton({ label, onPress, disabled = false, tone = 'pri
 const styles = StyleSheet.create({
   base: {
     width: '100%',
-    borderRadius: 14,
+    borderRadius: appTheme.borderRadius.lg,
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: appTheme.spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
   },
   primary: {
-    backgroundColor: '#D48A3E',
+    backgroundColor: appTheme.colors.accent,
   },
   secondary: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: appTheme.colors.surface,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
+    borderColor: appTheme.colors.borderStrong,
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -53,9 +54,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   primaryLabel: {
-    color: '#FFFFFF',
+    color: appTheme.colors.textInverse,
   },
   secondaryLabel: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
   },
 });
