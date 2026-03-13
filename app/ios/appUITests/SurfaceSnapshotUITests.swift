@@ -7,7 +7,7 @@ final class SurfaceSnapshotUITests: XCTestCase {
   override func setUpWithError() throws {
     continueAfterFailure = false
     app = XCUIApplication()
-    interruptionToken = InterruptionHandling.installSystemAlertMonitor()
+    interruptionToken = InterruptionHandling.installSystemAlertMonitor(on: self)
   }
 
   override func tearDownWithError() throws {
@@ -16,7 +16,10 @@ final class SurfaceSnapshotUITests: XCTestCase {
   }
 
   private func assertSurfaceReady(_ snapshotId: String) {
-    app.launchArguments = ["-e2e_surface_snapshot", snapshotId]
+    app.launchArguments = [
+      "-e2e_open_screen", "surface_snapshot",
+      "-e2e_surface_snapshot", snapshotId
+    ]
     app.launch()
     app.tap()
 

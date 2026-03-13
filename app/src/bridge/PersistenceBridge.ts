@@ -10,12 +10,17 @@ import type {
 } from './PersistenceBridge.types';
 import { mockBridge } from './MockPersistenceBridge';
 
-const Native: any = (NativeModules as any)?.PersistenceBridge;
-const SettingsManager: any = (NativeModules as any)?.SettingsManager;
+function getNativeModule(): NativePersistenceBridgeAPI | null {
+  return ((NativeModules as any)?.PersistenceBridge as NativePersistenceBridgeAPI | undefined) ?? null;
+}
+
+function getSettingsManagerModule(): any {
+  return (NativeModules as any)?.SettingsManager ?? null;
+}
 
 function isNativeAvailable(): NativePersistenceBridgeAPI | null {
   if (Platform.OS !== 'ios') return null;
-  const bridge = Native as NativePersistenceBridgeAPI | undefined;
+  const bridge = getNativeModule();
   if (!bridge) return null;
   if (typeof bridge.getBooks !== 'function') return null;
   if (typeof bridge.getPlanForDate !== 'function') return null;
@@ -29,6 +34,7 @@ function getBridge(): NativePersistenceBridgeAPI {
 }
 
 function readLaunchArgFallback(key: string): string | null {
+  const SettingsManager = getSettingsManagerModule();
   const settings = SettingsManager?.settings;
   const value = settings?.[key];
   if (typeof value === 'string') return value;
@@ -42,6 +48,12 @@ export const persistenceBridge = {
     const fallback = readLaunchArgFallback(key);
     if (typeof bridge.getLaunchArg !== 'function') return fallback;
     try {
+      // E2E launch-args are test-critical. Avoid timeout races on cold start.
+      if (key.startsWith('e2e_')) {
+        const value = await bridge.getLaunchArg(key);
+        return value ?? fallback;
+      }
+
       const value = await Promise.race<string | null>([
         bridge.getLaunchArg(key),
         new Promise<string | null>((resolve) => {

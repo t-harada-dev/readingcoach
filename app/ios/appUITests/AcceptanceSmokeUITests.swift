@@ -7,7 +7,7 @@ final class AcceptanceSmokeUITests: XCTestCase {
   override func setUpWithError() throws {
     continueAfterFailure = false
     app = XCUIApplication()
-    interruptionToken = InterruptionHandling.installSystemAlertMonitor()
+    interruptionToken = InterruptionHandling.installSystemAlertMonitor(on: self)
   }
 
   override func tearDownWithError() throws {

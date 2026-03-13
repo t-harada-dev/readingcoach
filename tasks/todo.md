@@ -1,5 +1,44 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-13: surface:os SF-01/02 失敗収束（続行）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `SurfaceOS01/02` 失敗時に `app.debugDescription` を failure message に出す
+- [x] 失敗ログから現在画面を確定し、`surface_snapshot` 遷移条件の原因を特定する
+- [x] 必要最小限の修正を適用し、`cd app && npm run e2e:capture:surface:os` が `exit code 0` になるまで再検証する
+  - [x] `cd app && npm run e2e:capture:surface:os`（exit code 0, `SurfaceOSPlacementUITests` 5 tests / failure 0）
+
+## 2026-03-13: XCUIビルド失敗修正（ExpoImagePicker / ExpoModulesCore 不整合）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] 原因を依存関係で確定する（`expo-image-picker` が Expo SDK と整合しているか）
+- [x] `package.json` の `expo-image-picker` を SDK 同梱推奨版へ修正する
+- [x] `npm install` と `pod install` を再実行して Pods を再生成する
+- [x] XCUI short を再実行してビルド通過を確認し、結果（exit code / failure件数）を記録する
+  - [x] `cd app && npm install`（exit code 0）
+  - [x] `cd app/ios && pod install`（exit code 0）
+  - [x] `cd app && npm run e2e:xcui:permission:short` 初回（exit code 65, build fail: `addUIInterruptionMonitor` scope）
+  - [x] `cd app && npm run e2e:xcui:permission:short` 2回目（exit code 65, 3 tests 中 2 fail）
+  - [x] `cd app && npm run e2e:xcui:permission:short` 3回目（exit code 65, 3 tests 中 1 fail）
+  - [x] `cd app && npm run e2e:xcui:permission:short` 最終（exit code 0, 3 tests passed / failed 0）
+
+## 2026-03-13: XCUI 次フェーズ実行（permission full + surface-os）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `cd app && npm run e2e:xcui:permission:full` を実行し、8ケースの成否を記録する
+- [x] 失敗があれば `.xcresult` から原因を特定して修正する
+- [x] `cd app && npm run e2e:capture:surface:os` を実行し、Widget/Intent 実OS配置スクショ生成を確認する
+- [x] 最終結果（exit code / pass-fail / 生成物）を記録する
+  - [x] `cd app && npm run e2e:capture:surface:os`（exit code 0, 5 tests passed / failed 0, artifacts: `artifacts/surface-os/2026-03-13T08-43-09Z`）
+
+## 2026-03-13: Surface Snapshot 起動引数ルート安定化
+
+- [x] `e2e_surface_snapshot` の起動引数経路を確認し、失敗点を特定する
+- [x] 初回コールドスタートでも `e2e_*` 引数を取りこぼさないようブリッジ取得を修正する
+- [x] `cd app && npm run e2e:capture:surface:os` を再実行して SF-01/02 を再検証する（複数回実行、毎回 exit code 65）
+- [x] 生成物と終了コードを記録して todo をクローズする
+  - [x] 収束後: `SurfaceOS01/02/03/04/05` すべて pass（exit code 0）
+
 ## 2026-03-13: リファクタリング6フェーズ実行計画（Navigation/Hook/Theme/Bridge/View分離/小整理）
 
 - [x] `tasks/lessons.md` を確認してから着手する

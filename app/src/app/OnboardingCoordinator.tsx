@@ -18,6 +18,7 @@ export function OnboardingCoordinator({ navigationRef, navigationReady }: Props)
     (async () => {
       if (consumedRef.current) return;
       consumedRef.current = true;
+      if (await persistenceBridge.getLaunchArg('e2e_surface_snapshot')) return;
 
       const forceOnboarding = (await persistenceBridge.getLaunchArg('e2e_onboarding')) === '1';
       const forcedStage = await persistenceBridge.getLaunchArg('e2e_onboarding_stage');

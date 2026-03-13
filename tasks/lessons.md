@@ -84,3 +84,8 @@
 
 1. **CocoaPods 構成では `xcodebuild` を `-workspace` 優先で実行する**: `-project` で app 単体ビルドすると Expo/Pods の modulemap 不足で失敗しやすい。
 2. **`e2e:capture:docs` の失敗切り分けは flow と sf:native を分離して確認する**: flow 側の Detox fail と sf:native 側の build/simctl fail は原因が異なるため、先に失敗フェーズを確定してから修正する。
+
+## XCUI 通知権限テストの安定化
+
+1. **`denied` ケース前に設定状態を正規化する**: 前ケースの設定値が残ると、同じ `e2e_notification_permission=denied` でも UI が `enabled` 分岐になる。Settings 経由で事前に OFF に揃える。
+2. **失敗理由は `.xcresult` から行番号で特定する**: `XCTAssertTrue failed` だけでは原因が見えないため、`xcresulttool` で失敗行とメッセージを先に確定してから修正する。

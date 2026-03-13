@@ -29,6 +29,8 @@ if [[ -f "$PROJECT_PATH/project.pbxproj" ]] && grep -q "appUITests" "$PROJECT_PA
     "${XCODE_CONTAINER_ARGS[@]}" \
     -scheme "$SCHEME" \
     -destination "platform=iOS Simulator,name=$SIM_NAME" \
+    -parallel-testing-enabled NO \
+    -maximum-parallel-testing-workers 1 \
     -only-testing:appUITests/SurfaceOSPlacementUITests
 else
   echo "[surface-os] appUITests target not found; running build only"

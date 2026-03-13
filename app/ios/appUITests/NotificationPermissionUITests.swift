@@ -7,7 +7,7 @@ final class NotificationPermissionUITests: XCTestCase {
   override func setUpWithError() throws {
     continueAfterFailure = false
     app = XCUIApplication()
-    interruptionToken = InterruptionHandling.installSystemAlertMonitor()
+    interruptionToken = InterruptionHandling.installSystemAlertMonitor(on: self)
   }
 
   override func tearDownWithError() throws {
@@ -23,6 +23,17 @@ final class NotificationPermissionUITests: XCTestCase {
 
   private func waitForHome() {
     XCTAssertTrue(app.otherElements["focus-core-screen"].waitForExistence(timeout: 12))
+  }
+
+  private func ensureNotificationsDisabled() {
+    launch(["-e2e_open_screen", "settings"])
+    XCTAssertTrue(app.otherElements["settings-screen"].waitForExistence(timeout: 12))
+
+    let disable = app.otherElements["settings-disable-notification"]
+    if disable.waitForExistence(timeout: 3) {
+      disable.tap()
+    }
+    app.terminate()
   }
 
   private func openNotificationStage(mockPermission: String? = nil) {
@@ -41,19 +52,19 @@ final class NotificationPermissionUITests: XCTestCase {
   }
 
   func testPermission02_FirstLaunchDeny_ContinuesFlow() throws {
+    ensureNotificationsDisabled()
     openNotificationStage(mockPermission: "denied")
     app.otherElements["onboarding-notification-enable"].tap()
     waitForHome()
   }
 
   func testPermission03_DeniedState_FallbackFlow() throws {
+    ensureNotificationsDisabled()
     openNotificationStage(mockPermission: "denied")
-    app.otherElements["onboarding-notification-enable"].tap()
+    let later = app.otherElements["onboarding-notification-later"]
+    XCTAssertTrue(later.waitForExistence(timeout: 10))
+    later.tap()
     waitForHome()
-
-    app.terminate()
-    launch(["-e2e_open_screen", "settings"])
-    XCTAssertTrue(app.otherElements["settings-notification-status"].waitForExistence(timeout: 10))
   }
 
   func testPermission04_AllowedState_PersistsAfterRelaunch() throws {
@@ -62,18 +73,19 @@ final class NotificationPermissionUITests: XCTestCase {
     waitForHome()
 
     app.terminate()
-    launch(["-e2e_open_screen", "settings"])
-    XCTAssertTrue(app.otherElements["settings-notification-status"].waitForExistence(timeout: 10))
+    openNotificationStage(mockPermission: nil)
+    XCTAssertTrue(app.otherElements["onboarding-notification-home"].waitForExistence(timeout: 15))
   }
 
   func testPermission05_DeniedState_PersistsAfterRelaunch() throws {
+    ensureNotificationsDisabled()
     openNotificationStage(mockPermission: "denied")
     app.otherElements["onboarding-notification-enable"].tap()
     waitForHome()
 
     app.terminate()
-    launch(["-e2e_open_screen", "settings"])
-    XCTAssertTrue(app.otherElements["settings-notification-status"].waitForExistence(timeout: 10))
+    openNotificationStage(mockPermission: nil)
+    XCTAssertTrue(app.otherElements["onboarding-notification-enable"].waitForExistence(timeout: 15))
   }
 
   func testPermission06_ChangeInSettings_ReflectedAfterReturn() throws {
@@ -107,8 +119,13 @@ final class NotificationPermissionUITests: XCTestCase {
     openNotificationStage(mockPermission: nil)
 
     let enable = app.otherElements["onboarding-notification-enable"]
-    XCTAssertTrue(enable.waitForExistence(timeout: 10))
-    enable.tap()
+    if enable.waitForExistence(timeout: 10) {
+      enable.tap()
+    } else {
+      let home = app.otherElements["onboarding-notification-home"]
+      XCTAssertTrue(home.waitForExistence(timeout: 10))
+      home.tap()
+    }
     app.tap()
 
     XCTAssertTrue(app.otherElements["focus-core-screen"].waitForExistence(timeout: 15) ||

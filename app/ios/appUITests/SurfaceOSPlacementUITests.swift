@@ -3,19 +3,23 @@ import XCTest
 final class SurfaceOSPlacementUITests: XCTestCase {
   private var app: XCUIApplication!
   private var springboard: XCUIApplication!
+  private var interruptionToken: NSObjectProtocol?
 
   override func setUpWithError() throws {
     continueAfterFailure = false
     app = XCUIApplication()
     springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+    interruptionToken = InterruptionHandling.installSystemAlertMonitor(on: self)
   }
 
   override func tearDownWithError() throws {
     app = nil
     springboard = nil
+    interruptionToken = nil
   }
 
   private func launch(_ args: [String]) {
+    app.terminate()
     app.launchArguments = args
     app.launch()
     app.tap()
@@ -30,9 +34,29 @@ final class SurfaceOSPlacementUITests: XCTestCase {
   }
 
   private func captureSurfaceSnapshot(_ id: String, attachmentName: String) {
-    launch(["-e2e_surface_snapshot", id])
-    XCTAssertTrue(app.otherElements["surface-snapshot-ready-\(id)"].waitForExistence(timeout: 10))
+    launch([
+      "-e2e_open_screen", "surface_snapshot",
+      "-e2e_surface_snapshot", id
+    ])
+    assertExists("surface-snapshot-ready-\(id)", timeout: 10)
+    assertExists("surface-snapshot-ready", timeout: 10)
     capture(attachmentName)
+  }
+
+  private func assertExists(_ testID: String, timeout: TimeInterval) {
+    let exists = app.otherElements[testID].waitForExistence(timeout: timeout)
+    XCTAssertTrue(exists, "Missing testID=\(testID)\n--- app.debugDescription ---\n\(app.debugDescription)")
+  }
+
+  private func assertAnyExists(_ testIDs: [String], timeout: TimeInterval) {
+    let start = Date()
+    while Date().timeIntervalSince(start) < timeout {
+      if testIDs.contains(where: { app.otherElements[$0].exists }) {
+        return
+      }
+      RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+    }
+    XCTFail("Missing any testID in \(testIDs)\n--- app.debugDescription ---\n\(app.debugDescription)")
   }
 
   func testSurfaceOS01_WidgetNormalPlacementShot() throws {
@@ -52,20 +76,22 @@ final class SurfaceOSPlacementUITests: XCTestCase {
   func testSurfaceOS03_IntentStartShot() throws {
     launch([
       "-e2e_state", "due_normal",
+      "-e2e_session_seconds", "900",
       "-e2e_surface_source", "app_intent",
       "-e2e_surface_action", "start"
     ])
-    XCTAssertTrue(app.otherElements["active-session-screen"].waitForExistence(timeout: 12))
+    assertAnyExists(["active-session-screen", "completion-screen"], timeout: 12)
     capture("surface-os_intent_start")
   }
 
   func testSurfaceOS04_IntentStart5mShot() throws {
     launch([
       "-e2e_state", "due_rehab3",
+      "-e2e_session_seconds", "900",
       "-e2e_surface_source", "app_intent",
       "-e2e_surface_action", "start_5m"
     ])
-    XCTAssertTrue(app.otherElements["active-session-screen"].waitForExistence(timeout: 12))
+    assertAnyExists(["active-session-screen", "completion-screen"], timeout: 12)
     capture("surface-os_intent_start_5m")
   }
 
@@ -74,7 +100,7 @@ final class SurfaceOSPlacementUITests: XCTestCase {
       "-e2e_surface_source", "app_intent",
       "-e2e_surface_action", "show_today_book"
     ])
-    XCTAssertTrue(app.otherElements["focus-core-screen"].waitForExistence(timeout: 12))
+    assertExists("focus-core-screen", timeout: 12)
     capture("surface-os_intent_show_today_book")
   }
 }

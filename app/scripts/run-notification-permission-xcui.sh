@@ -42,4 +42,6 @@ xcodebuild test \
   "${XCODE_CONTAINER_ARGS[@]}" \
   -scheme "$SCHEME" \
   -destination "platform=iOS Simulator,name=$SIM_NAME" \
+  -parallel-testing-enabled NO \
+  -maximum-parallel-testing-workers 1 \
   "${ARGS[@]}"

@@ -48,6 +48,7 @@ export function SurfaceTriggerCoordinator({ navigationRef, navigationReady }: Pr
     (async () => {
       if (consumedRef.current) return;
       consumedRef.current = true;
+      if (await persistenceBridge.getLaunchArg('e2e_surface_snapshot')) return;
 
       const source = toSource(await persistenceBridge.getLaunchArg('e2e_surface_source'));
       const action = toAction(await persistenceBridge.getLaunchArg('e2e_surface_action'));
