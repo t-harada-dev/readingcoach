@@ -1,9 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createNavigationContainerRef, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import type { NavigationContainerRefWithCurrent } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View } from 'react-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppInitProvider } from './src/appInit';
 import { NotificationResponseCoordinator } from './src/app/NotificationResponseCoordinator';
@@ -31,10 +32,73 @@ import { ProgressTrackingSetupScreen } from './src/screens/ProgressTrackingSetup
 import { ReserveScreen } from './src/screens/ReserveScreen';
 import { RestartRecoveryScreen } from './src/screens/RestartRecoveryScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { isSurfaceSnapshotId, SurfaceSnapshotScreen } from './src/screens/SurfaceSnapshotScreen';
 import { TimeChangeScreen } from './src/screens/TimeChangeScreen';
 
 const Stack = createNativeStackNavigator();
 const navigationRef = createNavigationContainerRef();
+
+function InitialLaunchCoordinator({
+    navigationRef,
+    navigationReady,
+    onCatalogFlags,
+}: {
+    navigationRef: NavigationContainerRefWithCurrent<any>;
+    navigationReady: boolean;
+    onCatalogFlags: (enabled: boolean, autoOpen: boolean) => void;
+}) {
+    const consumedRef = useRef(false);
+
+    useEffect(() => {
+        if (!navigationReady) return;
+        if (consumedRef.current) return;
+
+        (async () => {
+            if (consumedRef.current) return;
+            consumedRef.current = true;
+
+            try {
+                const [enabledArg, autoOpenArg, surfaceSnapshot, openScreen] = await Promise.all([
+                    persistenceBridge.getLaunchArg('e2e_screen_catalog'),
+                    persistenceBridge.getLaunchArg('e2e_screen_catalog_auto_open'),
+                    persistenceBridge.getLaunchArg('e2e_surface_snapshot'),
+                    persistenceBridge.getLaunchArg('e2e_open_screen'),
+                ]);
+
+                const enabled = enabledArg === '1';
+                const autoOpen = autoOpenArg === '1';
+                onCatalogFlags(enabled, autoOpen);
+
+                if (isSurfaceSnapshotId(surfaceSnapshot)) {
+                    requestAnimationFrame(() => {
+                        if (!navigationRef.isReady()) return;
+                        (navigationRef as any).navigate('SurfaceSnapshot', { snapshotId: surfaceSnapshot });
+                    });
+                    return;
+                }
+
+                if (openScreen === 'settings') {
+                    requestAnimationFrame(() => {
+                        if (!navigationRef.isReady()) return;
+                        navigationRef.navigate('Settings' as never);
+                    });
+                    return;
+                }
+
+                if (enabled && autoOpen) {
+                    requestAnimationFrame(() => {
+                        if (!navigationRef.isReady()) return;
+                        navigationRef.navigate('DevScreenCatalog' as never);
+                    });
+                }
+            } catch {
+                // e2e launch args are best-effort and must not block app startup.
+            }
+        })();
+    }, [navigationReady, navigationRef, onCatalogFlags]);
+
+    return null;
+}
 
 const theme = {
     ...DefaultTheme,
@@ -52,6 +116,11 @@ export default function App() {
     const [activeRouteName, setActiveRouteName] = useState<string | undefined>(undefined);
     const [e2eCatalogEnabled, setE2eCatalogEnabled] = useState(false);
     const [e2eCatalogAutoOpen, setE2eCatalogAutoOpen] = useState(false);
+    const [navigationReady, setNavigationReady] = useState(false);
+    const applyCatalogFlags = useCallback((enabled: boolean, autoOpen: boolean) => {
+        setE2eCatalogEnabled(enabled);
+        setE2eCatalogAutoOpen(autoOpen);
+    }, []);
     const syncRouteName = useCallback(() => {
         if (!navigationRef.isReady()) return;
         setActiveRouteName(navigationRef.getCurrentRoute()?.name);
@@ -69,24 +138,20 @@ export default function App() {
                     <NavigationContainer
                         theme={theme}
                         ref={navigationRef}
-                        onReady={async () => {
+                        onReady={() => {
+                            setNavigationReady(true);
                             syncRouteName();
-                            const enabled = (await persistenceBridge.getLaunchArg('e2e_screen_catalog')) === '1';
-                            const autoOpen = (await persistenceBridge.getLaunchArg('e2e_screen_catalog_auto_open')) === '1';
-                            setE2eCatalogEnabled(enabled);
-                            setE2eCatalogAutoOpen(autoOpen);
-                            if (enabled && autoOpen) {
-                                requestAnimationFrame(() => {
-                                    if (!navigationRef.isReady()) return;
-                                    navigationRef.navigate('DevScreenCatalog' as never);
-                                });
-                            }
                         }}
                         onStateChange={syncRouteName}
                     >
+                        <InitialLaunchCoordinator
+                            navigationRef={navigationRef}
+                            navigationReady={navigationReady}
+                            onCatalogFlags={applyCatalogFlags}
+                        />
                         <NotificationResponseCoordinator navigationRef={navigationRef} />
-                        <SurfaceTriggerCoordinator navigationRef={navigationRef} />
-                        <OnboardingCoordinator navigationRef={navigationRef} />
+                        <SurfaceTriggerCoordinator navigationRef={navigationRef} navigationReady={navigationReady} />
+                        <OnboardingCoordinator navigationRef={navigationRef} navigationReady={navigationReady} />
                         <Stack.Navigator
                             initialRouteName="FocusCore"
                             screenOptions={{
@@ -186,6 +251,11 @@ export default function App() {
                                 name="OnboardingNotification"
                                 component={OnboardingNotificationScreen}
                                 options={{ title: '通知案内', headerBackVisible: false }}
+                            />
+                            <Stack.Screen
+                                name="SurfaceSnapshot"
+                                component={SurfaceSnapshotScreen}
+                                options={{ title: 'Surface Snapshot', headerBackVisible: false }}
                             />
                             {showCatalogDevTools ? (
                                 <>

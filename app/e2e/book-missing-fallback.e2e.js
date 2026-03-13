@@ -10,10 +10,10 @@ describe('Book Missing Fallback', () => {
       launchArgs: { e2e_state: 'book_missing' },
     });
 
-    await waitFor(element(by.id('focus-core-primary-cta'))).toBeVisible().withTimeout(20000);
-    await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(15000);
+    await waitFor(element(by.id('focus-core-no-book-warning'))).toBeVisible().withTimeout(20000);
+    await waitFor(element(by.id('focus-core-resolve-book'))).toBeVisible().withTimeout(15000);
 
-    await element(by.id('focus-core-change-book')).tap();
-    await waitFor(element(by.id('library-screen'))).toBeVisible().withTimeout(10000);
+    await element(by.id('focus-core-resolve-book')).tap();
+    await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
   });
 });

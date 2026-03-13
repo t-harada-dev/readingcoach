@@ -1,5 +1,66 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-13: Screen Spec 確認手順の可視化（index導線 + 実行コマンド）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `definition本文インライン表示` の確認手順を文書化する
+- [x] `docs/screen-spec/index.html` から確認手順へ遷移できる導線を追加する
+- [x] ローカルサーバー起動を1コマンド化（preview script + npm script）
+- [x] 実行検証（preview command 起動確認）を行い、結果を記録する
+  - [x] `cd app && npm run docs:screen-spec:preview`（サーバー起動を確認、`Ctrl+C` で停止）
+
+## 2026-03-13: 画面定義書再編の完了確認 + 直開き表示復旧 + 計画永続化運用
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] 現状監査（`docs/screen-spec/index.html` 表示可否、`screen-index.json` の `syncState`、`assets` 実ファイル）を確認する
+- [x] 最新計画と実施済み計画を分離して永続化する仕組みを追加する
+  - [x] `tasks/plans/current.md` を作成し、今回の実行計画をチェックリスト化
+  - [x] `tasks/plans/completed.md` を作成し、完了済み計画の履歴を記録する運用を明記
+  - [x] `tasks/todo.md` から current/completed 参照導線を追加する（参照先: `tasks/plans/current.md`, `tasks/plans/completed.md`）
+- [x] `docs/screen-spec/index.html` が `file://` 直開きでも一覧表示できるようにする
+- [x] `screen-index` の配布形式を改善し、`refresh/sync` 実行時に参照データを自動再生成する
+- [x] `npm run docs:screen-spec:refresh` を再実行し、SC/SF スクリーンショット正本を再同期する
+- [x] 検証を実行して結果を記録する
+  - [x] `cd app && npm run docs:screen-spec:refresh`（exit code 0, copied=32 / missing=0 / total=33）
+  - [x] `cd app && npm run e2e:snapshot:manifest:check`（exit code 0, requiredTargets=32, implementedTargets=32）
+  - [x] `cd app && npm run typecheck`（exit code 0）
+
+## 2026-03-13: E2E回帰 + docs capture 復旧（全回帰+docs）
+
+- [x] `tasks/lessons.md` を確認し、今回の復旧方針を固定
+- [x] iOS Settings 永続化契約を JS DTO と一致させる（progress/notification flags）
+  - [x] `SettingsEntity` に optional flags を追加
+  - [x] `SaveSettingsParams` / `PersistenceStore.saveSettings` / `toDTO` を拡張
+- [x] `progress prompt` の skip 復帰ハングを解消（設定保存成功でループ停止、必要なら縮退復帰）
+- [x] `e2e_open_screen=settings` を deterministic に遷移させる（init.ready 後に一度だけ適用）
+- [x] スナップショット不安定ケースを harden
+  - [x] `addbook-snapshots` に add-book 遷移リトライ導入
+  - [x] `session-snapshots` SC-13 を段階待機（active-session-screen → mode-3）へ変更
+  - [x] `completionFlow` の待機上限を 120s 未満へ調整
+- [x] 失敗関連のピンポイント Detox を再実行して収束確認
+- [x] フル回帰: `cd app && npm run e2e:test:ios`（exit code 0, 28 suites / 80 tests failed=0）
+- [x] docs capture: `cd app && npm run e2e:capture:docs`（exit code 0, flows 7 suites / 23 tests + sf native captures）
+- [x] 補助確認: `cd app && npm run e2e:snapshot:manifest:check` / `cd app && npm run typecheck`
+
+## 2026-03-13: 画面定義書再編 + 全対象スクリーンショット基盤（SC+SF）
+
+- [x] `docs/screen-spec/` のディレクトリ構造を新設（index/README/data/definitions/assets）
+- [x] 画面定義書を SC/SF 全件で分割作成し、SC-08 は `archive` 扱いで保持
+- [x] 既存マスター文書の `## 6. 画面定義` / `## 7. Surface 定義` を定義書リンク集へ置換
+- [x] `docs/screen-spec/data/screen-index.json` を正本として定義し、`index.html` から動的参照
+- [x] `app/e2e/snapshots/snapshotTargets.json` / `uiSnapshotManifest.v1.json` を core10 から SC+SF 全対象へ拡張
+- [x] `app/scripts/check-ui-snapshot-manifest.js` を全対象チェック仕様へ更新
+- [x] SC 用 snapshot suite を拡張し、`npm run e2e:capture:docs` で一括収集できる状態にする
+- [x] SF 用 native UI test（`appUITests/SurfaceSnapshotUITests.swift`）とキャプチャスクリプトを追加
+- [x] `docs:screen-spec:refresh` スクリプトを追加し、成果物画像を `docs/screen-spec/assets/screenshots/**` へ正規化コピー
+- [x] 関連ドキュメント（manual commands / snapshot design / release matrix）を新運用へ更新
+- [x] 検証を実行して結果を記録（最低: typecheck + manifest check、可能なら capture コマンド）
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm run e2e:snapshot:manifest:check`（exit code 0, requiredTargets=32）
+  - [x] `cd app && npm run docs:screen-spec:refresh`（exit code 0, copied=9 / missing=23）
+  - [x] `cd app && npm test -- src/dev/screenCatalog/screenCatalog.test.ts`（exit code 0, 1 file / 7 tests passed）
+  - [x] `cd app && npm run e2e:capture:docs`（exit code 0, flows 7 suites / 23 tests + sf native captures 9 files）
+
 ## 2026-03-13: SC-20 選択カード強調（Library）
 
 - [x] `LibraryView` の選択中カード（`isFocus`）に強調スタイル（背景/枠）を追加

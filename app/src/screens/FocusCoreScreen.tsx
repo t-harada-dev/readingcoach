@@ -140,6 +140,7 @@ export function FocusCoreScreen({ navigation, route }: any) {
     const subMode: SessionMode | null = policy.secondaryMode;
     const rehabMode: SessionMode | null = policy.rehabMode;
     const skipRestartOnce = Boolean(route?.params?.skipRestartOnce);
+    const skipDueRouteOnce = Boolean(route?.params?.skipDueRouteOnce);
 
     useEffect(() => {
         if (!skipRestartOnce) return;
@@ -147,7 +148,13 @@ export function FocusCoreScreen({ navigation, route }: any) {
     }, [navigation, skipRestartOnce]);
 
     useEffect(() => {
+        if (!skipDueRouteOnce) return;
+        navigation.setParams({ skipDueRouteOnce: false });
+    }, [navigation, skipDueRouteOnce]);
+
+    useEffect(() => {
         if (loading || init.status !== 'ready') return;
+        if (skipDueRouteOnce) return;
         if (!plan) return;
         if (plan.state !== 'due') {
             dueRoutedPlanIdRef.current = null;
@@ -163,7 +170,7 @@ export function FocusCoreScreen({ navigation, route }: any) {
             entryPoint: 'app',
             dueActionScreenId: 'SC-23',
         });
-    }, [continuousMissedDays, init.status, loading, navigation, plan]);
+    }, [continuousMissedDays, init.status, loading, navigation, plan, skipDueRouteOnce]);
 
     useEffect(() => {
         if (loading || init.status !== 'ready') return;

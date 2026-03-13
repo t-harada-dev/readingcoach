@@ -6,9 +6,10 @@ const path = require('path');
 const manifestPath = path.resolve(__dirname, '../e2e/snapshots/uiSnapshotManifest.v1.json');
 const snapshotTargetsPath = path.resolve(__dirname, '../e2e/snapshots/snapshotTargets.json');
 
-const allowedUiTypes = new Set(['screen']);
-const allowedModes = new Set(['detox_flow', 'detox_injected']);
+const allowedUiTypes = new Set(['screen', 'surface']);
+const allowedModes = new Set(['detox_flow', 'detox_injected', 'xctest_simctl']);
 const allowedStatus = new Set(['implemented']);
+const allowedCaptureSources = new Set(['flow', 'injected', 'native_ui']);
 
 function fail(message) {
   console.error(`[ui-snapshot-manifest] ERROR: ${message}`);
@@ -38,6 +39,24 @@ function main() {
     fail('snapshotTargets must be an array');
   }
 
+  const duplicateTarget = new Set();
+  for (const [index, target] of snapshotTargets.entries()) {
+    const pointer = `snapshotTargets[${index}]`;
+    for (const key of ['screenId', 'scenario', 'captureSource', 'suite']) {
+      if (typeof target[key] !== 'string' || target[key].trim() === '') {
+        fail(`${pointer}.${key} must be a non-empty string`);
+      }
+    }
+    if (!allowedCaptureSources.has(target.captureSource)) {
+      fail(`${pointer}.captureSource is invalid: ${target.captureSource}`);
+    }
+    const targetId = `${target.screenId}:${target.scenario}`;
+    if (duplicateTarget.has(targetId)) {
+      fail(`duplicate snapshot target: ${targetId}`);
+    }
+    duplicateTarget.add(targetId);
+  }
+
   const requiredTargetIds = new Set(
     snapshotTargets.map((target) => `${target.screenId}:${target.scenario}`)
   );
@@ -53,7 +72,7 @@ function main() {
       }
     }
     if (entry.baseline !== true) {
-      fail(`${pointer}.baseline must be true (core10 scope)`);
+      fail(`${pointer}.baseline must be true`);
     }
     if (!allowedUiTypes.has(entry.uiType)) {
       fail(`${pointer}.uiType is invalid: ${entry.uiType}`);
@@ -71,13 +90,13 @@ function main() {
     foundTargetIds.add(entry.targetId);
 
     if (!requiredTargetIds.has(entry.targetId)) {
-      fail(`unexpected targetId for core10 scope: ${entry.targetId}`);
+      fail(`unexpected targetId: ${entry.targetId}`);
     }
   }
 
   for (const targetId of requiredTargetIds) {
     if (!foundTargetIds.has(targetId)) {
-      fail(`missing required core10 targetId: ${targetId}`);
+      fail(`missing required targetId: ${targetId}`);
     }
   }
 
@@ -87,7 +106,7 @@ function main() {
 
   console.log('[ui-snapshot-manifest] OK');
   console.log(JSON.stringify({
-    scope: 'core10',
+    scope: manifest?.scope?.mode ?? 'unknown',
     requiredTargets: requiredTargetIds.size,
     implementedTargets: foundTargetIds.size,
   }, null, 2));

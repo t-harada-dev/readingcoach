@@ -99,13 +99,25 @@ final class PersistenceStore {
       existing.defaultDuration = params.defaultDuration
       existing.retryLimit = params.retryLimit
       existing.dayRolloverHour = params.dayRolloverHour
+      if let progressTrackingEnabled = params.progressTrackingEnabled {
+        existing.progressTrackingEnabled = progressTrackingEnabled
+      }
+      if let progressPromptShown = params.progressPromptShown {
+        existing.progressPromptShown = progressPromptShown
+      }
+      if let notificationsEnabled = params.notificationsEnabled {
+        existing.notificationsEnabled = notificationsEnabled
+      }
     } else {
       context.insert(
         SettingsEntity(
           dailyTargetTime: params.dailyTargetTime,
           defaultDuration: params.defaultDuration,
           retryLimit: params.retryLimit,
-          dayRolloverHour: params.dayRolloverHour
+          dayRolloverHour: params.dayRolloverHour,
+          progressTrackingEnabled: params.progressTrackingEnabled,
+          progressPromptShown: params.progressPromptShown,
+          notificationsEnabled: params.notificationsEnabled
         )
       )
     }
@@ -359,12 +371,9 @@ final class PersistenceStore {
   }
 
   private func injectedPlanStateFromLaunchArgs() -> E2EInjectedPlanState? {
-    let args = ProcessInfo.processInfo.arguments
-    guard let idx = args.firstIndex(of: "-e2e_state"), idx + 1 < args.count else {
+    guard let state = launchArgValue("e2e_state")?.lowercased() else {
       return nil
     }
-
-    let state = args[idx + 1].lowercased()
     switch state {
     case "rehab3":
       return E2EInjectedPlanState(missedDays: 3, state: nil, retryCount: nil, overrideBookId: nil, forceHeavyDay: nil)
@@ -393,11 +402,10 @@ final class PersistenceStore {
     if e2eStartFailureConsumed {
       return false
     }
-    let args = ProcessInfo.processInfo.arguments
-    guard let idx = args.firstIndex(of: "-e2e_fail_start_once"), idx + 1 < args.count else {
+    guard let raw = launchArgValue("e2e_fail_start_once") else {
       return false
     }
-    let enabled = args[idx + 1] == "1"
+    let enabled = raw == "1"
     if enabled {
       e2eStartFailureConsumed = true
     }
@@ -405,26 +413,37 @@ final class PersistenceStore {
   }
 
   private func e2eSessionSecondsFromLaunchArgs() -> Int? {
-    let args = ProcessInfo.processInfo.arguments
-    guard let idx = args.firstIndex(of: "-e2e_session_seconds"), idx + 1 < args.count else {
-      return nil
-    }
-    return Int(args[idx + 1])
+    guard let raw = launchArgValue("e2e_session_seconds") else { return nil }
+    return Int(raw)
   }
 
   private func e2eFailSaveBookOnceFromLaunchArgs() -> Bool {
     if e2eSaveBookFailureConsumed {
       return false
     }
-    let args = ProcessInfo.processInfo.arguments
-    guard let idx = args.firstIndex(of: "-e2e_fail_save_book_once"), idx + 1 < args.count else {
+    guard let raw = launchArgValue("e2e_fail_save_book_once") else {
       return false
     }
-    let enabled = args[idx + 1] == "1"
+    let enabled = raw == "1"
     if enabled {
       e2eSaveBookFailureConsumed = true
     }
     return enabled
+  }
+
+  private func launchArgValue(_ key: String) -> String? {
+    let args = ProcessInfo.processInfo.arguments
+    let flag = "-\(key)"
+    if let idx = args.firstIndex(of: flag), idx + 1 < args.count {
+      return args[idx + 1]
+    }
+    if let value = UserDefaults.standard.string(forKey: key) {
+      return value
+    }
+    if let value = UserDefaults.standard.object(forKey: key) as? NSNumber {
+      return value.stringValue
+    }
+    return nil
   }
 
   private func ensureSeededIfNeeded() throws {
@@ -457,6 +476,26 @@ final class PersistenceStore {
           status: "queued"
         )
       )
+    }
+
+    if launchArgValue("e2e_progress_tracking_enabled") == "1" {
+      let settingsDescriptor = FetchDescriptor<SettingsEntity>()
+      if let settings = try context.fetch(settingsDescriptor).first {
+        settings.progressTrackingEnabled = true
+        settings.progressPromptShown = true
+      } else {
+        context.insert(
+          SettingsEntity(
+            dailyTargetTime: 21 * 60,
+            defaultDuration: 15,
+            retryLimit: 1,
+            dayRolloverHour: 4,
+            progressTrackingEnabled: true,
+            progressPromptShown: true,
+            notificationsEnabled: true
+          )
+        )
+      }
     }
 
     if context.hasChanges {

@@ -22,10 +22,10 @@ describe('Finished Book Recovery', () => {
     await ensureCompletionActionVisible('completion-finished-book');
 
     await element(by.id('completion-finished-book')).tap();
-    await waitFor(element(by.id('completion-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('completion-message'))).toBeVisible().withTimeout(10000);
     await waitFor(element(by.id('completion-finished-error'))).toBeVisible().withTimeout(10000);
 
     await element(by.id('completion-finished-book')).tap();
-    await waitFor(element(by.id('next-focus-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('next-focus-selection-ready'))).toExist().withTimeout(10000);
   });
 });

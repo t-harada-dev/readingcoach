@@ -3,6 +3,7 @@ import { NativeModules, Platform } from 'react-native';
 import { copy } from '../config/copy';
 
 const Native: any = (NativeModules as any)?.PersistenceBridge;
+const SettingsManager: any = (NativeModules as any)?.SettingsManager;
 
 export type TriggerSource =
   | 'app_launch'
@@ -372,11 +373,30 @@ function getBridge(): NativePersistenceBridgeAPI {
   return isNativeAvailable() ?? mockBridge;
 }
 
+function readLaunchArgFallback(key: string): string | null {
+  const settings = SettingsManager?.settings;
+  const value = settings?.[key];
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return null;
+}
+
 export const persistenceBridge = {
   async getLaunchArg(key: string): Promise<string | null> {
     const bridge = getBridge();
-    if (typeof bridge.getLaunchArg !== 'function') return null;
-    return bridge.getLaunchArg(key);
+    const fallback = readLaunchArgFallback(key);
+    if (typeof bridge.getLaunchArg !== 'function') return fallback;
+    try {
+      const value = await Promise.race<string | null>([
+        bridge.getLaunchArg(key),
+        new Promise<string | null>((resolve) => {
+          setTimeout(() => resolve(fallback), 250);
+        }),
+      ]);
+      return value ?? fallback;
+    } catch {
+      return fallback;
+    }
   },
 
   getSettings(): Promise<UserSettingsDTO | null> {

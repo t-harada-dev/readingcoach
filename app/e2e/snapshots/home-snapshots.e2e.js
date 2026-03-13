@@ -27,7 +27,7 @@ describe('Flow Snapshots: Home', () => {
   it('captures SC-05 / heavy_day (injected)', async () => {
     await launchHome({ e2e_state: 'heavy_day' });
 
-    await waitFor(element(by.id('focus-core-primary-cta'))).toBeVisible().withTimeout(15000);
+    await waitFor(element(by.id('focus-core-resolve-book'))).toBeVisible().withTimeout(15000);
     await tracker.capture('SC-05', 'heavy_day');
   });
 

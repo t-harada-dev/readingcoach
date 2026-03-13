@@ -52,6 +52,8 @@ describe('Onboarding Flow', () => {
     await element(by.id('onboarding-search-input')).tapReturnKey();
     await waitFor(element(by.id('onboarding-manual-entry'))).toExist().withTimeout(10000);
     await element(by.id('add-book-manual-title')).typeText('Manual Onboarding');
+    await element(by.id('add-book-manual-title')).tapReturnKey();
+    await waitFor(element(by.id('add-book-manual-save'))).toExist().withTimeout(10000);
     await element(by.id('add-book-manual-save')).tap();
     await waitFor(element(by.id('onboarding-time-save'))).toExist().withTimeout(10000);
   });
@@ -64,6 +66,8 @@ describe('Onboarding Flow', () => {
     await element(by.id('onboarding-search-empty-fallback')).tap();
     await waitFor(element(by.id('onboarding-manual-entry'))).toExist().withTimeout(10000);
     await element(by.id('add-book-manual-title')).typeText('Offline Manual');
+    await element(by.id('add-book-manual-title')).tapReturnKey();
+    await waitFor(element(by.id('add-book-manual-save'))).toExist().withTimeout(10000);
     await element(by.id('add-book-manual-save')).tap();
     await waitFor(element(by.id('onboarding-time-save'))).toExist().withTimeout(10000);
   });

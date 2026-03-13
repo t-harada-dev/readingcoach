@@ -23,6 +23,23 @@ export function DueActionSheetScreen({ navigation, route }: any) {
     const [bookCoverSource, setBookCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
     const [hasSelectedBook, setHasSelectedBook] = useState(true);
 
+    const closeAfterSnooze = () => {
+        if (typeof navigation.canGoBack === 'function' && navigation.canGoBack()) {
+            navigation.goBack();
+            return;
+        }
+
+        if (typeof navigation.reset === 'function') {
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'FocusCore', params: { skipRestartOnce: true, skipDueRouteOnce: true } }],
+            });
+            return;
+        }
+
+        navigation.navigate('FocusCore', { skipRestartOnce: true, skipDueRouteOnce: true });
+    };
+
     useEffect(() => {
         let alive = true;
         if (!planId) return () => { alive = false; };
@@ -87,7 +104,7 @@ export function DueActionSheetScreen({ navigation, route }: any) {
                 setBusy(true);
                 try {
                     await runSnoozePlanUseCase(planId, 30);
-                    navigation.goBack();
+                    closeAfterSnooze();
                 } finally {
                     setBusy(false);
                 }

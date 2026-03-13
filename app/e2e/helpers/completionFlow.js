@@ -42,10 +42,10 @@ async function reachCompletion({ dismissProgressPrompt = false, sessionStarted =
     await startSessionFromHome();
   }
 
-  const deadline = Date.now() + 130000;
+  const deadline = Date.now() + 90000;
   while (Date.now() < deadline) {
     try {
-      await expect(element(by.id('completion-screen'))).toBeVisible();
+      await expect(element(by.id('completion-message'))).toBeVisible();
       return;
     } catch {
       // no-op
@@ -55,7 +55,7 @@ async function reachCompletion({ dismissProgressPrompt = false, sessionStarted =
       await expect(element(by.id('progress-prompt-screen'))).toBeVisible();
       if (!dismissProgressPrompt) return;
       await element(by.id('progress-prompt-later')).tap();
-      await waitFor(element(by.id('completion-screen'))).toBeVisible().withTimeout(10000);
+      await waitFor(element(by.id('completion-message'))).toBeVisible().withTimeout(15000);
       return;
     } catch {
       // no-op

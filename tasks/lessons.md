@@ -79,3 +79,8 @@
 
 1. **モーダル表示中でも親画面を `null` で潰さない**: `presentation: 'modal'` を使う画面で親を空描画にすると、戻る操作で空画面に落ちる経路が発生する。
 2. **導線変更時は副作用契約を追従確認する**: 画面遷移先を差し替えるときは、旧導線で実行されていたカウンタ更新（例: manual focus change count）を失っていないかを必ず確認する。
+
+## SF Native キャプチャ（xcodebuild）
+
+1. **CocoaPods 構成では `xcodebuild` を `-workspace` 優先で実行する**: `-project` で app 単体ビルドすると Expo/Pods の modulemap 不足で失敗しやすい。
+2. **`e2e:capture:docs` の失敗切り分けは flow と sf:native を分離して確認する**: flow 側の Detox fail と sf:native 側の build/simctl fail は原因が異なるため、先に失敗フェーズを確定してから修正する。

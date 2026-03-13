@@ -34,7 +34,7 @@
 - Gate-1: blocker ケースの manual acceptance が全件 PASS
 - Gate-2: `npm run e2e:test:ios` と `npm test` が直近実行で PASS
 - Gate-3: non-blocker は既知制約として証跡リンク付きで管理
-- Gate-4: `npm run e2e:snapshot:manifest:check` が PASS（Core 10 画面の欠落なし）
+- Gate-4: `npm run e2e:snapshot:manifest:check` が PASS（SC+SF 対象の欠落なし）
 
 ## blocker 扱い（初期定義）
 - TC-SUR-NA-01

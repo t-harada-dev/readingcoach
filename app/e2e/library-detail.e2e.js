@@ -2,20 +2,33 @@ const { expect, element, by, waitFor } = require('detox');
 const { launchAppUnsynced } = require('./helpers/launchApp');
 
 async function launchToLibrary() {
-  await launchAppUnsynced({ newInstance: true, delete: true });
-  await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(15000);
+  await launchAppUnsynced({
+    newInstance: true,
+    delete: true,
+    launchArgs: { e2e_progress_tracking_enabled: '1' },
+  });
+  await waitFor(element(by.id('focus-core-scroll'))).toExist().withTimeout(15000);
+
+  for (let i = 0; i < 5; i += 1) {
+    try {
+      await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(1200);
+      break;
+    } catch {
+      await element(by.id('focus-core-scroll')).scroll(260, 'down');
+    }
+  }
+  await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(10000);
 
   for (let i = 0; i < 3; i += 1) {
     await element(by.id('focus-core-change-book')).tap();
     try {
-      await waitFor(element(by.id('library-screen'))).toBeVisible().withTimeout(2500);
+      await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(2500);
       break;
     } catch {
       // Retry to absorb occasional unsynced tap drops on simulator.
     }
   }
 
-  await waitFor(element(by.id('library-screen'))).toBeVisible().withTimeout(10000);
   await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
 }
 
@@ -65,7 +78,11 @@ async function ensureProgressEnabled() {
 
   for (let i = 0; i < 2; i += 1) {
     await waitFor(element(by.id('book-detail-enable-progress'))).toExist().withTimeout(10000);
-    await element(by.id('book-detail-progress-toggle')).tap();
+    try {
+      await element(by.id('book-detail-enable-progress')).tap();
+    } catch {
+      await element(by.id('book-detail-progress-toggle')).tap();
+    }
     try {
       await waitFor(element(by.id('book-detail-current-page'))).toExist().withTimeout(6000);
       return;
@@ -75,6 +92,41 @@ async function ensureProgressEnabled() {
   }
 
   await waitFor(element(by.id('book-detail-current-page'))).toExist().withTimeout(15000);
+}
+
+async function tapSaveButton() {
+  try {
+    await element(by.id('book-detail-screen')).scrollTo('bottom');
+  } catch {
+    // no-op
+  }
+
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      await waitFor(element(by.id('book-detail-save'))).toBeVisible().withTimeout(1500);
+      await element(by.id('book-detail-save')).tap();
+      return;
+    } catch {
+      // Keep nudging content to avoid keyboard overlap and transition snapshots.
+      try {
+        await element(by.id('book-detail-current-page')).tapReturnKey();
+      } catch {
+        // no-op
+      }
+      try {
+        await element(by.id('book-detail-page-count')).tapReturnKey();
+      } catch {
+        // no-op
+      }
+      try {
+        await element(by.id('book-detail-screen')).scroll(140, 'up');
+      } catch {
+        // no-op
+      }
+    }
+  }
+
+  await element(by.id('book-detail-save')).tap();
 }
 
 describe('Library and Book Detail', () => {
@@ -108,7 +160,7 @@ describe('Library and Book Detail', () => {
     await element(by.id('book-detail-current-page')).clearText();
     await element(by.id('book-detail-current-page')).typeText('45');
     await element(by.id('book-detail-current-page')).tapReturnKey();
-    await element(by.id('book-detail-save')).tap();
+    await tapSaveButton();
     await expect(element(by.id('book-detail-current-page'))).toHaveText('45');
   });
 
@@ -124,7 +176,7 @@ describe('Library and Book Detail', () => {
     await element(by.id('book-detail-page-count')).clearText();
     await element(by.id('book-detail-page-count')).typeText('333');
     await element(by.id('book-detail-page-count')).tapReturnKey();
-    await element(by.id('book-detail-save')).tap();
+    await tapSaveButton();
     await expect(element(by.id('book-detail-title'))).toHaveText('UpdatedTitle');
     await expect(element(by.id('book-detail-page-count'))).toHaveText('333');
   });

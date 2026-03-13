@@ -1,24 +1,79 @@
 {
-  "version": "1.1.0",
-  "updatedAt": "2026-03-12",
-  "coverageRule": "Core-10 snapshots only.",
+  "version": "2.0.0",
+  "updatedAt": "2026-03-13",
+  "coverageRule": "Full SC+SF snapshots (SC-08 archived)",
   "scope": {
-    "mode": "core10",
-    "description": "Only the 10 priority screens are baseline targets.",
+    "mode": "full_sc_sf",
+    "description": "All SC and SF are baseline targets except archived SC-08.",
     "screenIds": [
+      "SC-01",
+      "SC-02",
+      "SC-03",
       "SC-04",
       "SC-05",
       "SC-06",
       "SC-07",
+      "SC-09",
+      "SC-10",
+      "SC-11",
       "SC-12",
+      "SC-13",
       "SC-14",
       "SC-15",
+      "SC-16",
+      "SC-17",
+      "SC-18",
+      "SC-19",
       "SC-20",
       "SC-21",
-      "SC-23"
+      "SC-22",
+      "SC-23",
+      "SC-24",
+      "SF-01",
+      "SF-02",
+      "SF-03",
+      "SF-04",
+      "SF-05",
+      "SF-06",
+      "SF-07",
+      "SF-08",
+      "SF-09"
     ]
   },
   "entries": [
+    {
+      "targetId": "SC-01:normal",
+      "uiId": "SC-01",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/onboarding-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-01_normal_part001"
+    },
+    {
+      "targetId": "SC-02:normal",
+      "uiId": "SC-02",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/onboarding-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-02_normal_part001"
+    },
+    {
+      "targetId": "SC-03:normal",
+      "uiId": "SC-03",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/onboarding-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-03_normal_part001"
+    },
     {
       "targetId": "SC-04:normal",
       "uiId": "SC-04",
@@ -64,6 +119,39 @@
       "artifactKey": "flow-snapshots/SC-07_long_absence_part001"
     },
     {
+      "targetId": "SC-09:normal",
+      "uiId": "SC-09",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/addbook-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-09_normal_part001"
+    },
+    {
+      "targetId": "SC-10:timeout_or_error",
+      "uiId": "SC-10",
+      "uiType": "screen",
+      "variantId": "timeout_or_error",
+      "baseline": true,
+      "captureMode": "detox_injected",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/addbook-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-10_timeout_or_error_part001"
+    },
+    {
+      "targetId": "SC-11:normal",
+      "uiId": "SC-11",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/addbook-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-11_normal_part001"
+    },
+    {
       "targetId": "SC-12:normal",
       "uiId": "SC-12",
       "uiType": "screen",
@@ -75,26 +163,81 @@
       "artifactKey": "flow-snapshots/SC-12_normal_part001"
     },
     {
+      "targetId": "SC-13:rehab",
+      "uiId": "SC-13",
+      "uiType": "screen",
+      "variantId": "rehab",
+      "baseline": true,
+      "captureMode": "detox_injected",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/session-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-13_rehab_part001"
+    },
+    {
       "targetId": "SC-14:rehab",
       "uiId": "SC-14",
       "uiType": "screen",
       "variantId": "rehab",
       "baseline": true,
-      "captureMode": "detox_flow",
+      "captureMode": "detox_injected",
       "status": "implemented",
       "sourceRef": "e2e/snapshots/session-snapshots.e2e.js",
       "artifactKey": "flow-snapshots/SC-14_rehab_part001"
     },
     {
-      "targetId": "SC-15:rehab",
+      "targetId": "SC-15:normal",
       "uiId": "SC-15",
       "uiType": "screen",
-      "variantId": "rehab",
+      "variantId": "normal",
       "baseline": true,
       "captureMode": "detox_flow",
       "status": "implemented",
-      "sourceRef": "e2e/snapshots/session-snapshots.e2e.js",
-      "artifactKey": "flow-snapshots/SC-15_rehab_part001"
+      "sourceRef": "e2e/snapshots/completion-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-15_normal_part001"
+    },
+    {
+      "targetId": "SC-16:normal",
+      "uiId": "SC-16",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/completion-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-16_normal_part001"
+    },
+    {
+      "targetId": "SC-17:normal",
+      "uiId": "SC-17",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/completion-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-17_normal_part001"
+    },
+    {
+      "targetId": "SC-18:normal",
+      "uiId": "SC-18",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/completion-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-18_normal_part001"
+    },
+    {
+      "targetId": "SC-19:finished_book",
+      "uiId": "SC-19",
+      "uiType": "screen",
+      "variantId": "finished_book",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/completion-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-19_finished_book_part001"
     },
     {
       "targetId": "SC-20:normal",
@@ -119,6 +262,17 @@
       "artifactKey": "flow-snapshots/SC-21_normal_part001"
     },
     {
+      "targetId": "SC-22:normal",
+      "uiId": "SC-22",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/settings-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-22_normal_part001"
+    },
+    {
       "targetId": "SC-23:due",
       "uiId": "SC-23",
       "uiType": "screen",
@@ -128,6 +282,116 @@
       "status": "implemented",
       "sourceRef": "e2e/snapshots/home-snapshots.e2e.js",
       "artifactKey": "flow-snapshots/SC-23_due_part001"
+    },
+    {
+      "targetId": "SC-24:normal",
+      "uiId": "SC-24",
+      "uiType": "screen",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "detox_flow",
+      "status": "implemented",
+      "sourceRef": "e2e/snapshots/session-snapshots.e2e.js",
+      "artifactKey": "flow-snapshots/SC-24_normal_part001"
+    },
+    {
+      "targetId": "SF-01:normal",
+      "uiId": "SF-01",
+      "uiType": "surface",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-01_normal"
+    },
+    {
+      "targetId": "SF-02:rehab",
+      "uiId": "SF-02",
+      "uiType": "surface",
+      "variantId": "rehab",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-02_rehab"
+    },
+    {
+      "targetId": "SF-03:normal",
+      "uiId": "SF-03",
+      "uiType": "surface",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-03_normal"
+    },
+    {
+      "targetId": "SF-04:rehab",
+      "uiId": "SF-04",
+      "uiType": "surface",
+      "variantId": "rehab",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-04_rehab"
+    },
+    {
+      "targetId": "SF-05:normal",
+      "uiId": "SF-05",
+      "uiType": "surface",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-05_normal"
+    },
+    {
+      "targetId": "SF-06:rehab",
+      "uiId": "SF-06",
+      "uiType": "surface",
+      "variantId": "rehab",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-06_rehab"
+    },
+    {
+      "targetId": "SF-07:rehab",
+      "uiId": "SF-07",
+      "uiType": "surface",
+      "variantId": "rehab",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-07_rehab"
+    },
+    {
+      "targetId": "SF-08:normal",
+      "uiId": "SF-08",
+      "uiType": "surface",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-08_normal"
+    },
+    {
+      "targetId": "SF-09:normal",
+      "uiId": "SF-09",
+      "uiType": "surface",
+      "variantId": "normal",
+      "baseline": true,
+      "captureMode": "xctest_simctl",
+      "status": "implemented",
+      "sourceRef": "ios/appUITests/SurfaceSnapshotUITests.swift",
+      "artifactKey": "surface-snapshots/SF-09_normal"
     }
   ]
 }

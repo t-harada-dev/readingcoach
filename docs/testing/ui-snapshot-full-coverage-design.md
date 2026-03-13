@@ -1,53 +1,56 @@
-# Core 10 UI Snapshot Design
+# Full SC/SF UI Snapshot Design
 
-更新日: 2026-03-12
+更新日: 2026-03-13
 
 ## 目的
 
-- 自動スクリーンショットの対象を 10 画面に固定する。
-- `Screen Catalog`（手動レビュー）と回帰証跡（Detox snapshot）を分離する。
-- 10画面の欠落を `manifest check` で機械検出する。
+- 自動スクリーンショット対象を `SC+SF` 全件へ拡張する（`SC-08` は archived）。
+- 画面定義書の画像正本を `docs/screen-spec/assets/screenshots/**` に固定する。
+- Detox（SC）と native capture（SF）を同一 manifest で管理する。
 
-## スコープ（固定）
+## スコープ
 
-対象は次の 10 画面のみ。
+対象:
 
-- `SC-04` normal
-- `SC-05` heavy_day
-- `SC-06` rehab
-- `SC-07` long_absence
-- `SC-12` normal
-- `SC-14` rehab
-- `SC-15` rehab
-- `SC-20` normal
-- `SC-21` normal
-- `SC-23` due
+- SC: `SC-01..24`（`SC-08` は archived で収集対象外）
+- SF: `SF-01..09`
 
-本設計では `SC-01..03/08..11/13/16..19/22/24` と `SF-*` は対象外。
+除外:
+
+- archived 画面（現在は `SC-08`）
 
 ## 正本ファイル
 
-- `app/e2e/snapshots/snapshotTargets.json`（10画面ターゲット定義）
+- `docs/screen-spec/data/screen-index.json`（画面定義のインデックス正本）
+- `app/e2e/snapshots/snapshotTargets.json`（収集ターゲット定義）
 - `app/e2e/snapshots/uiSnapshotManifest.v1.json`（運用メタ情報）
 - `app/scripts/check-ui-snapshot-manifest.js`（整合チェック）
+
+## 収集モード
+
+- `detox_flow`: 通常導線で遷移して取得
+- `detox_injected`: launch args で状態注入して取得
+- `xctest_simctl`: iOSネイティブ収集（`xcodebuild` + `simctl screenshot`）
 
 ## ルール
 
 1. `uiSnapshotManifest.v1.json` の `targetId` は `snapshotTargets.json` と 1:1 一致させる。
-2. `baseline` は全件 `true`。
-3. `status` は全件 `implemented`。
-4. `captureMode` は `detox_flow` または `detox_injected` のみ。
-5. 10画面以外を自動snapshot対象に追加する場合は、別タスクで明示合意する。
+2. `manifest.entries[].baseline` は全件 `true`。
+3. `manifest.entries[].status` は全件 `implemented`。
+4. `captureMode` は `detox_flow` / `detox_injected` / `xctest_simctl` のみ許可。
+5. 画像正本は `docs/screen-spec/assets/screenshots/**` へ同期し、`screen-index.json` を更新する。
 
 ## 実行コマンド
 
 ```bash
 cd app
 npm run e2e:snapshot:manifest:check
-npm run e2e:capture:flows
+npm run e2e:capture:docs
+npm run docs:screen-spec:refresh
 ```
 
 ## Release Gate 連携
 
 - Gate-SNAP-1: `npm run e2e:snapshot:manifest:check` が exit code 0
-- Gate-SNAP-2: `npm run e2e:capture:flows` が exit code 0
+- Gate-SNAP-2: `npm run e2e:capture:docs` が exit code 0
+- Gate-SNAP-3: `npm run docs:screen-spec:refresh` 実行後、`screen-index.json` の `missing` が 0

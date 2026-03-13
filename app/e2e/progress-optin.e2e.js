@@ -17,7 +17,7 @@ describe('Progress Opt-in Flow', () => {
 
     await waitFor(element(by.id('progress-prompt-enable'))).toBeVisible().withTimeout(10000);
     await element(by.id('progress-prompt-enable')).tap();
-    await waitFor(element(by.id('progress-setup-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('progress-setup-save'))).toBeVisible().withTimeout(10000);
   });
 
   // TC-CMP-06: SC-16 -> あとで -> SC-15に戻る
@@ -27,7 +27,7 @@ describe('Progress Opt-in Flow', () => {
 
     await waitFor(element(by.id('progress-prompt-later'))).toBeVisible().withTimeout(10000);
     await element(by.id('progress-prompt-later')).tap();
-    await waitFor(element(by.id('completion-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('completion-message'))).toBeVisible().withTimeout(10000);
   });
 
   // TC-CMP-07: SC-17 入力保存
@@ -37,7 +37,7 @@ describe('Progress Opt-in Flow', () => {
 
     await waitFor(element(by.id('progress-prompt-enable'))).toBeVisible().withTimeout(10000);
     await element(by.id('progress-prompt-enable')).tap();
-    await waitFor(element(by.id('progress-setup-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('progress-setup-save'))).toBeVisible().withTimeout(10000);
 
     const saveButton = element(by.id('progress-setup-save'));
     await waitFor(saveButton).toExist().withTimeout(10000);

@@ -26,7 +26,7 @@ npm run e2e:artifacts:prune
 ```
 
 - `artifacts/` 配下を新しい順で 10 件だけ残し、古い run を削除
-- `e2e:test:ios` / `e2e:capture:flows` / `e2e:capture:flows:debug` 実行時にも自動で実行
+- `e2e:test:ios` / `e2e:capture:flows` / `e2e:capture:docs` 実行時にも自動で実行
 
 ### ビルド
 
@@ -40,11 +40,22 @@ npm run e2e:build:ios
 npm run e2e:test:ios
 ```
 
-### Flowスナップショット取得（catalog非依存）
+### 画面定義向けスクリーンショット取得（SC+SF 全対象）
 
 ```bash
-# core10 target 整合チェック
+# target / manifest 整合チェック
 npm run e2e:snapshot:manifest:check
+
+# SC(Detox) + SF(native capture)
+npm run e2e:capture:docs
+
+# docs/screen-spec/assets へ正本同期
+npm run docs:screen-spec:refresh
+```
+
+### Detoxのみ（SCフロー）
+
+```bash
 npm run e2e:capture:flows
 ```
 
@@ -87,15 +98,12 @@ npx detox test -c ios.sim.debug e2e/next-focus-visible.e2e.js -- --watchman=fals
 npx detox test -c ios.sim.debug e2e/finished-book.e2e.js -- --watchman=false
 npx detox test -c ios.sim.debug e2e/finished-book-recovery.e2e.js -- --watchman=false
 npx detox test -c ios.sim.debug e2e/widget-fallback.e2e.js -- --watchman=false
-npx detox test -c ios.sim.debug e2e/snapshots/home-snapshots.e2e.js -- --watchman=false
-npx detox test -c ios.sim.debug e2e/snapshots/session-snapshots.e2e.js -- --watchman=false
-npx detox test -c ios.sim.debug e2e/snapshots/library-snapshots.e2e.js -- --watchman=false
 ```
 
 ## Screen Catalog（手動レビュー専用）
 
 - `Screen Catalog` は手動レビュー時の画面確認/操作に限定する
-- 自動スクリーンショット取得は `e2e:capture:flows` 系コマンドを使用する
+- 画面定義書向けの自動スクリーンショット取得は `e2e:capture:docs` を使用する
 
 ## 補助コマンド（iOSアプリ起動）
 

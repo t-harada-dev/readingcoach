@@ -15,7 +15,7 @@ describe('Finished Book Flow', () => {
     await waitFor(element(by.id('completion-finished-book'))).toBeVisible().withTimeout(10000);
     await element(by.id('completion-finished-book')).tap();
 
-    await waitFor(element(by.id('next-focus-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('next-focus-selection-ready'))).toExist().withTimeout(10000);
     await waitFor(element(by.id('next-focus-confirm'))).toBeVisible().withTimeout(10000);
   });
 });

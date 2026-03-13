@@ -17,6 +17,7 @@
 
 - ドメイン仕様: `docs/積読コーチ_論理仕様書_v1.md`
 - 画面ID/遷移: `docs/積読コーチ 画面一覧 兼 画面遷移 兼 画面定義.md`
+- 画面定義書/画面画像正本: `docs/screen-spec/index.html`（データ正本: `docs/screen-spec/data/screen-index.json`）
 - UI/UX原則: `docs/積読コーチ_UIUX統合指針_20260309.md`
 - 実装進捗と未完: `tasks/todo.md`
 - 再発防止メモ: `tasks/lessons.md`

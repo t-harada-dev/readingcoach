@@ -82,12 +82,14 @@ export function BookDetailView({
 
       <Text style={styles.label}>進捗バー設定</Text>
       <View style={styles.settingValueRow}>
-        <Text
+        <TouchableOpacity
           testID={progressEnabled ? 'book-detail-disable-progress' : 'book-detail-enable-progress'}
-          style={styles.settingValue}
+          style={styles.settingValueButton}
+          onPress={onPressToggleProgress}
+          disabled={saving}
         >
-          {progressEnabled ? 'ON' : 'OFF'}
-        </Text>
+          <Text style={styles.settingValue}>{progressEnabled ? 'ON' : 'OFF'}</Text>
+        </TouchableOpacity>
         <Switch
           testID="book-detail-progress-toggle"
           value={progressEnabled}
@@ -211,6 +213,10 @@ const styles = StyleSheet.create({
     color: '#2C2C2C',
     fontSize: 16,
     fontWeight: '600',
+  },
+  settingValueButton: {
+    paddingVertical: 4,
+    paddingRight: 8,
   },
   coverSectionCard: {
     marginTop: 2,

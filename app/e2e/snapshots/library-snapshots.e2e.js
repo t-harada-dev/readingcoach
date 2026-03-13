@@ -7,9 +7,18 @@ const tracker = createSnapshotTracker('library');
 async function launchToLibrary() {
   await launchAppUnsynced({ newInstance: true, delete: true });
 
-  await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(15000);
+  await waitFor(element(by.id('focus-core-scroll'))).toExist().withTimeout(15000);
+  for (let i = 0; i < 5; i += 1) {
+    try {
+      await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(1200);
+      break;
+    } catch {
+      await element(by.id('focus-core-scroll')).scroll(260, 'down');
+    }
+  }
+  await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(10000);
   await element(by.id('focus-core-change-book')).tap();
-  await waitFor(element(by.id('library-screen'))).toBeVisible().withTimeout(10000);
+  await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
 }
 
 async function openBookDetail(rowId) {
@@ -39,7 +48,7 @@ describe('Flow Snapshots: Library', () => {
 
   it('captures SC-21 / normal', async () => {
     await launchToLibrary();
-    await waitFor(element(by.id('library-book-row-native_book_1'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('library-book-row-native_book_1'))).toExist().withTimeout(10000);
     await openBookDetail('library-book-row-native_book_1');
     await waitFor(element(by.id('book-detail-title'))).toBeVisible().withTimeout(10000);
     await tracker.capture('SC-21', 'normal');

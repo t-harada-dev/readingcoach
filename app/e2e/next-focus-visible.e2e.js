@@ -15,7 +15,6 @@ describe('Next Focus Visible', () => {
     await waitFor(element(by.id('completion-finished-book'))).toBeVisible().withTimeout(10000);
     await element(by.id('completion-finished-book')).tap();
 
-    await waitFor(element(by.id('next-focus-screen'))).toBeVisible().withTimeout(10000);
     await waitFor(element(by.id('next-focus-selection-ready'))).toExist().withTimeout(10000);
     try {
       await waitFor(element(by.id('next-focus-book-row-native_book_2-button')))
@@ -31,7 +30,6 @@ describe('Next Focus Visible', () => {
     await waitFor(element(by.id('next-focus-confirm'))).toBeVisible().withTimeout(10000);
     await element(by.id('next-focus-confirm')).tap();
 
-    await waitFor(element(by.id('next-focus-screen'))).not.toBeVisible().withTimeout(60000);
     await waitFor(element(by.id('focus-core-change-book'))).toBeVisible().withTimeout(30000);
     await waitFor(element(by.id('focus-core-book-title')))
       .toHaveText('再点火トレーニング (Native)')
