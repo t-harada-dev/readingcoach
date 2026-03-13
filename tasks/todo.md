@@ -1,5 +1,17 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-13: TEST_PLAN再基準化 + 未完了クローズ
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `TEST_PLAN.md` を現行実装ベースへ更新（完了/N/A/運用完了の明記 + 完了エビデンス追加）
+- [x] `app-check.yml` を `check` + `e2e-ios` の2ジョブへ更新（Detox artifact収集を含む）
+- [x] `cd app && npm run check` を実行し、`exit code 0` を確認する
+- [ ] `cd app && npm run e2e:test:ios` を実行し、`exit code 0` かつ failed 0 を確認する
+  - [x] 事前ビルドなし実行: `exit code 1`（バイナリ未生成）
+  - [x] `cd app && npm run e2e:build:ios`: `exit code 0`
+  - [ ] 再実行: `exit code 1`（32 suites 中 3 suites fail: `restart-recovery`, `onboarding-flow`, `focus-book-picker`）
+  - [ ] 失敗3スイート再実行: `exit code 1`（`onboarding-flow` は pass、`restart-recovery`/`focus-book-picker` は再現）
+
 ## 2026-03-13: surface:os SF-01/02 失敗収束（続行）
 
 - [x] `tasks/lessons.md` を確認してから着手する
