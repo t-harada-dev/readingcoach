@@ -65,8 +65,8 @@ describe('RestartRecoveryScreen', () => {
   it('SC-07 の CTA 順序を維持する', () => {
     renderToStaticMarkup(
       React.createElement(RestartRecoveryScreen, {
-        navigation: { replace: vi.fn(), navigate: vi.fn() },
-        route: { params: { planId: 'p1' } },
+        navigation: { replace: vi.fn(), navigate: vi.fn() } as any,
+        route: { params: { planId: 'p1' } } as any,
       })
     );
     expect(ctaCalls.map((c) => c.label)).toEqual([
@@ -80,8 +80,8 @@ describe('RestartRecoveryScreen', () => {
     const navigate = vi.fn();
     renderToStaticMarkup(
       React.createElement(RestartRecoveryScreen, {
-        navigation: { replace: vi.fn(), navigate },
-        route: { params: { planId: 'p1', planDate: '2026-03-10', bookId: 'b1' } },
+        navigation: { replace: vi.fn(), navigate } as any,
+        route: { params: { planId: 'p1', planDate: '2026-03-10', bookId: 'b1' } } as any,
       })
     );
 

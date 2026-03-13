@@ -59,7 +59,7 @@ describe('CompletionScreen', () => {
   it('SC-15 の CTA 順序（5分/15分/読了/閉じる）を維持する', () => {
     renderToStaticMarkup(
       React.createElement(CompletionScreen, {
-        navigation: { replace: vi.fn(), navigate: vi.fn() },
+        navigation: { replace: vi.fn(), navigate: vi.fn() } as any,
         route: {
           params: {
             planId: 'p1',
@@ -68,7 +68,7 @@ describe('CompletionScreen', () => {
             result: 'soft_success',
             elapsedSeconds: 300,
           },
-        },
+        } as any,
       })
     );
 
@@ -79,7 +79,7 @@ describe('CompletionScreen', () => {
     const replace = vi.fn();
     renderToStaticMarkup(
       React.createElement(CompletionScreen, {
-        navigation: { replace, navigate: vi.fn() },
+        navigation: { replace, navigate: vi.fn() } as any,
         route: {
           params: {
             planId: 'p1',
@@ -88,7 +88,7 @@ describe('CompletionScreen', () => {
             result: 'soft_success',
             elapsedSeconds: 300,
           },
-        },
+        } as any,
       })
     );
 
@@ -109,7 +109,7 @@ describe('CompletionScreen', () => {
 
     renderToStaticMarkup(
       React.createElement(CompletionScreen, {
-        navigation: { replace: vi.fn(), navigate },
+        navigation: { replace: vi.fn(), navigate } as any,
         route: {
           params: {
             planId: 'p1',
@@ -118,7 +118,7 @@ describe('CompletionScreen', () => {
             result: 'soft_success',
             elapsedSeconds: 300,
           },
-        },
+        } as any,
       })
     );
 

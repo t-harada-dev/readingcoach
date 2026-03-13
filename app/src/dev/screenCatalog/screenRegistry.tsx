@@ -35,7 +35,7 @@ import { fixtureBooks } from './fixtures/books';
 import { screenCatalogManifest } from './screenCatalogManifest';
 import type { MockScenario, ScreenId, ScreenRegistryItem } from './types';
 
-const stubNavigation = {
+const stubNavigation: any = {
     navigate: () => {},
     replace: () => {},
     reset: () => {},
@@ -44,11 +44,11 @@ const stubNavigation = {
 
 const renderByScreenId: Record<ScreenId, (scenario: MockScenario) => React.ReactElement> = {
     'SC-01': (scenario) => <SC01CatalogPreview scenario={scenario} />,
-    'SC-02': () => <OnboardingTimeScreen navigation={stubNavigation} />,
+    'SC-02': () => <OnboardingTimeScreen navigation={stubNavigation as any} route={{} as any} />,
     'SC-03': (scenario) => (
         <OnboardingNotificationScreen
             navigation={stubNavigation}
-            route={{ params: { forceNotificationsEnabled: scenario === 'already_has_data' } }}
+            route={{ params: { forceNotificationsEnabled: scenario === 'already_has_data' } } as any}
         />
     ),
     'SC-04': (scenario) => <FocusCoreView {...buildSC04Props(scenario)} />,
@@ -70,7 +70,7 @@ const renderByScreenId: Record<ScreenId, (scenario: MockScenario) => React.React
                     bookId: fixtureBooks.standardBook.id,
                     bookTitle: scenario === 'rehab' ? fixtureBooks.lightweightBook.title : fixtureBooks.standardBook.title,
                 },
-            }}
+            } as any}
         />
     ),
     'SC-17': (scenario) => (
@@ -84,7 +84,7 @@ const renderByScreenId: Record<ScreenId, (scenario: MockScenario) => React.React
                     bookThumbnailUrl: scenario === 'rehab' ? undefined : fixtureBooks.standardBook.thumbnailUrl,
                     bookCoverSource: scenario === 'rehab' ? 'placeholder' : fixtureBooks.standardBook.coverSource,
                 },
-            }}
+            } as any}
         />
     ),
     'SC-18': (scenario) => <SC18CatalogPreview scenario={scenario} />,
@@ -94,7 +94,7 @@ const renderByScreenId: Record<ScreenId, (scenario: MockScenario) => React.React
     'SC-22': (scenario) => (
         <SettingsScreen
             navigation={stubNavigation}
-            route={{ params: { forceNotificationsEnabled: scenario === 'rehab' } }}
+            route={{ params: { forceNotificationsEnabled: scenario === 'rehab' } } as any}
         />
     ),
     'SC-23': (scenario) => <SC23CatalogPreview scenario={scenario} />,

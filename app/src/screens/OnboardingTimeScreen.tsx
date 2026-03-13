@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { copy } from '../config/copy';
 import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
+import type { ScreenProps } from '../navigation/types';
+import { appTheme } from '../theme/layout';
 
 function normalizeTimeField(raw: string, max: number): number | null {
   if (raw.trim().length === 0) return null;
@@ -12,7 +14,7 @@ function normalizeTimeField(raw: string, max: number): number | null {
   return normalized;
 }
 
-export function OnboardingTimeScreen({ navigation }: any) {
+export function OnboardingTimeScreen({ navigation }: ScreenProps<'OnboardingTime'>) {
   const [hourInput, setHourInput] = useState('21');
   const [minuteInput, setMinuteInput] = useState('00');
   const [saving, setSaving] = useState(false);
@@ -80,16 +82,16 @@ export function OnboardingTimeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    backgroundColor: '#FDFCF8',
+    padding: appTheme.spacing.xl,
+    backgroundColor: appTheme.colors.screenBackground,
   },
   title: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 26,
     fontWeight: '700',
   },
   subtitle: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 14,
     marginTop: 8,
     marginBottom: 18,
@@ -104,17 +106,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   inputLabel: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 12,
     marginBottom: 8,
   },
   timeInput: {
     width: 96,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    color: '#2C2C2C',
+    borderColor: appTheme.colors.borderStrong,
+    borderRadius: appTheme.borderRadius.lg,
+    backgroundColor: appTheme.colors.surface,
+    color: appTheme.colors.textPrimary,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
@@ -122,20 +124,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   colon: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 14,
   },
   cta: {
     marginTop: 'auto',
-    borderRadius: 14,
-    backgroundColor: '#D48A3E',
+    borderRadius: appTheme.borderRadius.lg,
+    backgroundColor: appTheme.colors.accent,
     paddingVertical: 14,
     alignItems: 'center',
   },
   ctaText: {
-    color: '#FFFFFF',
+    color: appTheme.colors.textInverse,
     fontSize: 16,
     fontWeight: '700',
   },

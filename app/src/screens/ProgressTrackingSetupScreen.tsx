@@ -4,6 +4,8 @@ import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
 import { BookCoverImage } from '../components/BookCoverImage';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { enableProgressTracking, updateBookProgress } from '../useCases/ProgressTrackingUseCases';
+import type { ScreenProps } from '../navigation/types';
+import { appTheme } from '../theme/layout';
 
 function toPositiveInt(value: string): number | undefined {
   const n = Number(value);
@@ -19,15 +21,15 @@ function toNonNegativeInt(value: string): number | undefined {
   return Math.floor(n);
 }
 
-export function ProgressTrackingSetupScreen({ navigation, route }: any) {
+export function ProgressTrackingSetupScreen({ navigation, route }: ScreenProps<'ProgressTrackingSetup'>) {
   const [pageCount, setPageCount] = useState('');
   const [currentPage, setCurrentPage] = useState('');
   const [busy, setBusy] = useState(false);
   const [book, setBook] = useState<BookDTO | null>(null);
-  const bookId = route.params?.bookId as string | undefined;
-  const routeBookTitle = route.params?.bookTitle as string | undefined;
-  const routeBookAuthor = route.params?.bookAuthor as string | undefined;
-  const routeBookThumbnailUrl = route.params?.bookThumbnailUrl as string | undefined;
+  const bookId = route.params?.bookId;
+  const routeBookTitle = route.params?.bookTitle;
+  const routeBookAuthor = route.params?.bookAuthor;
+  const routeBookThumbnailUrl = route.params?.bookThumbnailUrl;
   const routeBookCoverSource = route.params?.bookCoverSource as BookDTO['coverSource'] | undefined;
   const displayTitle = routeBookTitle ?? book?.title;
   const displayAuthor = routeBookAuthor ?? book?.author;
@@ -121,47 +123,47 @@ export function ProgressTrackingSetupScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
+    backgroundColor: appTheme.colors.screenBackground,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 24,
     paddingBottom: 24,
   },
   title: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 22,
     fontWeight: '700',
   },
   subtitle: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     marginTop: 8,
   },
   bookCard: {
     marginTop: 14,
-    borderRadius: 12,
+    borderRadius: appTheme.borderRadius.md,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.10)',
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.surface,
     padding: 12,
   },
   bookLabel: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 12,
     fontWeight: '700',
   },
   bookTitle: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 15,
     fontWeight: '700',
     marginTop: 6,
   },
   bookFallback: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     marginTop: 6,
   },
   bookAuthor: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     marginTop: 4,
   },
@@ -175,19 +177,19 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
   label: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     marginTop: 18,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: appTheme.colors.surface,
+    borderRadius: appTheme.borderRadius.md,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.12)',
+    borderColor: appTheme.colors.borderStrong,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 16,
   },
 });

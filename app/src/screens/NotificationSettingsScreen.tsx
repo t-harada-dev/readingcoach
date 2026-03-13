@@ -6,8 +6,9 @@ import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { cancelScheduled, requestPermission } from '../notifications';
 import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { appTheme } from '../theme/layout';
+import type { ScreenProps } from '../navigation/types';
 
-export function NotificationSettingsScreen({ navigation }: any) {
+export function NotificationSettingsScreen({ navigation }: ScreenProps<'NotificationSettings'>) {
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
 

@@ -72,8 +72,8 @@ describe('DueActionSheetScreen', () => {
   it('SC-23 の CTA 配置（主CTAを最下段）を維持する', () => {
     renderToStaticMarkup(
       React.createElement(DueActionSheetScreen, {
-        navigation: { replace: vi.fn(), goBack: vi.fn() },
-        route: { params: { planId: 'p1', defaultMode: 'normal_15m' } },
+        navigation: { replace: vi.fn(), goBack: vi.fn() } as any,
+        route: { params: { planId: 'p1', defaultMode: 'normal_15m' } } as any,
       })
     );
 
@@ -85,8 +85,8 @@ describe('DueActionSheetScreen', () => {
     const replace = vi.fn();
     renderToStaticMarkup(
       React.createElement(DueActionSheetScreen, {
-        navigation: { replace, goBack: vi.fn() },
-        route: { params: { planId: 'p1', defaultMode: 'ignition_1m', entryPoint: 'notification' } },
+        navigation: { replace, goBack: vi.fn() } as any,
+        route: { params: { planId: 'p1', defaultMode: 'ignition_1m', entryPoint: 'notification' } } as any,
       })
     );
 

@@ -1,22 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { copy } from '../config/copy';
 import { buildCompletionFeedback } from '../domain/completionFeedback';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { shouldOfferProgressTracking } from '../domain/progressTrackingPolicy';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import type { ScreenProps } from '../navigation/types';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
 import { CompletionView } from './CompletionView';
 
-type Params = {
-  planId: string;
-  bookId: string;
-  bookTitle: string;
-  result: 'hard_success' | 'soft_success' | 'prep_success';
-  elapsedSeconds: number;
-};
-
-export function CompletionScreen({ navigation, route }: any) {
-  const { planId, bookId, bookTitle, result, elapsedSeconds } = (route.params ?? {}) as Params;
+export function CompletionScreen({ navigation, route }: ScreenProps<'Completion'>) {
+  const { planId, bookId, bookTitle, result, elapsedSeconds } = route.params;
   const [busy, setBusy] = useState(false);
   const [promptChecked, setPromptChecked] = useState(false);
   const [finishedBookError, setFinishedBookError] = useState<string | null>(null);
@@ -30,20 +24,14 @@ export function CompletionScreen({ navigation, route }: any) {
     [bookTitle, result]
   );
 
-  useEffect(() => {
-    let alive = true;
+  useAsyncEffect(async (signal) => {
     if (promptChecked) return;
-    (async () => {
-      const settings = await persistenceBridge.getSettings();
-      if (!alive) return;
-      if (shouldOfferProgressTracking(settings)) {
-        navigation.navigate('ProgressTrackingPrompt', { bookId, bookTitle });
-      }
-      setPromptChecked(true);
-    })();
-    return () => {
-      alive = false;
-    };
+    const settings = await persistenceBridge.getSettings();
+    if (!signal.alive) return;
+    if (shouldOfferProgressTracking(settings)) {
+      navigation.navigate('ProgressTrackingPrompt', { bookId, bookTitle });
+    }
+    setPromptChecked(true);
   }, [bookId, bookTitle, navigation, promptChecked]);
 
   const startExtra = async (mode: 'rescue_5m' | 'normal_15m') => {

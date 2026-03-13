@@ -1,10 +1,10 @@
 import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import type { BookDTO } from '../bridge/PersistenceBridge';
+import type { LibraryItem } from '../navigation/types';
 import { BookCoverImage } from '../components/BookCoverImage';
 import { copy } from '../config/copy';
+import { appTheme } from '../theme/layout';
 
-export type LibraryItem = BookDTO & { isFocus: boolean };
 
 export type LibraryViewProps = {
   books: LibraryItem[];
@@ -69,28 +69,28 @@ export function LibraryView({ books, onPressAddBook, onPressBook }: LibraryViewP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
+    backgroundColor: appTheme.colors.screenBackground,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 18,
-    paddingBottom: 24,
+    paddingBottom: appTheme.spacing.screenPaddingVertical,
   },
   title: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 19,
     fontWeight: '700',
   },
   subtitle: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 13,
     marginTop: 6,
   },
   selectionArea: {
     flex: 1,
     marginTop: 10,
-    borderRadius: 16,
+    borderRadius: appTheme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.10)',
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.surface,
     padding: 10,
     minHeight: 360,
   },
@@ -98,13 +98,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addButton: {
-    borderRadius: 16,
-    backgroundColor: '#D48A3E',
+    borderRadius: appTheme.borderRadius.lg,
+    backgroundColor: appTheme.colors.accent,
     paddingVertical: 12,
     alignItems: 'center',
   },
   addButtonText: {
-    color: '#FFFFFF',
+    color: appTheme.colors.textInverse,
     fontSize: 15,
     fontWeight: '700',
   },
@@ -117,14 +117,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   empty: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 14,
   },
   row: {
-    borderRadius: 18,
+    borderRadius: appTheme.borderRadius.xl,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.10)',
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.surface,
     paddingHorizontal: 14,
     paddingVertical: 12,
     flexDirection: 'row',
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rowFocus: {
-    borderColor: '#D48A3E',
+    borderColor: appTheme.colors.accent,
     borderWidth: 2,
     backgroundColor: '#FFF8EE',
   },
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 60,
     borderRadius: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: appTheme.colors.surfaceMuted,
     marginRight: 12,
   },
   rowMain: {
@@ -151,12 +151,12 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   bookTitle: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',
   },
   bookMeta: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 12,
     marginTop: 2,
   },

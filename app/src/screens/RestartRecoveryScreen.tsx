@@ -7,19 +7,11 @@ import { runFindPlanByIdUseCase } from '../useCases/FindPlanUseCase';
 import { runReconcilePlansUseCase } from '../useCases/ReconcilePlansUseCase';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import type { ScreenProps } from '../navigation/types';
 import { RestartRecoveryView } from './RestartRecoveryView';
 
-type Params = {
-    planId?: string;
-    planDate?: string;
-    bookId?: string;
-    bookTitle?: string;
-    bookThumbnailUrl?: string;
-    bookCoverSource?: 'manual' | 'google_books' | 'placeholder';
-};
-
-export function RestartRecoveryScreen({ navigation, route }: any) {
-    const { planId, planDate, bookId, bookTitle, bookThumbnailUrl, bookCoverSource } = (route.params ?? {}) as Params;
+export function RestartRecoveryScreen({ navigation, route }: ScreenProps<'RestartRecovery'>) {
+    const { planId, planDate, bookId, bookTitle, bookThumbnailUrl, bookCoverSource } = route.params ?? {};
     const [busy, setBusy] = useState(false);
     const [errorText, setErrorText] = useState<string | null>(null);
 

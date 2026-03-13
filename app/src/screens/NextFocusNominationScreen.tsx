@@ -3,35 +3,28 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View }
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
 import { runNominateNextFocusBookUseCase } from '../useCases/NominateNextFocusBookUseCase';
+import type { ScreenProps } from '../navigation/types';
+import { useAsyncEffect } from '../hooks/useAsyncEffect';
+import { appTheme } from '../theme/layout';
 
-type Params = {
-  completedBookId: string;
-};
-
-export function NextFocusNominationScreen({ navigation, route }: any) {
-  const { completedBookId } = (route.params ?? {}) as Params;
+export function NextFocusNominationScreen({ navigation, route }: ScreenProps<'NextFocusNomination'>) {
+  const { completedBookId } = route.params;
   const [books, setBooks] = useState<BookDTO[]>([]);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const list = await persistenceBridge.getBooks();
-        if (!alive) return;
-        const candidates = list.filter((b) => b.id !== completedBookId && b.status !== 'completed');
-        setBooks(candidates);
-        if (candidates[0]) setSelectedBookId(candidates[0].id);
-      } finally {
-        if (!alive) return;
-        setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
+  useAsyncEffect(async (signal) => {
+    try {
+      const list = await persistenceBridge.getBooks();
+      if (!signal.alive) return;
+      const candidates = list.filter((b) => b.id !== completedBookId && b.status !== 'completed');
+      setBooks(candidates);
+      if (candidates[0]) setSelectedBookId(candidates[0].id);
+    } finally {
+      if (!signal.alive) return;
+      setLoading(false);
+    }
   }, [completedBookId]);
 
   const selected = useMemo(
@@ -127,34 +120,34 @@ export function NextFocusNominationScreen({ navigation, route }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFCF8',
-    paddingHorizontal: 22,
+    backgroundColor: appTheme.colors.screenBackground,
+    paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
     paddingTop: 20,
     paddingBottom: 24,
   },
   title: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 22,
     fontWeight: '700',
   },
   subtitle: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 18,
     fontWeight: '700',
     marginTop: 8,
     marginBottom: 8,
   },
   selectionArea: {
-    borderRadius: 16,
+    borderRadius: appTheme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.10)',
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.surface,
     padding: 10,
     minHeight: 320,
     maxHeight: 320,
   },
   selectionAreaLabel: {
-    color: '#4B5563',
+    color: appTheme.colors.textSecondary,
     fontSize: 12,
     fontWeight: '700',
     marginBottom: 8,
@@ -175,10 +168,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   row: {
-    borderRadius: 12,
+    borderRadius: appTheme.borderRadius.md,
     borderWidth: 1,
-    borderColor: 'rgba(44,44,44,0.10)',
-    backgroundColor: '#FFFFFF',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 8,
@@ -187,29 +180,29 @@ const styles = StyleSheet.create({
   },
   rowSelected: {
     borderColor: 'rgba(212,138,62,0.45)',
-    backgroundColor: 'rgba(212,138,62,0.06)',
+    backgroundColor: appTheme.colors.accentSoft,
   },
   rowMain: {
     flex: 1,
     paddingRight: 8,
   },
   rowTitle: {
-    color: '#2C2C2C',
+    color: appTheme.colors.textPrimary,
     fontSize: 14,
     fontWeight: '700',
   },
   rowMeta: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   rowSelectedBadge: {
-    color: '#D48A3E',
+    color: appTheme.colors.accent,
     fontSize: 12,
     fontWeight: '700',
   },
   empty: {
-    color: '#6B7280',
+    color: appTheme.colors.textMuted,
     fontSize: 14,
     marginTop: 8,
     marginBottom: 12,

@@ -8,6 +8,7 @@ import { cancelScheduled, requestPermission } from '../notifications';
 import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { runUpdateDailyTargetTimeUseCase } from '../useCases/UpdateDailyTargetTimeUseCase';
 import { appTheme } from '../theme/layout';
+import type { ScreenProps } from '../navigation/types';
 
 function normalizeTimeField(raw: string, max: number): number | null {
   if (raw.trim().length === 0) return null;
@@ -18,8 +19,8 @@ function normalizeTimeField(raw: string, max: number): number | null {
   return normalized;
 }
 
-export function SettingsScreen({ navigation, route }: any) {
-  const routeForcedNotificationsEnabled = route?.params?.forceNotificationsEnabled;
+export function SettingsScreen({ navigation, route }: ScreenProps<'Settings'>) {
+  const routeForcedNotificationsEnabled = route.params?.forceNotificationsEnabled;
   const [hourInput, setHourInput] = useState('21');
   const [minuteInput, setMinuteInput] = useState('00');
   const [notificationsEnabled, setNotificationsEnabled] = useState(

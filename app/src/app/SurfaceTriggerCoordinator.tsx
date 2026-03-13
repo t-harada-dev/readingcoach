@@ -7,9 +7,10 @@ import { runResolveNotificationStartModeUseCase } from '../useCases/ResolveNotif
 import { runStartSessionUseCase, type EntryPoint, type SessionMode } from '../useCases/StartSessionUseCase';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
+import type { RootStackParamList } from '../navigation/types';
 
 type Props = {
-  navigationRef: NavigationContainerRefWithCurrent<any>;
+  navigationRef: NavigationContainerRefWithCurrent<RootStackParamList>;
   navigationReady: boolean;
 };
 

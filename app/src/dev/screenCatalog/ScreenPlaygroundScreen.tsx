@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { appTheme } from '../../theme/layout';
+import type { ScreenProps } from '../../navigation/types';
 import { DevNotice } from './components/DevNotice';
 import { ScenarioPicker } from './components/ScenarioPicker';
 import { screenCatalogManifest } from './screenCatalogManifest';
@@ -20,8 +21,8 @@ function isScenario(value: unknown): value is MockScenario {
     return typeof value === 'string' && scenarioSet.has(value as MockScenario);
 }
 
-export function ScreenPlaygroundScreen({ navigation, route }: any) {
-    const params = route?.params ?? {};
+export function ScreenPlaygroundScreen({ navigation, route }: ScreenProps<'DevScreenPlayground'>) {
+    const params = route.params ?? {};
     const [screenId, setScreenId] = useState<ScreenId>(isScreenId(params.screenId) ? params.screenId : 'SC-04');
     const [scenario, setScenario] = useState<MockScenario>(isScenario(params.scenario) ? params.scenario : 'normal');
     const [showDetails, setShowDetails] = useState(false);

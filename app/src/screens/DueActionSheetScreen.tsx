@@ -5,17 +5,11 @@ import { runFindPlanByIdUseCase } from '../useCases/FindPlanUseCase';
 import { runStartSessionUseCase } from '../useCases/StartSessionUseCase';
 import { runSnoozePlanUseCase } from '../useCases/SnoozePlanUseCase';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
+import type { ScreenProps } from '../navigation/types';
 import { DueActionSheetView } from './DueActionSheetView';
 
-type Params = {
-    planId: string;
-    defaultMode: 'normal_15m' | 'ignition_1m';
-    entryPoint?: 'notification' | 'app';
-    dueActionScreenId?: 'SC-23';
-};
-
-export function DueActionSheetScreen({ navigation, route }: any) {
-    const { planId, defaultMode, entryPoint } = (route.params ?? {}) as Params;
+export function DueActionSheetScreen({ navigation, route }: ScreenProps<'DueActionSheet'>) {
+    const { planId, defaultMode, entryPoint } = route.params;
     const [busy, setBusy] = useState(false);
     const [bookTitle, setBookTitle] = useState('今日のFocus Book');
     const [bookAuthor, setBookAuthor] = useState<string | undefined>(undefined);

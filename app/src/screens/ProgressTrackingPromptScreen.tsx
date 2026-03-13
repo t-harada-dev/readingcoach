@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { skipProgressTrackingPrompt } from '../useCases/ProgressTrackingUseCases';
+import type { ScreenProps } from '../navigation/types';
 
-export function ProgressTrackingPromptScreen({ navigation, route }: any) {
+export function ProgressTrackingPromptScreen({ navigation, route }: ScreenProps<'ProgressTrackingPrompt'>) {
   const [busy, setBusy] = useState(false);
   const closePrompt = () => {
     if (typeof navigation.canGoBack === 'function' && navigation.canGoBack()) {
       navigation.goBack();
       return;
     }
-    if (typeof navigation.dismiss === 'function') {
-      navigation.dismiss();
+    const modalNav = navigation as ScreenProps<'ProgressTrackingPrompt'>['navigation'] & { dismiss?: () => void };
+    if (typeof modalNav.dismiss === 'function') {
+      modalNav.dismiss();
     }
   };
 
