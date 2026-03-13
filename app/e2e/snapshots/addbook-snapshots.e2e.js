@@ -74,7 +74,7 @@ describe('Flow Snapshots: Add Book', () => {
   it('captures SC-10 / timeout_or_error', async () => {
     await launchToAddBook({ e2e_book_search_mode: 'timeout' });
     await element(by.id('add-book-search-input')).typeText('TimeoutBook');
-    await submitSearchUntil('add-book-manual-title');
+    await submitSearchUntil('add-book-manual-title-input');
     await tracker.capture('SC-10', 'timeout_or_error');
   });
 

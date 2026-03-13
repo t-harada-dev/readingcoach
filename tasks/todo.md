@@ -609,3 +609,41 @@
 - [x] P1対応: `plan.state === due` 時にホーム本体を `null` にしない（空画面回避）
 - [x] P2対応: `本を変える` 導線で手動変更回数カウントの契約を維持（`FocusBookPicker` 経由へ戻す）
 - [x] 回帰確認: `npm run typecheck` と `npm test`
+
+## 2026-03-13: TEST_PLAN.md 完遂（condescending-merkle）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [ ] 対象差分の棚卸し（既存E2E/スナップショット/ユニットとの重複確認）
+- [ ] Phase 1: 現行テスト実行（`npm run test`, `npm run typecheck`, `npm run e2e:build:ios`, `npm run e2e:test:ios`）
+- [ ] Phase 3: 不足 `testID` の補完（Reserve/TimeChange/FocusBookPicker/RestartRecovery）
+- [ ] Phase 2: 未カバーE2E 4ファイル追加（reserve/time-change/focus-book-picker/restart-recovery）
+- [ ] Phase 4: スナップショット基盤の不足分整備（targets/suites/capture導線）
+- [ ] Phase 5: 不足ユニットテスト追加（TimeChange/Reserve）
+- [ ] Phase 6: CI統合（必要差分が残る場合のみ workflow 更新）
+- [ ] 追加・既存テストの実行結果をログと終了コード付きで記録
+- [ ] セルフレビュー（回帰・命名規則・運用整合）
+
+### 進捗更新（2026-03-13 14:26 JST）
+
+- [x] Phase 1: `npm run test` / `npm run typecheck` / `npm run e2e:build:ios` 実施
+- [x] 既存失敗の一部修正: `onboarding-flow`, `addbook-snapshots` のtestID追従
+- [x] Phase 3: `Reserve` / `TimeChange` / `RestartRecovery` の testID 補完（実装）
+- [x] Phase 2: 新規E2E 4ファイル追加（`reserve-flow`, `time-change`, `focus-book-picker`, `restart-recovery`）
+- [x] Phase 5: ユニットテスト追加（`ReserveScreen.test.ts`, `TimeChangeScreen.test.ts`）
+- [ ] Phase 2/4 の最終収束確認（Detox `waitForActive` 長時間ハングにより未完了）
+- [ ] Phase 6: CI統合（今回未着手）
+
+## 2026-03-13: Detox + XCUITest 再計画 実装（通知8ケース + surface-os capture）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] Detox起動の既定権限を `notifications=NO` へ統一
+- [x] XCUI `NotificationPermissionUITests` 追加（8ケース）
+- [x] XCUI `SurfaceOSPlacementUITests` 追加（widget/intent capture導線）
+- [x] `scripts/capture-surface-os.sh` 追加
+- [x] `package.json` scripts 更新（`e2e:capture:surface:os`, `e2e:capture:docs` 統合）
+- [x] 実行手順書へハング復旧手順を追記
+- [x] 検証実行（typecheck + unit + XCUI script dry run相当）
+- [x] 結果と未解決事項を記録
+  - [x] `cd app && npm run test`（exit code 0, 42 files / 118 tests passed）
+  - [x] `cd app && npm run typecheck`（exit code 0）
+  - [x] `cd app && npm run e2e:xcui:permission:short`（exit code 0, `appUITests target not found; skipping`）

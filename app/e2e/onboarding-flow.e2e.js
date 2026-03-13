@@ -1,8 +1,8 @@
 const { element, by, waitFor } = require('detox');
-const { launchAppSynced } = require('./helpers/launchApp');
+const { launchAppUnsynced } = require('./helpers/launchApp');
 
 async function launchOnboarding(extra = {}) {
-  await launchAppSynced({
+  await launchAppUnsynced({
     newInstance: true,
     delete: true,
     launchArgs: {
@@ -36,6 +36,23 @@ async function waitForReadyHome() {
   await waitFor(element(by.id('focus-core-screen'))).toExist().withTimeout(10000);
 }
 
+async function tapOnboardingManualSave() {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await waitFor(element(by.id('onboarding-manual-save'))).toBeVisible().withTimeout(1200);
+      await element(by.id('onboarding-manual-save')).tap();
+      return;
+    } catch {
+      try {
+        await element(by.id('onboarding-manual-screen')).scroll(160, 'down');
+      } catch {
+        // no-op
+      }
+    }
+  }
+  await element(by.id('onboarding-manual-save')).tap();
+}
+
 describe('Onboarding Flow', () => {
   // TC-ONB-01
   it('ONB-01: search success and candidate save moves to time screen', async () => {
@@ -50,11 +67,11 @@ describe('Onboarding Flow', () => {
     await waitFor(element(by.id('onboarding-search-input'))).toExist().withTimeout(15000);
     await element(by.id('onboarding-search-input')).typeText('NoResult');
     await element(by.id('onboarding-search-input')).tapReturnKey();
-    await waitFor(element(by.id('onboarding-manual-entry'))).toExist().withTimeout(10000);
-    await element(by.id('add-book-manual-title')).typeText('Manual Onboarding');
-    await element(by.id('add-book-manual-title')).tapReturnKey();
-    await waitFor(element(by.id('add-book-manual-save'))).toExist().withTimeout(10000);
-    await element(by.id('add-book-manual-save')).tap();
+    await waitFor(element(by.id('onboarding-manual-screen'))).toExist().withTimeout(10000);
+    await element(by.id('onboarding-manual-title-input')).typeText('Manual Onboarding');
+    await element(by.id('onboarding-manual-title-input')).tapReturnKey();
+    await waitFor(element(by.id('onboarding-manual-save'))).toExist().withTimeout(10000);
+    await tapOnboardingManualSave();
     await waitFor(element(by.id('onboarding-time-save'))).toExist().withTimeout(10000);
   });
 
@@ -64,11 +81,11 @@ describe('Onboarding Flow', () => {
 
     await waitFor(element(by.id('onboarding-search-input'))).toExist().withTimeout(15000);
     await element(by.id('onboarding-search-empty-fallback')).tap();
-    await waitFor(element(by.id('onboarding-manual-entry'))).toExist().withTimeout(10000);
-    await element(by.id('add-book-manual-title')).typeText('Offline Manual');
-    await element(by.id('add-book-manual-title')).tapReturnKey();
-    await waitFor(element(by.id('add-book-manual-save'))).toExist().withTimeout(10000);
-    await element(by.id('add-book-manual-save')).tap();
+    await waitFor(element(by.id('onboarding-manual-screen'))).toExist().withTimeout(10000);
+    await element(by.id('onboarding-manual-title-input')).typeText('Offline Manual');
+    await element(by.id('onboarding-manual-title-input')).tapReturnKey();
+    await waitFor(element(by.id('onboarding-manual-save'))).toExist().withTimeout(10000);
+    await tapOnboardingManualSave();
     await waitFor(element(by.id('onboarding-time-save'))).toExist().withTimeout(10000);
   });
 

@@ -69,6 +69,7 @@ export function RestartRecoveryView({
                     disabled={busy || !hasSelectedBook}
                 />
                 <SessionCTAButton
+                    testID="restart-recovery-change-time"
                     tone="ghost"
                     label={copy.restartRecovery.ctaChangeTime}
                     onPress={onPressChangeTime}

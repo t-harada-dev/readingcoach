@@ -79,9 +79,17 @@ function InitialLaunchCoordinator({
                     return;
                 }
 
-                if (openScreen === 'settings') {
+                if (openScreen === 'settings' || openScreen === 'time_change' || openScreen === 'reserve') {
                     requestAnimationFrame(() => {
                         if (!navigationRef.isReady()) return;
+                        if (openScreen === 'time_change') {
+                            navigationRef.navigate('TimeChange');
+                            return;
+                        }
+                        if (openScreen === 'reserve') {
+                            navigationRef.navigate('Reserve');
+                            return;
+                        }
                         navigationRef.navigate('Settings');
                     });
                     return;
