@@ -71,4 +71,28 @@ describe('StartSessionUseCase integration', () => {
     expect(r1.startedAt).toBe(r2.startedAt);
     expect(r1.endTimeISO).toBe(r2.endTimeISO);
   });
+
+  it('does not fail session start when live activity bridge throws', async () => {
+    bridgeMock.startSession.mockResolvedValue({
+      sessionId: 'session_live_1',
+      startedAt: '2026-03-11T00:00:00.000Z',
+      bookTitle: 'Book A',
+    });
+    liveActivityMock.startSession.mockRejectedValue(new Error('live activity unavailable'));
+
+    await expect(
+      runStartSessionUseCase({
+        planId: 'plan_2',
+        mode: 'rescue_5m',
+        entryPoint: 'app',
+      })
+    ).resolves.toMatchObject({
+      planId: 'plan_2',
+      sessionId: 'session_live_1',
+      bookTitle: 'Book A',
+    });
+
+    expect(bridgeMock.startSession).toHaveBeenCalledTimes(1);
+    expect(cancelScheduledForPlanMock).toHaveBeenCalledWith('plan_2');
+  });
 });

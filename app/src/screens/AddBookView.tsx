@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   KeyboardAvoidingView,
-  Keyboard,
   Platform,
   ScrollView,
   StyleSheet,
@@ -11,6 +10,8 @@ import {
 } from 'react-native';
 import { BookFormFields } from '../components/BookFormFields';
 import { BookCoverSection } from '../components/BookCoverSection';
+import { InlineErrorBanner } from '../components/InlineErrorBanner';
+import { ScreenLoadingView } from '../components/ScreenLoadingView';
 import { copy } from '../config/copy';
 import { appTheme } from '../theme/layout';
 
@@ -23,6 +24,8 @@ type AddBookViewProps = {
   thumbnailUrl: string;
   coverSource: 'manual' | 'google_books' | 'placeholder';
   saving: boolean;
+  loading: boolean;
+  errorText: string | null;
   onChangeTitle: (value: string) => void;
   onChangeAuthor: (value: string) => void;
   onChangePageCount: (value: string) => void;
@@ -40,6 +43,8 @@ export function AddBookView({
   thumbnailUrl,
   coverSource,
   saving,
+  loading,
+  errorText,
   onChangeTitle,
   onChangeAuthor,
   onChangePageCount,
@@ -48,6 +53,10 @@ export function AddBookView({
   onPressRemoveCover,
   onPressSaveManual,
 }: AddBookViewProps) {
+  if (loading) {
+    return <ScreenLoadingView testID="add-book-loading" message={copy.focusCore.loading} />;
+  }
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
@@ -80,6 +89,7 @@ export function AddBookView({
         </View>
       </ScrollView>
       <View style={styles.manualActions}>
+        {errorText ? <InlineErrorBanner testID={`${manualPrefix}-inline-error`} message={errorText} /> : null}
         <TouchableOpacity
           testID={`${manualPrefix}-manual-save`}
           style={[styles.cta, (!title.trim() || saving) && styles.ctaDisabled]}

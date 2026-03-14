@@ -25,6 +25,7 @@ export function buildSC06Props(_scenario: MockScenario): FocusCoreViewProps {
         rehabMode: null,
         intentCopy,
         dailyQuote: null,
+        sessionStartErrorText: null,
         startingMode: null,
         onPressChangeBook: () => {},
         onPressResolveBook: () => {},

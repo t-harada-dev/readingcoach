@@ -48,6 +48,7 @@ function buildProps(overrides: Partial<FocusCoreViewProps> = {}): FocusCoreViewP
     rehabMode: null,
     intentCopy: 'intent',
     dailyQuote: null,
+    sessionStartErrorText: null,
     startingMode: null,
     onPressChangeBook: vi.fn(),
     onPressResolveBook: vi.fn(),
@@ -70,5 +71,24 @@ describe('FocusCoreView progress visibility', () => {
     const markup = renderToStaticMarkup(React.createElement(FocusCoreView, buildProps({ progressRatio: 0.4 })));
     expect(markup).toContain('focus-core-progress-track');
   });
-});
 
+  it('renders completed section in quote -> title -> CTA order', () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(
+        FocusCoreView,
+        buildProps({
+          showCompletedActions: true,
+          dailyQuote: { text: 'Quote', author: 'Author' },
+        })
+      )
+    );
+
+    const quoteAt = markup.indexOf('Quote');
+    const titleAt = markup.indexOf('今日のセッションは完了しています');
+    const ctaAt = markup.indexOf('もう 5 分やる');
+
+    expect(quoteAt).toBeGreaterThanOrEqual(0);
+    expect(titleAt).toBeGreaterThan(quoteAt);
+    expect(ctaAt).toBeGreaterThan(titleAt);
+  });
+});

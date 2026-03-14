@@ -31,6 +31,7 @@ export function buildSC04Props(scenario: MockScenario): FocusCoreViewProps {
         rehabMode: fixture.rehabMode,
         intentCopy: '「人生は短いのではない。私たちがそれを浪費しているのだ」\n— セネカ',
         dailyQuote: { text: '人生は短いのではない。私たちがそれを浪費しているのだ', author: 'セネカ' },
+        sessionStartErrorText: null,
         startingMode: null,
         onPressChangeBook: () => {},
         onPressResolveBook: () => {},

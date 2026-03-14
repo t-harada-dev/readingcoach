@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { InlineErrorBanner } from '../components/InlineErrorBanner';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { copy } from '../config/copy';
 import { completionCtaOrder } from './screenPolicy';
@@ -119,11 +120,7 @@ export function CompletionView({
         );
       })}
       </View>
-      {finishedBookError ? (
-        <Text testID="completion-finished-error" style={styles.errorText}>
-          {finishedBookError}
-        </Text>
-      ) : null}
+      {finishedBookError ? <InlineErrorBanner testID="completion-finished-error" message={finishedBookError} /> : null}
     </View>
   );
 }
@@ -160,12 +157,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     marginTop: 12,
-  },
-  errorText: {
-    marginTop: 10,
-    color: appTheme.colors.danger,
-    fontSize: 13,
-    textAlign: 'center',
   },
   ctaStack: {
     marginTop: 'auto',

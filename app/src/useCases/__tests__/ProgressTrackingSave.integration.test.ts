@@ -44,7 +44,8 @@ vi.mock('../../bridge/PersistenceBridge', () => ({
   persistenceBridge: bridgeMock,
 }));
 
-import { enableProgressTracking, updateBookProgress } from '../ProgressTrackingUseCases';
+import { enableProgressTracking } from '../EnableProgressTrackingUseCase';
+import { updateBookProgress } from '../UpdateBookProgressUseCase';
 
 describe('ProgressTrackingSave integration', () => {
   beforeEach(() => {

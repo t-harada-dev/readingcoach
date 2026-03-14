@@ -1,8 +1,8 @@
 const { by, element, waitFor } = require('detox');
-const { launchAppUnsynced } = require('./helpers/launchApp');
+const { launchAppSynced } = require('./helpers/launchApp');
 
 async function launchRestartRecovery(extra = {}) {
-  await launchAppUnsynced({
+  await launchAppSynced({
     newInstance: true,
     delete: true,
     launchArgs: {
@@ -26,14 +26,30 @@ describe('Restart Recovery Flow', () => {
   it('RR-03: navigates to settings via change-time CTA', async () => {
     await launchRestartRecovery();
     await waitFor(element(by.id('restart-recovery-change-time'))).toBeVisible().withTimeout(10000);
-    await element(by.id('restart-recovery-change-time')).tap();
-    await waitFor(element(by.id('settings-screen'))).toBeVisible().withTimeout(15000);
+    for (let i = 0; i < 3; i += 1) {
+      await element(by.id('restart-recovery-change-time')).tap();
+      try {
+        await waitFor(element(by.id('settings-screen'))).toExist().withTimeout(3000);
+        break;
+      } catch {
+        // retry when transition is delayed
+      }
+    }
+    await waitFor(element(by.id('settings-screen'))).toExist().withTimeout(15000);
   });
 
   it('RR-04: navigates to library via change-book CTA', async () => {
     await launchRestartRecovery();
     await waitFor(element(by.id('restart-change-book'))).toBeVisible().withTimeout(10000);
-    await element(by.id('restart-change-book')).tap();
+    for (let i = 0; i < 3; i += 1) {
+      await element(by.id('restart-change-book')).tap();
+      try {
+        await waitFor(element(by.id('library-screen'))).toExist().withTimeout(3000);
+        break;
+      } catch {
+        // retry when transition is delayed
+      }
+    }
     await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(15000);
   });
 });

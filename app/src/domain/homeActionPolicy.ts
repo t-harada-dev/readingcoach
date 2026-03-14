@@ -1,5 +1,6 @@
+import type { SessionMode } from './sessionMode';
+
 export type HomeSurface = 'normal' | 'heavy_day' | 'rehab' | 'restart';
-export type SessionMode = 'normal_15m' | 'rescue_5m' | 'rehab_3m' | 'ignition_1m';
 
 export type HomeActionPlan = {
   surface: HomeSurface;

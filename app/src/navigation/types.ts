@@ -94,7 +94,7 @@ export type RootStackParamList = {
   Library: LibraryParams | undefined;
   BookDetail: BookDetailParams;
   Reserve: undefined;
-  AddBook: undefined;
+  AddBook: OnboardingAddBookParams | undefined;
   OnboardingAddBook: OnboardingAddBookParams | undefined;
   OnboardingTime: undefined;
   OnboardingNotification: OnboardingNotificationParams | undefined;

@@ -1,4 +1,4 @@
-import type { SessionMode } from './homeActionPolicy';
+import type { SessionMode } from './sessionMode';
 
 export type ExecutionResult = 'hard_success' | 'soft_success' | 'prep_success';
 

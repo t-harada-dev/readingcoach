@@ -3,7 +3,8 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
 import { BookCoverImage } from '../components/BookCoverImage';
 import { SessionCTAButton } from '../components/SessionCTAButton';
-import { enableProgressTracking, updateBookProgress } from '../useCases/ProgressTrackingUseCases';
+import { enableProgressTracking } from '../useCases/EnableProgressTrackingUseCase';
+import { updateBookProgress } from '../useCases/UpdateBookProgressUseCase';
 import type { ScreenProps } from '../navigation/types';
 import { appTheme } from '../theme/layout';
 

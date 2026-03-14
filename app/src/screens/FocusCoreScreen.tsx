@@ -1,18 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert } from 'react-native';
 
 import { persistenceBridge, type BookDTO, type DailyExecutionPlanDTO } from '../bridge/PersistenceBridge';
 import { copy, dailyPerformanceMentorQuote } from '../config/copy';
 import { toLocalISODateString } from '../date';
 import { getManualFocusChangeCount } from '../manualFocusChange';
 import { useAppInit } from '../appInit';
-import { runReconcilePlansUseCase } from '../useCases/ReconcilePlansUseCase';
-import {
-    getResumableSession,
-    runStartSessionUseCase,
-    type SessionMode,
-} from '../useCases/StartSessionUseCase';
+import { runStartSessionUseCase, type SessionMode } from '../useCases/StartSessionUseCase';
 import { resolvePrimaryStartModeByMissedDays } from '../useCases/ResolveNotificationStartModeUseCase';
+import { runLoadTodayFocusUseCase } from '../useCases/LoadTodayFocusUseCase';
 import { resolveFocusCoreScreenPolicy } from './screenPolicy';
 import { buildActiveSessionRouteParams } from '../navigation/activeSessionRoute';
 import type { ScreenProps } from '../navigation/types';
@@ -37,6 +32,7 @@ export function FocusCoreScreen({ navigation, route }: ScreenProps<'FocusCore'>)
     const [continuousMissedDays, setContinuousMissedDays] = useState(0);
     const [manualChangeCount, setManualChangeCount] = useState(0);
     const [starting, setStarting] = useState<SessionMode | null>(null);
+    const [sessionStartErrorText, setSessionStartErrorText] = useState<string | null>(null);
     const dueRoutedPlanIdRef = useRef<string | null>(null);
     const todayISO = toLocalISODateString(new Date());
 
@@ -59,23 +55,17 @@ export function FocusCoreScreen({ navigation, route }: ScreenProps<'FocusCore'>)
         if (init.status !== 'ready') return;
         setLoading(true);
         try {
-            const [reconcile, settings] = await Promise.all([
-                runReconcilePlansUseCase('foreground'),
-                persistenceBridge.getSettings(),
-            ]);
+            const { plan: todayPlan, book: nextBook, settings, continuousMissedDays } =
+                await runLoadTodayFocusUseCase('foreground');
             setProgressTrackingEnabled(Boolean(settings?.progressTrackingEnabled));
-            const date = reconcile.todayPlan?.planDate ?? toLocalISODateString(new Date());
-            const todayPlan = (await persistenceBridge.getPlanForDate(date)) ?? reconcile.todayPlan ?? null;
             setPlan(todayPlan);
-            setContinuousMissedDays(reconcile.continuousMissedDays ?? todayPlan?.continuousMissedDaysSnapshot ?? 0);
+            setBook(nextBook);
+            setContinuousMissedDays(continuousMissedDays);
 
             if (todayPlan) {
-                const nextBook = await persistenceBridge.getBook(todayPlan.bookId);
-                setBook(nextBook);
                 const count = await getManualFocusChangeCount(todayPlan.planDate);
                 setManualChangeCount(count);
             } else {
-                setBook(null);
                 setManualChangeCount(0);
             }
         } finally {
@@ -103,49 +93,8 @@ export function FocusCoreScreen({ navigation, route }: ScreenProps<'FocusCore'>)
     const startSession = async (mode: SessionMode) => {
         if (!plan || !hasSelectedBook || starting) return;
         setStarting(mode);
+        setSessionStartErrorText(null);
         try {
-            const resumable = await getResumableSession(plan.planId, mode);
-            if (resumable) {
-                Alert.alert(
-                    copy.focusCore.sessionResumeDialogTitle,
-                    copy.focusCore.sessionResumeDialogMessage,
-                    [
-                        {
-                            text: copy.focusCore.sessionResumeStartNew,
-                            onPress: async () => {
-                                await persistenceBridge.abandonSession(
-                                    plan.planId,
-                                    resumable.sessionId,
-                                    new Date().toISOString()
-                                );
-                                const result = await runStartSessionUseCase({
-                                    planId: plan.planId,
-                                    mode,
-                                    entryPoint: 'app',
-                                });
-                                navigation.navigate(
-                                    'ActiveSession',
-                                    buildActiveSessionRouteParams({ started: result, mode, bookId: plan.bookId })
-                                );
-                            },
-                        },
-                        {
-                            text: copy.focusCore.sessionResumeResume,
-                            onPress: () => {
-                                navigation.navigate(
-                                    'ActiveSession',
-                                    buildActiveSessionRouteParams({
-                                        started: resumable.result,
-                                        mode: resumable.mode,
-                                        bookId: resumable.bookId,
-                                    })
-                                );
-                            },
-                        },
-                    ]
-                );
-                return;
-            }
             const result = await runStartSessionUseCase({
                 planId: plan.planId,
                 mode,
@@ -155,6 +104,8 @@ export function FocusCoreScreen({ navigation, route }: ScreenProps<'FocusCore'>)
                 'ActiveSession',
                 buildActiveSessionRouteParams({ started: result, mode, bookId: plan.bookId })
             );
+        } catch {
+            setSessionStartErrorText(copy.focusCore.startSessionError);
         } finally {
             setStarting(null);
         }
@@ -238,6 +189,7 @@ export function FocusCoreScreen({ navigation, route }: ScreenProps<'FocusCore'>)
             ? copy.focusCore.headerMessageCompleted
             : copy.focusCore.headerMessage,
         dailyQuote: dailyQuote,
+        sessionStartErrorText,
         startingMode: starting,
         onPressChangeBook,
         onPressResolveBook,

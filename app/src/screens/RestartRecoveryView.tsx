@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { BookCoverImage } from '../components/BookCoverImage';
+import { InlineErrorBanner } from '../components/InlineErrorBanner';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { copy } from '../config/copy';
 import { appTheme } from '../theme/layout';
@@ -84,7 +85,7 @@ export function RestartRecoveryView({
                 />
             </View>
 
-            {errorText ? <Text style={styles.errorText}>{errorText}</Text> : null}
+            {errorText ? <InlineErrorBanner testID="restart-recovery-error" message={errorText} /> : null}
         </View>
     );
 }
@@ -158,11 +159,5 @@ const styles = StyleSheet.create({
     },
     actions: {
         marginBottom: 20,
-    },
-    errorText: {
-        color: '#B91C1C',
-        fontSize: 13,
-        textAlign: 'center',
-        marginBottom: 8,
     },
 });

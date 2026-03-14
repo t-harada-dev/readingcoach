@@ -71,6 +71,10 @@
 
 1. **`detoxEnableSynchronization=0` は全スイート一律適用にしない**: `due-action-sheet` / `home.session-start` ではタップ不可・モーダル遷移の不安定化が再現したため、起動helperは共通化しつつ suite ごとに synced/unsynced を選ぶ。
 
+## Detox ビルド反映
+
+1. **JS変更後の実機挙動差分は `e2e:build:ios` で再バンドル確認する**: `ios.sim.debug` でも既存バンドルを参照して古い挙動が残るケースがあるため、導線変更直後は再ビルド後に対象スイートを再実行する。
+
 ## Detox タップ安定化（ScrollView）
 
 1. **`toExist()` だけでタップしない**: ScrollView 内の要素は存在していても画面外にあることがあり、`View is not hittable` につながる。`toBeVisible()` と必要最小限の `scroll()` をセットで使う。

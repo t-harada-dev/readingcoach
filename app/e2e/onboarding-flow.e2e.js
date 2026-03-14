@@ -1,8 +1,8 @@
 const { element, by, waitFor } = require('detox');
-const { launchAppUnsynced } = require('./helpers/launchApp');
+const { launchAppSynced } = require('./helpers/launchApp');
 
 async function launchOnboarding(extra = {}) {
-  await launchAppUnsynced({
+  await launchAppSynced({
     newInstance: true,
     delete: true,
     launchArgs: {
@@ -18,8 +18,7 @@ async function goToOnboardingManualAndComplete() {
   await waitFor(element(by.id('onboarding-manual-title-input'))).toExist().withTimeout(10000);
   await element(by.id('onboarding-manual-title-input')).typeText('DetoxBook');
   await element(by.id('onboarding-manual-title-input')).tapReturnKey();
-  await waitFor(element(by.id('onboarding-manual-save'))).toExist().withTimeout(10000);
-  await element(by.id('onboarding-manual-save')).tap();
+  await tapOnboardingManualSave();
   await waitFor(element(by.id('onboarding-time-save'))).toExist().withTimeout(10000);
 }
 
@@ -32,6 +31,13 @@ async function waitForOnboardingNotificationAction() {
     await waitFor(element(by.id('onboarding-notification-home'))).toExist().withTimeout(10000);
     return 'home';
   }
+}
+
+async function enableNotificationThenGoHome() {
+  await waitFor(element(by.id('onboarding-notification-enable'))).toExist().withTimeout(10000);
+  await element(by.id('onboarding-notification-enable')).tap();
+  await waitFor(element(by.id('onboarding-notification-home'))).toExist().withTimeout(10000);
+  await element(by.id('onboarding-notification-home')).tap();
 }
 
 async function waitForReadyHome() {
@@ -114,8 +120,7 @@ describe('Onboarding Flow', () => {
       e2e_onboarding_stage: 'notification',
       e2e_notification_permission: 'allowed',
     });
-    const action = await waitForOnboardingNotificationAction();
-    await element(by.id(action === 'enable' ? 'onboarding-notification-enable' : 'onboarding-notification-home')).tap();
+    await enableNotificationThenGoHome();
     await waitForReadyHome();
   });
 

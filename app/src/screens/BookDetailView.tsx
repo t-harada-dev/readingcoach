@@ -2,6 +2,8 @@ import React from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BookFormFields } from '../components/BookFormFields';
 import { BookCoverSection } from '../components/BookCoverSection';
+import { InlineErrorBanner } from '../components/InlineErrorBanner';
+import { ScreenLoadingView } from '../components/ScreenLoadingView';
 import { copy } from '../config/copy';
 import { appTheme } from '../theme/layout';
 
@@ -14,7 +16,9 @@ export type BookDetailViewProps = {
   coverSource?: 'manual' | 'google_books' | 'placeholder';
   progressEnabled: boolean;
   saving: boolean;
+  loading: boolean;
   canSave: boolean;
+  errorText: string | null;
   onChangeTitle: (value: string) => void;
   onChangeAuthor: (value: string) => void;
   onChangePageCount: (value: string) => void;
@@ -36,7 +40,9 @@ export function BookDetailView({
   coverSource,
   progressEnabled,
   saving,
+  loading,
   canSave,
+  errorText,
   onChangeTitle,
   onChangeAuthor,
   onChangePageCount,
@@ -48,6 +54,10 @@ export function BookDetailView({
   onPressSave,
   onPressSetFocusBook,
 }: BookDetailViewProps) {
+  if (loading) {
+    return <ScreenLoadingView testID="book-detail-loading" message={copy.focusCore.loading} />;
+  }
+
   return (
     <ScrollView testID="book-detail-screen" contentContainerStyle={styles.container}>
       {copy.bookDetail.subtitle ? <Text style={styles.subtitle}>{copy.bookDetail.subtitle}</Text> : null}
@@ -116,6 +126,7 @@ export function BookDetailView({
       >
         <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaSetFocusBook}</Text>
       </TouchableOpacity>
+      {errorText ? <InlineErrorBanner testID="book-detail-inline-error" message={errorText} /> : null}
     </ScrollView>
   );
 }

@@ -77,7 +77,7 @@ describe('DueActionSheetScreen', () => {
       })
     );
 
-    expect(ctaCalls.map((c) => c.label)).toEqual(['5分だけ', '30分延期', '開始']);
+    expect(ctaCalls.map((c) => c.label)).toEqual(['今日は5分だけにする', '30分延期', '開始']);
     expect(ctaCalls.map((c) => c.tone)).toEqual(['secondary', 'ghost', 'primary']);
   });
 

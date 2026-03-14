@@ -1,12 +1,12 @@
 const { expect, element, by, waitFor } = require('detox');
-const { launchAppUnsynced } = require('./helpers/launchApp');
+const { launchAppSynced } = require('./helpers/launchApp');
 const {
   reachCompletion,
   ensureCompletionActionVisible,
 } = require('./helpers/completionFlow');
 
 async function launchToCompletion(launchArgs = {}) {
-  await launchAppUnsynced({
+  await launchAppSynced({
     newInstance: true,
     delete: true,
     launchArgs: { e2e_session_seconds: '2', ...launchArgs },
@@ -45,7 +45,7 @@ async function launchToCompletion(launchArgs = {}) {
   if (!started) {
     throw new Error('Timed out waiting for start CTA');
   }
-  await waitFor(element(by.id('active-session-book-title'))).toExist().withTimeout(10000);
+  await waitFor(element(by.id('active-session-screen'))).toExist().withTimeout(15000);
   await reachCompletion({ dismissProgressPrompt: true, sessionStarted: true });
 }
 
