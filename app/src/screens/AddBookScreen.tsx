@@ -1,26 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { Keyboard } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Keyboard } from 'react-native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import type { ScreenProps } from '../navigation/types';
-import { runBookSearchUseCase, type BookSearchCandidate } from '../useCases/BookSearchUseCase';
-import { AddBookView, type AddBookFlowState } from './AddBookView';
+import { AddBookView } from './AddBookView';
 import { showErrorAlert } from '../utils/errorAlert';
+
+type ImagePickerModule = typeof import('expo-image-picker');
+let cachedImagePickerModule: ImagePickerModule | null | undefined;
+
+async function resolveImagePickerModule(): Promise<ImagePickerModule | null> {
+  if (cachedImagePickerModule !== undefined) return cachedImagePickerModule;
+  try {
+    cachedImagePickerModule = await import('expo-image-picker');
+  } catch {
+    cachedImagePickerModule = null;
+  }
+  return cachedImagePickerModule;
+}
 
 type SavePayload = {
   title: string;
   author?: string;
-  googleBooksId?: string;
   pageCount?: number;
   thumbnailUrl?: string;
   coverSource?: 'manual' | 'google_books' | 'placeholder';
-};
-
-type AddBookScreenProps = {
-  navigation: ScreenProps<'AddBook'>['navigation'];
-  route: {
-    name: 'AddBook' | 'OnboardingAddBook';
-    params?: { onboarding?: boolean };
-  };
 };
 
 function normalizePageCount(raw: string): number | undefined {
@@ -30,36 +33,15 @@ function normalizePageCount(raw: string): number | undefined {
   return Math.floor(parsed);
 }
 
-export function AddBookScreen({ navigation, route }: AddBookScreenProps) {
-  const isOnboarding = route.name === 'OnboardingAddBook' || route.params?.onboarding === true;
-  const searchScreenTestId = isOnboarding ? 'onboarding-add-book-screen' : 'add-book-search-screen';
-  const searchPrefix = isOnboarding ? 'onboarding' : 'add-book';
+export function AddBookScreen({ navigation, route }: ScreenProps<'AddBook'>) {
+  const isOnboarding = route.params?.onboarding === true;
   const manualPrefix = isOnboarding ? 'onboarding' : 'add-book';
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [pageCount, setPageCount] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [coverSource, setCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
   const [saving, setSaving] = useState(false);
-  const [query, setQuery] = useState('');
-  const [flow, setFlow] = useState<AddBookFlowState>('search');
-  const [candidates, setCandidates] = useState<BookSearchCandidate[]>([]);
-  const [selectedCandidate, setSelectedCandidate] = useState<BookSearchCandidate | null>(null);
-  const [hasExistingBooks, setHasExistingBooks] = useState(false);
-
-  useEffect(() => {
-    let alive = true;
-    if (!isOnboarding) return () => {
-      alive = false;
-    };
-    void (async () => {
-      const books = await persistenceBridge.getBooks();
-      if (!alive) return;
-      setHasExistingBooks(books.length > 0);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [isOnboarding]);
 
   const finishAfterSave = () => {
     if (isOnboarding) {
@@ -74,7 +56,6 @@ export function AddBookScreen({ navigation, route }: AddBookScreenProps) {
       id: `book_${Date.now()}`,
       title: payload.title,
       author: payload.author,
-      googleBooksId: payload.googleBooksId,
       pageCount: payload.pageCount,
       thumbnailUrl: payload.thumbnailUrl,
       coverSource: payload.coverSource,
@@ -93,6 +74,7 @@ export function AddBookScreen({ navigation, route }: AddBookScreenProps) {
         setAuthor('');
         setPageCount('');
         setThumbnailUrl('');
+        setCoverSource('placeholder');
       }
       finishAfterSave();
     } catch (error) {
@@ -112,72 +94,90 @@ export function AddBookScreen({ navigation, route }: AddBookScreenProps) {
         author: author.trim() || undefined,
         pageCount: normalizePageCount(pageCount),
         thumbnailUrl: thumbnailUrl.trim() || undefined,
-        coverSource: thumbnailUrl.trim() ? 'manual' : 'placeholder',
+        coverSource: thumbnailUrl.trim().length > 0 ? coverSource : 'placeholder',
       },
       { clearManualInputs: true }
     );
   };
 
-  const onSearchSubmit = async () => {
-    Keyboard.dismiss();
-    const trimmed = query.trim();
-    if (!trimmed || saving) return;
-    setSaving(true);
+  const pickImageFromLibrary = async () => {
+    if (saving) return;
     try {
-      const result = await runBookSearchUseCase(trimmed);
-      if (result.length === 0) {
-        setFlow('manual');
+      const imagePicker = await resolveImagePickerModule();
+      if (!imagePicker || typeof imagePicker.requestMediaLibraryPermissionsAsync !== 'function') {
+        Alert.alert('画像機能を利用できません', 'このビルドでは画像選択機能が無効です。');
         return;
       }
-      setCandidates(result);
-      setSelectedCandidate(result[0] ?? null);
-      setFlow('candidate');
-    } catch {
-      setFlow('manual');
-    } finally {
-      setSaving(false);
+      const permission = await imagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('権限が必要です', '写真ライブラリへのアクセスを許可してください。');
+        return;
+      }
+      const result = await imagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const selected = result.assets[0];
+      if (!selected?.uri) return;
+      setThumbnailUrl(selected.uri);
+      setCoverSource('manual');
+    } catch (error) {
+      showErrorAlert('画像の選択に失敗しました', error);
     }
   };
 
-  const onSaveCandidate = async () => {
-    Keyboard.dismiss();
-    if (!selectedCandidate || saving) return;
-    await persistAndFinish({
-      title: selectedCandidate.title,
-      author: selectedCandidate.author,
-      googleBooksId: selectedCandidate.googleBooksId,
-      pageCount: selectedCandidate.pageCount,
-      thumbnailUrl: selectedCandidate.thumbnailUrl,
-      coverSource: selectedCandidate.thumbnailUrl ? 'google_books' : 'placeholder',
-    });
+  const takePhoto = async () => {
+    if (saving) return;
+    try {
+      const imagePicker = await resolveImagePickerModule();
+      if (!imagePicker || typeof imagePicker.requestCameraPermissionsAsync !== 'function') {
+        Alert.alert('画像機能を利用できません', 'このビルドではカメラ機能が無効です。');
+        return;
+      }
+      const permission = await imagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('権限が必要です', 'カメラへのアクセスを許可してください。');
+        return;
+      }
+      const result = await imagePicker.launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (result.canceled) return;
+      const selected = result.assets[0];
+      if (!selected?.uri) return;
+      setThumbnailUrl(selected.uri);
+      setCoverSource('manual');
+    } catch (error) {
+      showErrorAlert('撮影に失敗しました', error);
+    }
   };
 
   return (
     <AddBookView
       isOnboarding={isOnboarding}
-      hasExistingBooks={hasExistingBooks}
-      flow={flow}
-      searchScreenTestId={searchScreenTestId}
-      searchPrefix={searchPrefix}
       manualPrefix={manualPrefix}
-      query={query}
-      saving={saving}
-      candidates={candidates}
-      selectedCandidate={selectedCandidate}
       title={title}
       author={author}
       pageCount={pageCount}
       thumbnailUrl={thumbnailUrl}
-      onChangeQuery={setQuery}
-      onPressSearch={onSearchSubmit}
-      onPressOpenManual={() => setFlow('manual')}
-      onPressSelectCandidate={setSelectedCandidate}
-      onPressSaveCandidate={onSaveCandidate}
-      onPressBackToSearch={() => setFlow('search')}
+      coverSource={coverSource}
+      saving={saving}
       onChangeTitle={setTitle}
       onChangeAuthor={setAuthor}
       onChangePageCount={setPageCount}
-      onChangeThumbnailUrl={setThumbnailUrl}
+      onPressTakePhoto={() => {
+        void takePhoto();
+      }}
+      onPressPickFromLibrary={() => {
+        void pickImageFromLibrary();
+      }}
+      onPressRemoveCover={() => {
+        setThumbnailUrl('');
+        setCoverSource('placeholder');
+      }}
       onPressSaveManual={onSaveManual}
     />
   );

@@ -1,3 +1,4 @@
+import { copy } from '../../../config/copy';
 import type { FocusCoreViewProps } from '../../../screens/FocusCoreView';
 import { fixtureBooks } from '../fixtures/books';
 import { scenarioFixtures, type CoreMockScenario } from '../fixtures/scenarios';
@@ -23,15 +24,20 @@ export function buildSC04Props(scenario: MockScenario): FocusCoreViewProps {
         initStatus: 'ready',
         canManualChange: true,
         progressRatio: fixture.progressTrackingEnabled ? 0.42 : 0,
+        showCompletedActions: false,
+        headerMessage: copy.focusCore.headerMessage,
         mainMode: fixture.mainMode,
         subMode: fixture.subMode,
         rehabMode: fixture.rehabMode,
         intentCopy: '「人生は短いのではない。私たちがそれを浪費しているのだ」\n— セネカ',
+        dailyQuote: { text: '人生は短いのではない。私たちがそれを浪費しているのだ', author: 'セネカ' },
         startingMode: null,
         onPressChangeBook: () => {},
         onPressResolveBook: () => {},
         onPressPrimaryCTA: () => {},
         onPressSecondaryCTA: () => {},
         onPressRehabCTA: () => {},
+        onPressCompletedExtra5m: () => {},
+        onPressCompletedExtra15m: () => {},
     };
 }

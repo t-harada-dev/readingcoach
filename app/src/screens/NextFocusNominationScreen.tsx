@@ -1,11 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BookCoverImage } from '../components/BookCoverImage';
 import { SessionCTAButton } from '../components/SessionCTAButton';
 import { persistenceBridge, type BookDTO } from '../bridge/PersistenceBridge';
 import { runNominateNextFocusBookUseCase } from '../useCases/NominateNextFocusBookUseCase';
+import { runSetFocusBookForTodayUseCase } from '../useCases/SetFocusBookForTodayUseCase';
 import type { ScreenProps } from '../navigation/types';
-import { useAsyncEffect } from '../hooks/useAsyncEffect';
+import { useAsyncFocusEffect } from '../hooks/useAsyncFocusEffect';
 import { appTheme } from '../theme/layout';
+import { copy } from '../config/copy';
 
 export function NextFocusNominationScreen({ navigation, route }: ScreenProps<'NextFocusNomination'>) {
   const { completedBookId } = route.params;
@@ -14,13 +17,13 @@ export function NextFocusNominationScreen({ navigation, route }: ScreenProps<'Ne
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  useAsyncEffect(async (signal) => {
+  useAsyncFocusEffect(async (signal) => {
     try {
       const list = await persistenceBridge.getBooks();
       if (!signal.alive) return;
-      const candidates = list.filter((b) => b.id !== completedBookId && b.status !== 'completed');
+      const candidates = list.filter((b) => b.id !== completedBookId);
       setBooks(candidates);
-      if (candidates[0]) setSelectedBookId(candidates[0].id);
+      setSelectedBookId(null);
     } finally {
       if (!signal.alive) return;
       setLoading(false);
@@ -44,6 +47,7 @@ export function NextFocusNominationScreen({ navigation, route }: ScreenProps<'Ne
     setSaving(true);
     try {
       await runNominateNextFocusBookUseCase(selected.id);
+      await runSetFocusBookForTodayUseCase(selected.id);
     } catch {
       // E-36: nomination save failure should not block returning to home.
     } finally {
@@ -79,11 +83,20 @@ export function NextFocusNominationScreen({ navigation, route }: ScreenProps<'Ne
                     onPress={() => setSelectedBookId(item.id)}
                     disabled={saving}
                   >
+                    <BookCoverImage
+                      thumbnailUrl={item.thumbnailUrl}
+                      coverSource={item.coverSource}
+                      title={item.title}
+                      style={styles.rowCover}
+                    />
                     <View style={styles.rowMain}>
                       <Text style={styles.rowTitle}>{item.title}</Text>
                       {item.author ? <Text style={styles.rowMeta}>{item.author}</Text> : null}
+                      {item.status === 'completed' ? (
+                        <Text style={styles.rowCompletedBadge}>{copy.nextFocusNomination.completedBadge}</Text>
+                      ) : null}
                     </View>
-                    {isSelected ? <Text style={styles.rowSelectedBadge}>この本を読んでいます</Text> : null}
+                    {isSelected ? <Text style={styles.rowSelectedBadge}>選択中</Text> : null}
                   </TouchableOpacity>
                 </View>
               );
@@ -95,21 +108,21 @@ export function NextFocusNominationScreen({ navigation, route }: ScreenProps<'Ne
         )}
       </View>
 
-      {!loading && selectedBookId ? <View testID="next-focus-selection-ready" /> : null}
+      {!loading ? <View testID="next-focus-selection-ready" /> : null}
 
       <View style={styles.actions}>
         <SessionCTAButton
           testID="next-focus-confirm"
-          label="次の本を選ぶ"
+          label={copy.nextFocusNomination.ctaConfirm}
           tone="primary"
           onPress={onConfirm}
           disabled={!selected || saving}
         />
         <SessionCTAButton
           testID="next-focus-add-book"
-          label="本を追加する"
+          label={copy.nextFocusNomination.ctaAddBook}
           tone="secondary"
-          onPress={() => navigation.navigate('Library')}
+          onPress={() => navigation.navigate('AddBook')}
           disabled={saving}
         />
       </View>
@@ -138,13 +151,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   selectionArea: {
+    flex: 1,
+    marginTop: 8,
     borderRadius: appTheme.borderRadius.lg,
     borderWidth: 1,
     borderColor: appTheme.colors.border,
     backgroundColor: appTheme.colors.surface,
     padding: 10,
     minHeight: 320,
-    maxHeight: 320,
   },
   selectionAreaLabel: {
     color: appTheme.colors.textSecondary,
@@ -182,6 +196,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212,138,62,0.45)',
     backgroundColor: appTheme.colors.accentSoft,
   },
+  rowCover: {
+    width: 36,
+    height: 48,
+    borderRadius: 6,
+    marginRight: 10,
+    backgroundColor: appTheme.colors.surfaceMuted,
+  },
   rowMain: {
     flex: 1,
     paddingRight: 8,
@@ -196,6 +217,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
+  rowCompletedBadge: {
+    color: appTheme.colors.textMuted,
+    fontSize: 11,
+    marginTop: 4,
+  },
   rowSelectedBadge: {
     color: appTheme.colors.accent,
     fontSize: 12,
@@ -208,7 +234,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   actions: {
-    marginTop: 'auto',
+    marginTop: 12,
     paddingBottom: 4,
   },
 });

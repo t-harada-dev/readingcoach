@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createNavigationContainerRef, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import type { NavigationContainerRefWithCurrent } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AppInitProvider } from './src/appInit';
@@ -19,6 +19,7 @@ import { persistenceBridge } from './src/bridge/PersistenceBridge';
 import { copy } from './src/config/copy';
 import { ActiveSessionScreen } from './src/screens/ActiveSessionScreen';
 import { AddBookScreen } from './src/screens/AddBookScreen';
+import { OnboardingAddBookScreen } from './src/screens/OnboardingAddBookScreen';
 import { BookDetailScreen } from './src/screens/BookDetailScreen';
 import { CompletionScreen } from './src/screens/CompletionScreen';
 import { DueActionSheetScreen } from './src/screens/DueActionSheetScreen';
@@ -29,16 +30,17 @@ import { OnboardingNotificationScreen } from './src/screens/OnboardingNotificati
 import { OnboardingTimeScreen } from './src/screens/OnboardingTimeScreen';
 import { ProgressTrackingPromptScreen } from './src/screens/ProgressTrackingPromptScreen';
 import { ProgressTrackingSetupScreen } from './src/screens/ProgressTrackingSetupScreen';
-import { ReserveScreen } from './src/screens/ReserveScreen';
 import { RestartRecoveryScreen } from './src/screens/RestartRecoveryScreen';
-import { NotificationSettingsScreen } from './src/screens/NotificationSettingsScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { isSurfaceSnapshotId, SurfaceSnapshotScreen } from './src/screens/SurfaceSnapshotScreen';
-import { TimeChangeScreen } from './src/screens/TimeChangeScreen';
 import type { RootStackParamList, SurfaceSnapshotId } from './src/navigation/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const navigationRef = createNavigationContainerRef<RootStackParamList>();
+
+function shouldShowHeaderSettings(routeName: keyof RootStackParamList): boolean {
+    return routeName !== 'DevScreenCatalog' && routeName !== 'DevScreenPlayground';
+}
 
 function parseSurfaceSnapshotId(raw: string | null): SurfaceSnapshotId | null {
     if (!raw) return null;
@@ -93,12 +95,7 @@ function InitialLaunchCoordinator({
                     return;
                 }
 
-                if (
-                    openScreen === 'settings' ||
-                    openScreen === 'time_change' ||
-                    openScreen === 'reserve' ||
-                    openScreen === 'surface_snapshot'
-                ) {
+                if (openScreen === 'settings' || openScreen === 'surface_snapshot') {
                     requestAnimationFrame(() => {
                         if (!navigationRef.isReady()) return;
                         if (openScreen === 'surface_snapshot') {
@@ -107,14 +104,6 @@ function InitialLaunchCoordinator({
                                 index: 0,
                                 routes: [{ name: 'SurfaceSnapshot', params: { snapshotId } }],
                             });
-                            return;
-                        }
-                        if (openScreen === 'time_change') {
-                            navigationRef.navigate('TimeChange');
-                            return;
-                        }
-                        if (openScreen === 'reserve') {
-                            navigationRef.navigate('Reserve');
                             return;
                         }
                         navigationRef.navigate('Settings');
@@ -164,6 +153,7 @@ export default function App() {
     }, []);
 
     const showCatalogDevTools = __DEV__ || e2eCatalogEnabled || e2eCatalogAutoOpen;
+    const showCatalogLauncher = e2eCatalogEnabled || e2eCatalogAutoOpen;
 
     const hideCatalogLauncher =
         activeRouteName === 'DevScreenCatalog' || activeRouteName === 'DevScreenPlayground';
@@ -191,12 +181,26 @@ export default function App() {
                         <OnboardingCoordinator navigationRef={navigationRef} navigationReady={navigationReady} />
                         <Stack.Navigator
                             initialRouteName="FocusCore"
-                            screenOptions={{
+                            screenOptions={({ route, navigation }) => ({
                                 headerStyle: { backgroundColor: '#FDFCF8' },
                                 headerTintColor: '#2C2C2C',
                                 headerTitleStyle: { fontSize: 17 },
                                 contentStyle: { backgroundColor: '#FDFCF8' },
-                            }}
+                                headerRight: shouldShowHeaderSettings(route.name)
+                                    ? () => (
+                                          <TouchableOpacity
+                                              testID="header-settings-button"
+                                              style={{ paddingHorizontal: 4, paddingVertical: 2 }}
+                                              onPress={() => {
+                                                  if (route.name === 'Settings') return;
+                                                  navigation.navigate('Settings');
+                                              }}
+                                          >
+                                              <Text style={{ color: '#2C2C2C', fontSize: 14, fontWeight: '600' }}>設定</Text>
+                                          </TouchableOpacity>
+                                      )
+                                    : undefined,
+                            })}
                         >
                             <Stack.Screen
                                 name="FocusCore"
@@ -222,16 +226,6 @@ export default function App() {
                                 name="RestartRecovery"
                                 component={RestartRecoveryScreen}
                                 options={{ title: copy.navigation.restartRecoveryTitle }}
-                            />
-                            <Stack.Screen
-                                name="TimeChange"
-                                component={TimeChangeScreen}
-                                options={{ title: copy.navigation.timeChangeTitle }}
-                            />
-                            <Stack.Screen
-                                name="NotificationSettings"
-                                component={NotificationSettingsScreen}
-                                options={{ title: copy.navigation.settingsTitle }}
                             />
                             <Stack.Screen
                                 name="Settings"
@@ -264,20 +258,14 @@ export default function App() {
                                 options={{ title: copy.navigation.bookDetailTitle }}
                             />
                             <Stack.Screen
-                                name="Reserve"
-                                component={ReserveScreen}
-                                options={{ title: copy.navigation.reserveTitle }}
-                            />
-                            <Stack.Screen
                                 name="AddBook"
                                 component={AddBookScreen}
                                 options={{ title: copy.navigation.addBookTitle }}
                             />
                             <Stack.Screen
                                 name="OnboardingAddBook"
-                                component={AddBookScreen}
-                                options={{ title: copy.navigation.addBookTitle, headerBackVisible: false }}
-                                initialParams={{ onboarding: true }}
+                                component={OnboardingAddBookScreen}
+                                options={{ title: copy.navigation.onboardingAddBookTitle, headerBackVisible: false }}
                             />
                             <Stack.Screen
                                 name="OnboardingTime"
@@ -310,7 +298,7 @@ export default function App() {
                             ) : null}
                         </Stack.Navigator>
                     </NavigationContainer>
-                    {showCatalogDevTools && !hideCatalogLauncher ? (
+                    {showCatalogLauncher && !hideCatalogLauncher ? (
                         <ScreenCatalogLauncher
                             onPress={() => {
                                 if (!navigationRef.isReady()) return;

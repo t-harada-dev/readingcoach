@@ -32,7 +32,8 @@ artifacts/
 .DS_Store
 *.pem
 
-# local env files
+# local env files (API キー等を含む .env はコミットしない)
+.env
 .env*.local
 
 # typescript

@@ -4,6 +4,7 @@ import type { SessionMode } from '../useCases/StartSessionUseCase';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import type { ScreenProps } from '../navigation/types';
 import { useAsyncEffect } from '../hooks/useAsyncEffect';
+import { clearSessionPauseRemaining, getSessionPauseRemaining, setSessionPauseRemaining } from '../sessionPauseRemaining';
 import { ActiveSessionView } from './ActiveSessionView';
 
 export function ActiveSessionScreen({ navigation, route }: ScreenProps<'ActiveSession'>) {
@@ -54,6 +55,16 @@ export function ActiveSessionScreen({ navigation, route }: ScreenProps<'ActiveSe
     setBookCoverSource(book?.coverSource ?? (book?.thumbnailUrl ? 'google_books' : 'placeholder'));
   }, [bookId]);
 
+  useAsyncEffect(async (signal) => {
+    if (!sessionId) return;
+    const remaining = await getSessionPauseRemaining(sessionId);
+    if (!signal.alive) return;
+    if (remaining != null) {
+      setEndTimeMs(Date.now() + remaining * 1000);
+      await clearSessionPauseRemaining(sessionId);
+    }
+  }, [sessionId]);
+
   useEffect(() => {
     if (!done || finalizedRef.current || completing || paused) return;
     if (!planId || !sessionId || !mode) return;
@@ -97,9 +108,11 @@ export function ActiveSessionScreen({ navigation, route }: ScreenProps<'ActiveSe
           endedAtISO: new Date().toISOString(),
         });
       }
+      const existing = await persistenceBridge.getBook(bookId);
       await persistenceBridge.saveBook({
+        ...(existing ?? {}),
         id: bookId,
-        title: bookTitle,
+        title: existing?.title ?? bookTitle,
         status: 'completed',
       });
       navigation.replace('NextFocusNomination', {
@@ -134,7 +147,13 @@ export function ActiveSessionScreen({ navigation, route }: ScreenProps<'ActiveSe
       onPressFinishedBook={() => {
         void onPressFinishedBook();
       }}
-      onPressQuit={() => navigation.navigate('FocusCore')}
+      onPressQuit={() => {
+        const remaining = Math.max(0, Math.ceil((endTimeMs - Date.now()) / 1000));
+        if (sessionId) {
+          void setSessionPauseRemaining(sessionId, remaining);
+        }
+        navigation.navigate('FocusCore');
+      }}
     />
   );
 }
