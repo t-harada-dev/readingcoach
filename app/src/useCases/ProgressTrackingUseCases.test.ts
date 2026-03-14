@@ -12,9 +12,9 @@ vi.mock('../bridge/PersistenceBridge', () => ({
 
 import {
   enableProgressTracking,
-  skipProgressTrackingPrompt,
-  updateBookProgress,
-} from './ProgressTrackingUseCases';
+} from './EnableProgressTrackingUseCase';
+import { skipProgressTrackingPrompt } from './SkipProgressTrackingUseCase';
+import { updateBookProgress } from './UpdateBookProgressUseCase';
 
 describe('ProgressTrackingUseCases', () => {
   beforeEach(() => {

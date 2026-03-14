@@ -2,27 +2,15 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
-import { enableProgressTracking, updateBookProgress } from '../useCases/ProgressTrackingUseCases';
+import { enableProgressTracking } from '../useCases/EnableProgressTrackingUseCase';
 import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { runSetFocusBookForTodayUseCase } from '../useCases/SetFocusBookForTodayUseCase';
+import { updateBookProgress } from '../useCases/UpdateBookProgressUseCase';
 import { BookDetailView } from './BookDetailView';
 import { validateProgressToggleInputs, type ProgressToggleGuardFailureReason } from './bookDetailProgressGuard';
 import type { ScreenProps } from '../navigation/types';
 import { useAsyncFocusEffect } from '../hooks/useAsyncFocusEffect';
-import { showErrorAlert } from '../utils/errorAlert';
-
-type ImagePickerModule = typeof import('expo-image-picker');
-let cachedImagePickerModule: ImagePickerModule | null | undefined;
-
-async function resolveImagePickerModule(): Promise<ImagePickerModule | null> {
-  if (cachedImagePickerModule !== undefined) return cachedImagePickerModule;
-  try {
-    cachedImagePickerModule = await import('expo-image-picker');
-  } catch {
-    cachedImagePickerModule = null;
-  }
-  return cachedImagePickerModule;
-}
+import { useImagePicker } from '../hooks/useImagePicker';
 
 export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'>) {
   const { bookId, manualChangePlanDate, manualChangeCurrentBookId } = route.params;
@@ -35,6 +23,8 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
   const [coverSource, setCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
   const [progressEnabled, setProgressEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [errorText, setErrorText] = useState<string | null>(null);
 
   type SavedSnapshot = {
     title: string;
@@ -48,6 +38,13 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
   const savedSnapshotRef = useRef<SavedSnapshot | null>(null);
 
   const canSave = useMemo(() => title.trim().length > 0 && !saving, [saving, title]);
+  const { pickImageFromLibrary, takePhoto, isLoading: imagePickerLoading } = useImagePicker({
+    disabled: saving,
+    onImageSelected: (uri) => {
+      setThumbnailUrl(uri);
+      setCoverSource('manual');
+    },
+  });
 
   function norm(s: string | undefined): string {
     return (s ?? '').trim();
@@ -84,31 +81,39 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
   };
 
   const refresh = useCallback(async () => {
-    const [book, settings] = await Promise.all([
-      persistenceBridge.getBook(bookId),
-      persistenceBridge.getSettings(),
-    ]);
-    if (!book) return;
+    setLoading(true);
+    setErrorText(null);
+    try {
+      const [book, settings] = await Promise.all([
+        persistenceBridge.getBook(bookId),
+        persistenceBridge.getSettings(),
+      ]);
+      if (!book) return;
 
-    setTitle(book.title);
-    setAuthor(book.author ?? '');
-    setPageCount(book.pageCount ? String(book.pageCount) : '');
-    setCurrentPage(typeof book.currentPage === 'number' ? String(book.currentPage) : '');
-    setThumbnailUrl(book.thumbnailUrl ?? '');
-    setCoverSource(book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'));
-    const hasProgressData =
-      typeof book.currentPage === 'number' || (book.lastProgressUpdatedAt ?? '').trim().length > 0;
-    const progressOn = hasProgressData ? Boolean(settings?.progressTrackingEnabled) : false;
-    setProgressEnabled(progressOn);
-    savedSnapshotRef.current = {
-      title: book.title,
-      author: book.author ?? '',
-      pageCount: book.pageCount != null ? String(book.pageCount) : '',
-      currentPage: typeof book.currentPage === 'number' ? String(book.currentPage) : '',
-      thumbnailUrl: book.thumbnailUrl ?? '',
-      coverSource: book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'),
-      progressEnabled: progressOn,
-    };
+      setTitle(book.title);
+      setAuthor(book.author ?? '');
+      setPageCount(book.pageCount ? String(book.pageCount) : '');
+      setCurrentPage(typeof book.currentPage === 'number' ? String(book.currentPage) : '');
+      setThumbnailUrl(book.thumbnailUrl ?? '');
+      setCoverSource(book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'));
+      const hasProgressData =
+        typeof book.currentPage === 'number' || (book.lastProgressUpdatedAt ?? '').trim().length > 0;
+      const progressOn = hasProgressData ? Boolean(settings?.progressTrackingEnabled) : false;
+      setProgressEnabled(progressOn);
+      savedSnapshotRef.current = {
+        title: book.title,
+        author: book.author ?? '',
+        pageCount: book.pageCount != null ? String(book.pageCount) : '',
+        currentPage: typeof book.currentPage === 'number' ? String(book.currentPage) : '',
+        thumbnailUrl: book.thumbnailUrl ?? '',
+        coverSource: book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'),
+        progressEnabled: progressOn,
+      };
+    } catch {
+      setErrorText(copy.bookDetail.saveError);
+    } finally {
+      setLoading(false);
+    }
   }, [bookId]);
 
   useAsyncFocusEffect(async (signal) => {
@@ -190,65 +195,11 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
         progressEnabled,
       };
       Alert.alert(copy.bookDetail.saved);
-    } catch (error) {
-      showErrorAlert(copy.bookDetail.saveError, error);
+      setErrorText(null);
+    } catch {
+      setErrorText(copy.bookDetail.saveError);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const pickImageFromLibrary = async () => {
-    if (saving) return;
-    try {
-      const imagePicker = await resolveImagePickerModule();
-      if (!imagePicker || typeof imagePicker.requestMediaLibraryPermissionsAsync !== 'function') {
-        Alert.alert('画像機能を利用できません', 'このビルドでは画像選択機能が無効です。');
-        return;
-      }
-      const permission = await imagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('権限が必要です', '写真ライブラリへのアクセスを許可してください。');
-        return;
-      }
-      const result = await imagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        quality: 0.8,
-      });
-      if (result.canceled) return;
-      const selected = result.assets[0];
-      if (!selected?.uri) return;
-      setThumbnailUrl(selected.uri);
-      setCoverSource('manual');
-    } catch (error) {
-      showErrorAlert('画像の選択に失敗しました', error);
-    }
-  };
-
-  const takePhoto = async () => {
-    if (saving) return;
-    try {
-      const imagePicker = await resolveImagePickerModule();
-      if (!imagePicker || typeof imagePicker.requestCameraPermissionsAsync !== 'function') {
-        Alert.alert('画像機能を利用できません', 'このビルドではカメラ機能が無効です。');
-        return;
-      }
-      const permission = await imagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('権限が必要です', 'カメラへのアクセスを許可してください。');
-        return;
-      }
-      const result = await imagePicker.launchCameraAsync({
-        allowsEditing: true,
-        quality: 0.8,
-      });
-      if (result.canceled) return;
-      const selected = result.assets[0];
-      if (!selected?.uri) return;
-      setThumbnailUrl(selected.uri);
-      setCoverSource('manual');
-    } catch (error) {
-      showErrorAlert('撮影に失敗しました', error);
     }
   };
 
@@ -293,8 +244,10 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
       thumbnailUrl={thumbnailUrl}
       coverSource={coverSource}
       progressEnabled={progressEnabled}
-      saving={saving}
+      saving={saving || imagePickerLoading}
+      loading={loading}
       canSave={canSave}
+      errorText={errorText}
       onChangeTitle={setTitle}
       onChangeAuthor={setAuthor}
       onChangePageCount={setPageCount}

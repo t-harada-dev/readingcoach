@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SessionCTAButton } from '../components/SessionCTAButton';
-import { skipProgressTrackingPrompt } from '../useCases/ProgressTrackingUseCases';
+import { skipProgressTrackingPrompt } from '../useCases/SkipProgressTrackingUseCase';
 import type { ScreenProps } from '../navigation/types';
 
 export function ProgressTrackingPromptScreen({ navigation, route }: ScreenProps<'ProgressTrackingPrompt'>) {

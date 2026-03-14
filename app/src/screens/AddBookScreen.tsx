@@ -1,22 +1,9 @@
 import React, { useState } from 'react';
-import { Alert, Keyboard } from 'react-native';
+import { Keyboard } from 'react-native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import type { ScreenProps } from '../navigation/types';
 import { AddBookView } from './AddBookView';
-import { showErrorAlert } from '../utils/errorAlert';
-
-type ImagePickerModule = typeof import('expo-image-picker');
-let cachedImagePickerModule: ImagePickerModule | null | undefined;
-
-async function resolveImagePickerModule(): Promise<ImagePickerModule | null> {
-  if (cachedImagePickerModule !== undefined) return cachedImagePickerModule;
-  try {
-    cachedImagePickerModule = await import('expo-image-picker');
-  } catch {
-    cachedImagePickerModule = null;
-  }
-  return cachedImagePickerModule;
-}
+import { useImagePicker } from '../hooks/useImagePicker';
 
 type SavePayload = {
   title: string;
@@ -42,6 +29,14 @@ export function AddBookScreen({ navigation, route }: ScreenProps<'AddBook'>) {
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [coverSource, setCoverSource] = useState<'manual' | 'google_books' | 'placeholder'>('placeholder');
   const [saving, setSaving] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
+  const { pickImageFromLibrary, takePhoto, isLoading: imagePickerLoading } = useImagePicker({
+    disabled: saving,
+    onImageSelected: (uri) => {
+      setThumbnailUrl(uri);
+      setCoverSource('manual');
+    },
+  });
 
   const finishAfterSave = () => {
     if (isOnboarding) {
@@ -68,6 +63,7 @@ export function AddBookScreen({ navigation, route }: ScreenProps<'AddBook'>) {
     const { clearManualInputs = false } = options;
     try {
       setSaving(true);
+      setErrorText(null);
       await saveBook(payload);
       if (clearManualInputs) {
         setTitle('');
@@ -77,8 +73,8 @@ export function AddBookScreen({ navigation, route }: ScreenProps<'AddBook'>) {
         setCoverSource('placeholder');
       }
       finishAfterSave();
-    } catch (error) {
-      showErrorAlert('保存に失敗しました', error);
+    } catch {
+      setErrorText('保存に失敗しました');
     } finally {
       setSaving(false);
     }
@@ -100,61 +96,6 @@ export function AddBookScreen({ navigation, route }: ScreenProps<'AddBook'>) {
     );
   };
 
-  const pickImageFromLibrary = async () => {
-    if (saving) return;
-    try {
-      const imagePicker = await resolveImagePickerModule();
-      if (!imagePicker || typeof imagePicker.requestMediaLibraryPermissionsAsync !== 'function') {
-        Alert.alert('画像機能を利用できません', 'このビルドでは画像選択機能が無効です。');
-        return;
-      }
-      const permission = await imagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('権限が必要です', '写真ライブラリへのアクセスを許可してください。');
-        return;
-      }
-      const result = await imagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        quality: 0.8,
-      });
-      if (result.canceled) return;
-      const selected = result.assets[0];
-      if (!selected?.uri) return;
-      setThumbnailUrl(selected.uri);
-      setCoverSource('manual');
-    } catch (error) {
-      showErrorAlert('画像の選択に失敗しました', error);
-    }
-  };
-
-  const takePhoto = async () => {
-    if (saving) return;
-    try {
-      const imagePicker = await resolveImagePickerModule();
-      if (!imagePicker || typeof imagePicker.requestCameraPermissionsAsync !== 'function') {
-        Alert.alert('画像機能を利用できません', 'このビルドではカメラ機能が無効です。');
-        return;
-      }
-      const permission = await imagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('権限が必要です', 'カメラへのアクセスを許可してください。');
-        return;
-      }
-      const result = await imagePicker.launchCameraAsync({
-        allowsEditing: true,
-        quality: 0.8,
-      });
-      if (result.canceled) return;
-      const selected = result.assets[0];
-      if (!selected?.uri) return;
-      setThumbnailUrl(selected.uri);
-      setCoverSource('manual');
-    } catch (error) {
-      showErrorAlert('撮影に失敗しました', error);
-    }
-  };
-
   return (
     <AddBookView
       isOnboarding={isOnboarding}
@@ -164,7 +105,9 @@ export function AddBookScreen({ navigation, route }: ScreenProps<'AddBook'>) {
       pageCount={pageCount}
       thumbnailUrl={thumbnailUrl}
       coverSource={coverSource}
-      saving={saving}
+      saving={saving || imagePickerLoading}
+      loading={saving || imagePickerLoading}
+      errorText={errorText}
       onChangeTitle={setTitle}
       onChangeAuthor={setAuthor}
       onChangePageCount={setPageCount}

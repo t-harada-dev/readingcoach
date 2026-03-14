@@ -85,7 +85,9 @@ export async function runStartSessionUseCase(
     if (existing) return existing;
 
     // Expo 通知経路で予約されている当該 plan の通知を先に消す（開始後の誤通知防止）。
-    await cancelScheduledForPlan(planId).catch(() => {});
+    if (typeof cancelScheduledForPlan === 'function') {
+      await cancelScheduledForPlan(planId).catch(() => {});
+    }
 
     const started = await persistenceBridge.startSession(
       planId,
@@ -103,12 +105,16 @@ export async function runStartSessionUseCase(
       durationSecondsOverride: started.e2eSessionSeconds,
     });
 
-    await liveActivityBridge.startSession({
-      planId,
-      bookTitle: result.bookTitle,
-      endTimeISO: result.endTimeISO,
-      durationSeconds: result.durationSeconds,
-    });
+    try {
+      await liveActivityBridge.startSession({
+        planId,
+        bookTitle: result.bookTitle,
+        endTimeISO: result.endTimeISO,
+        durationSeconds: result.durationSeconds,
+      });
+    } catch {
+      // Live Activity は補助機能のため、開始失敗でセッション本体を失敗扱いにしない。
+    }
 
     return result;
   })();

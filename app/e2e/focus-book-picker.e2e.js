@@ -1,8 +1,17 @@
 const { by, element, expect, waitFor } = require('detox');
-const { launchAppUnsynced } = require('./helpers/launchApp');
+const { launchAppSynced } = require('./helpers/launchApp');
+
+async function waitForLibraryReady(timeout = 15000) {
+  try {
+    await waitFor(element(by.id('library-screen'))).toExist().withTimeout(timeout);
+    return;
+  } catch {
+    await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(timeout);
+  }
+}
 
 async function launchToLibrary() {
-  await launchAppUnsynced({ newInstance: true, delete: true });
+  await launchAppSynced({ newInstance: true, delete: true });
 
   await waitFor(element(by.id('focus-core-scroll'))).toExist().withTimeout(15000);
   for (let i = 0; i < 5; i += 1) {
@@ -14,8 +23,16 @@ async function launchToLibrary() {
     }
   }
   await waitFor(element(by.id('focus-core-change-book'))).toExist().withTimeout(10000);
-  await element(by.id('focus-core-change-book')).tap();
-  await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
+  for (let i = 0; i < 3; i += 1) {
+    await element(by.id('focus-core-change-book')).tap();
+    try {
+      await waitForLibraryReady(3000);
+      break;
+    } catch {
+      // retry on transient tap miss
+    }
+  }
+  await waitForLibraryReady(10000);
 }
 
 async function openLibraryFromHome() {
@@ -28,8 +45,16 @@ async function openLibraryFromHome() {
       await element(by.id('focus-core-scroll')).scroll(260, 'down');
     }
   }
-  await element(by.id('focus-core-change-book')).tap();
-  await waitFor(element(by.id('library-add-book'))).toExist().withTimeout(10000);
+  for (let i = 0; i < 3; i += 1) {
+    await element(by.id('focus-core-change-book')).tap();
+    try {
+      await waitForLibraryReady(3000);
+      break;
+    } catch {
+      // retry on transient tap miss
+    }
+  }
+  await waitForLibraryReady(10000);
 }
 
 async function openBookDetail(rowId) {

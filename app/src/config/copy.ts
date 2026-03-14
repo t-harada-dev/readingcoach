@@ -19,6 +19,7 @@ export const copy = {
     sessionResumeStartNew: '新規で開始する',
     loading: '準備中…',
     initError: '初期化に失敗しました。再起動してください。',
+    startSessionError: 'セッションを開始できませんでした。少し待ってからもう一度お試しください。',
     performanceMentorQuotes: [
       {
         text: 'すべての良書を精読することは、過去の最も優れた人々と会話をすることと同じである。',
@@ -95,6 +96,29 @@ export const copy = {
     labelHour: '時',
     labelMinute: '分',
     ctaSave: 'この時刻で保存',
+  },
+  timeChange: {
+    title: '読む時間を変える',
+    subtitle: '毎日の読書開始時刻を変更できます',
+    labelHour: '時',
+    labelMinute: '分',
+    hint: '0-23時 / 0-59分で入力してください',
+    ctaOpenNotificationSettings: '通知設定へ',
+    ctaConfirm: 'この時刻に変更',
+  },
+  reserve: {
+    labelTomorrowBook: '明日読む本',
+    labelTime: '通知時刻',
+    notifyAtSuffix: 'に通知',
+    ctaReserve: 'この内容で予約する',
+    emptyAddBookFirst: '本がありません。先に本を追加してください。',
+    back: '戻る',
+    presets: [
+      { label: '07:00', h: 7, m: 0 },
+      { label: '12:00', h: 12, m: 0 },
+      { label: '21:00', h: 21, m: 0 },
+      { label: '22:00', h: 22, m: 0 },
+    ],
   },
   onboardingAddBook: {
     title: 'まずは読む本を登録しましょう',

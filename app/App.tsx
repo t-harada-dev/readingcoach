@@ -31,8 +31,10 @@ import { OnboardingTimeScreen } from './src/screens/OnboardingTimeScreen';
 import { ProgressTrackingPromptScreen } from './src/screens/ProgressTrackingPromptScreen';
 import { ProgressTrackingSetupScreen } from './src/screens/ProgressTrackingSetupScreen';
 import { RestartRecoveryScreen } from './src/screens/RestartRecoveryScreen';
+import { ReserveScreen } from './src/screens/ReserveScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { isSurfaceSnapshotId, SurfaceSnapshotScreen } from './src/screens/SurfaceSnapshotScreen';
+import { TimeChangeScreen } from './src/screens/TimeChangeScreen';
 import type { RootStackParamList, SurfaceSnapshotId } from './src/navigation/types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -95,7 +97,12 @@ function InitialLaunchCoordinator({
                     return;
                 }
 
-                if (openScreen === 'settings' || openScreen === 'surface_snapshot') {
+                if (
+                    openScreen === 'settings' ||
+                    openScreen === 'surface_snapshot' ||
+                    openScreen === 'reserve' ||
+                    openScreen === 'time_change'
+                ) {
                     requestAnimationFrame(() => {
                         if (!navigationRef.isReady()) return;
                         if (openScreen === 'surface_snapshot') {
@@ -103,6 +110,17 @@ function InitialLaunchCoordinator({
                             navigationRef.reset({
                                 index: 0,
                                 routes: [{ name: 'SurfaceSnapshot', params: { snapshotId } }],
+                            });
+                            return;
+                        }
+                        if (openScreen === 'reserve') {
+                            navigationRef.navigate('Reserve');
+                            return;
+                        }
+                        if (openScreen === 'time_change') {
+                            navigationRef.reset({
+                                index: 1,
+                                routes: [{ name: 'FocusCore' }, { name: 'TimeChange' }],
                             });
                             return;
                         }
@@ -226,6 +244,16 @@ export default function App() {
                                 name="RestartRecovery"
                                 component={RestartRecoveryScreen}
                                 options={{ title: copy.navigation.restartRecoveryTitle }}
+                            />
+                            <Stack.Screen
+                                name="Reserve"
+                                component={ReserveScreen}
+                                options={{ title: '予約' }}
+                            />
+                            <Stack.Screen
+                                name="TimeChange"
+                                component={TimeChangeScreen}
+                                options={{ title: '時刻変更' }}
                             />
                             <Stack.Screen
                                 name="Settings"

@@ -52,7 +52,6 @@ export function OnboardingNotificationScreen({ navigation, route }: ScreenProps<
       const granted = await resolvePermission();
       await saveSettingsWithDefaults({ notificationsEnabled: granted });
       setNotificationsEnabled(granted);
-      goReady();
     } finally {
       setBusy(false);
     }

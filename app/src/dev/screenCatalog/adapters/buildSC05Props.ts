@@ -27,6 +27,7 @@ export function buildSC05Props(scenario: MockScenario): FocusCoreViewProps {
     rehabMode: null,
     intentCopy: '今日は軽く始めるだけで十分です。1分だけでも前進です。',
     dailyQuote: null,
+    sessionStartErrorText: null,
     startingMode: null,
     onPressChangeBook: () => {},
     onPressResolveBook: () => {},

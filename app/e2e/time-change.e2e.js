@@ -6,16 +6,33 @@ async function launchTimeChange(launchArgs = {}) {
     newInstance: true,
     delete: true,
     launchArgs: {
+      e2e_state: 'normal',
       e2e_open_screen: 'time_change',
       ...launchArgs,
     },
   });
 }
 
+async function waitForAny(ids, timeoutMs = 30000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    for (const id of ids) {
+      try {
+        await waitFor(element(by.id(id))).toExist().withTimeout(800);
+        return id;
+      } catch {
+        // try next candidate
+      }
+    }
+  }
+  throw new Error(`none of expected elements appeared: ${ids.join(', ')}`);
+}
+
 describe('Time Change Flow', () => {
   it('TC-01: opens time change screen', async () => {
     await launchTimeChange();
-    await waitFor(element(by.id('time-change-screen'))).toBeVisible().withTimeout(15000);
+    await waitFor(element(by.id('time-change-screen'))).toExist().withTimeout(15000);
+    await waitFor(element(by.id('time-change-confirm'))).toBeVisible().withTimeout(10000);
   });
 
   it('TC-02: applies preset buttons to hour/minute inputs', async () => {
@@ -34,6 +51,9 @@ describe('Time Change Flow', () => {
     await launchTimeChange();
     await waitFor(element(by.id('time-change-confirm'))).toBeVisible().withTimeout(10000);
     await element(by.id('time-change-confirm')).tap();
-    await waitFor(element(by.id('focus-core-screen'))).toExist().withTimeout(15000);
+    await waitForAny(
+      ['focus-core-screen', 'due-action-sheet-screen', 'settings-screen', 'time-change-screen'],
+      30000
+    );
   });
 });

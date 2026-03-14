@@ -1,12 +1,13 @@
 const { expect, element, by, waitFor } = require('detox');
-const { launchAppUnsynced } = require('./launchApp');
+const { launchAppSynced, launchAppUnsynced } = require('./launchApp');
 
 async function sleep(ms) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function launchRehabFast({ state = 'rehab3', sessionSeconds = '2' } = {}) {
-  await launchAppUnsynced({
+async function launchRehabFast({ state = 'rehab3', sessionSeconds = '2', synced = false } = {}) {
+  const launch = synced ? launchAppSynced : launchAppUnsynced;
+  await launch({
     newInstance: true,
     delete: true,
     launchArgs: { e2e_state: state, e2e_session_seconds: sessionSeconds },

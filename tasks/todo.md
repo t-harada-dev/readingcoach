@@ -1,5 +1,80 @@
 # 積読コーチ Expo アプリ実装計画
 
+## 2026-03-14: Xcode回避でシミュレータ起動（ユーザー操作優先）
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] Xcodeを使わず `simctl` で iPhone 17 Pro を boot/install/launch
+- [x] 起動成否（PID / Booted）を確認して共有する
+  - [x] 起動PID: `com.anonymous.app: 78572`
+  - [x] 端末状態: `iPhone 17 Pro (...) (Booted)`
+
+## 2026-03-14: 更新ビルド反映 + シミュレータ起動復旧
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `cd app && npm run e2e:build:ios` を実行して最新ビルドを生成する
+- [x] CoreSimulatorService 異常を解消して iOS Simulator を起動する
+- [x] 最新ビルドを Simulator へ install/launch する
+- [x] 実行結果（exit code / 起動成否）を記録する
+  - [x] `cd app && npm run e2e:build:ios`（exit code 0, `** BUILD SUCCEEDED **`）
+  - [x] `killall -9 com.apple.CoreSimulator.CoreSimulatorService || true; open -a Simulator; ...; xcrun simctl launch "iPhone 17 Pro Max" com.anonymous.app`（exit code 0, `com.anonymous.app: 63977`）
+  - [x] `xcrun simctl list devices | rg "iPhone 17 Pro Max \\(|Booted"`（exit code 0, `iPhone 17 Pro Max ... (Booted)`）
+
+## 2026-03-14: 体感「古い表示」/ タイマー連動ずれの原因調査
+
+- [x] CoreSimulatorService が不安定（`connection became invalid`）で install/launch が失敗する事象を再確認
+- [x] 最新バイナリをクリーン再インストールして起動確認（`com.anonymous.app: 68978`）
+- [x] コード上の完了UI順序変更が反映済みであることを確認（`FocusCoreCompletedSection`）
+- [x] `e2e_*` 汚染疑いの確認（simulator defaults に `com.anonymous.app` ドメイン/`e2e_*` キーなし）
+
+## 2026-03-14: FocusCore完了UI順序 + 5分エラー + Onboarding通知導線
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] FocusCore 完了時の表示順を `quote -> completed title/subtitle -> CTA` へ変更
+- [x] `もう5分やる` 押下時の未処理Promiseを解消（開始処理の失敗を捕捉し画面内エラー表示）
+- [x] `StartSessionUseCase` の依存失敗（通知キャンセル/LiveActivity）で致命停止しないよう安全化
+- [x] OnboardingNotification の `通知を有効にする` 押下後の即時遷移を廃止
+- [x] Unit/Component テスト追加・更新（FocusCore順序/開始失敗/Onboarding遷移）
+- [x] E2E `onboarding-flow` ONB-05 を新導線に更新
+- [x] 検証: `cd app && npm run typecheck`
+- [x] 検証: `cd app && npm run test`
+- [x] 検証: `cd app && npm run e2e:test:ios`
+  - [x] 初回 full 実行は `due-retry` で Signal 11 により失敗（exit code 1）
+  - [x] `e2e/due-retry.e2e.js` 単体再実行で pass を確認
+  - [x] full 再実行: `exit code 0`（32 suites / 92 tests / failed 0）
+
+## 2026-03-14: REFACTOR-01〜08 実装
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] REFACTOR-01: FocusCore の未実装参照（`getResumableSession` / `abandonSession`）と再開ダイアログ導線を削除
+- [x] REFACTOR-02: `homeActionPolicy` の `SessionMode` 重複を解消（`domain/sessionMode` へ統一）
+- [x] REFACTOR-05: `LoadTodayFocusUseCase` を追加し FocusCoreScreen の取得責務を移管
+- [x] REFACTOR-03: `FocusCoreView` を 3 つの画面固有サブコンポーネントに分割
+- [x] REFACTOR-04: `useImagePicker` フックを追加し `BookDetail` / `AddBook` を共通化
+- [x] REFACTOR-06: `ProgressTrackingUseCases.ts` を3ファイルへ分割し import を更新
+- [x] REFACTOR-07: `copy.ts` の未定義/未使用キーを参照実態ベースで整理
+- [x] REFACTOR-08: `ScreenLoadingView` / `InlineErrorBanner` を追加し 4 画面へ適用
+- [x] 検証: `cd app && npm run check`
+- [x] 検証: `cd app && npm run e2e:build:ios`
+- [x] 検証: `cd app && npm run e2e:test:ios`
+  - [x] 初回実行結果: `exit code 1`（32 suites 中 7 suites fail / 13 tests fail）
+  - [x] fail suites: `onboarding-flow`, `focus-book-picker`, `completion-return`, `reserve-flow`, `next-focus-visible`, `time-change`, `restart-recovery`
+  - [x] 最終実行結果: `exit code 0`（32 suites / 92 tests, failed 0）
+
+## 2026-03-14: E2E 7失敗解消
+
+- [x] `tasks/lessons.md` を確認してから着手する
+- [x] `e2e_open_screen=reserve|time_change` の起動引数ルーティングを実装
+- [x] `Stack.Navigator` に `Reserve` / `TimeChange` を追加し E2E 到達性を確保
+- [x] 7失敗スイートの起動同期戦略を安定化（synced/unsynced を適正化）
+- [x] `onboarding-flow` manual save タップを共通リトライ導線へ統一
+- [x] `focus-book-picker` / `restart-recovery` の library 到達待機をリトライ化
+- [x] `completion-return` の active-session 待機を `active-session-screen` ベースへ変更
+- [x] `next-focus-visible` の期待書名を選択行に応じた動的検証へ変更
+- [x] 検証: 対象7スイート実行（exit code 0 / failed 0）
+- [x] 検証: `cd app && npm run typecheck`
+- [x] 検証: `cd app && npm run test`
+- [x] 検証: `cd app && npm run e2e:test:ios`
+
 ## 2026-03-13: TEST_PLAN再基準化 + 未完了クローズ
 
 - [x] `tasks/lessons.md` を確認してから着手する

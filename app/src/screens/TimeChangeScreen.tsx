@@ -34,7 +34,11 @@ export function TimeChangeScreen({ navigation }: ScreenProps<'TimeChange'>) {
     setBusy(true);
     try {
       await runUpdateDailyTargetTimeUseCase({ hour, minute });
-      navigation.goBack();
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('FocusCore');
+      }
     } finally {
       setBusy(false);
     }
