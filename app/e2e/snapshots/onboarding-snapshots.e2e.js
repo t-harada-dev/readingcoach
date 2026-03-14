@@ -21,8 +21,10 @@ describe('Flow Snapshots: Onboarding', () => {
   });
 
   it('captures SC-01 / normal', async () => {
-    await launchOnboarding({ e2e_book_search_mode: 'success' });
-    await waitFor(element(by.id('onboarding-search-input'))).toBeVisible().withTimeout(15000);
+    await launchOnboarding();
+    await waitFor(element(by.id('onboarding-add-book-landing'))).toBeVisible().withTimeout(15000);
+    await element(by.id('onboarding-add-book-cta-manual')).tap();
+    await waitFor(element(by.id('onboarding-manual-title-input'))).toBeVisible().withTimeout(15000);
     await tracker.capture('SC-01', 'normal');
   });
 

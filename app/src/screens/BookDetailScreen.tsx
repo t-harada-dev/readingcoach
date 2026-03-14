@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { persistenceBridge } from '../bridge/PersistenceBridge';
 import { copy } from '../config/copy';
@@ -6,7 +6,7 @@ import { enableProgressTracking, updateBookProgress } from '../useCases/Progress
 import { saveSettingsWithDefaults } from '../useCases/SaveSettingsWithDefaults';
 import { runSetFocusBookForTodayUseCase } from '../useCases/SetFocusBookForTodayUseCase';
 import { BookDetailView } from './BookDetailView';
-import { validateProgressToggleInputs } from './bookDetailProgressGuard';
+import { validateProgressToggleInputs, type ProgressToggleGuardFailureReason } from './bookDetailProgressGuard';
 import type { ScreenProps } from '../navigation/types';
 import { useAsyncFocusEffect } from '../hooks/useAsyncFocusEffect';
 import { showErrorAlert } from '../utils/errorAlert';
@@ -36,7 +36,52 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
   const [progressEnabled, setProgressEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  type SavedSnapshot = {
+    title: string;
+    author: string;
+    pageCount: string;
+    currentPage: string;
+    thumbnailUrl: string;
+    coverSource: 'manual' | 'google_books' | 'placeholder';
+    progressEnabled: boolean;
+  };
+  const savedSnapshotRef = useRef<SavedSnapshot | null>(null);
+
   const canSave = useMemo(() => title.trim().length > 0 && !saving, [saving, title]);
+
+  function norm(s: string | undefined): string {
+    return (s ?? '').trim();
+  }
+  function isDirty(): boolean {
+    const saved = savedSnapshotRef.current;
+    if (!saved) return false;
+    return (
+      norm(title) !== norm(saved.title) ||
+      norm(author) !== norm(saved.author) ||
+      norm(pageCount) !== norm(saved.pageCount) ||
+      norm(currentPage) !== norm(saved.currentPage) ||
+      norm(thumbnailUrl) !== norm(saved.thumbnailUrl) ||
+      coverSource !== saved.coverSource ||
+      progressEnabled !== saved.progressEnabled
+    );
+  }
+
+  const resolveProgressGuardMessage = (reason: ProgressToggleGuardFailureReason): string => {
+    switch (reason) {
+      case 'missing_page_count':
+        return copy.bookDetail.progressGuardMissingPageCount;
+      case 'invalid_page_count':
+        return copy.bookDetail.progressGuardInvalidPageCount;
+      case 'missing_current_page':
+        return copy.bookDetail.progressGuardMissingCurrentPage;
+      case 'invalid_current_page':
+        return copy.bookDetail.progressGuardInvalidCurrentPage;
+      case 'current_exceeds_page_count':
+        return copy.bookDetail.progressGuardCurrentExceedsPageCount;
+      default:
+        return copy.bookDetail.progressGuardMissingPageCount;
+    }
+  };
 
   const refresh = useCallback(async () => {
     const [book, settings] = await Promise.all([
@@ -48,10 +93,22 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
     setTitle(book.title);
     setAuthor(book.author ?? '');
     setPageCount(book.pageCount ? String(book.pageCount) : '');
-    setCurrentPage(book.currentPage ? String(book.currentPage) : '');
+    setCurrentPage(typeof book.currentPage === 'number' ? String(book.currentPage) : '');
     setThumbnailUrl(book.thumbnailUrl ?? '');
     setCoverSource(book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'));
-    setProgressEnabled(Boolean(settings?.progressTrackingEnabled));
+    const hasProgressData =
+      typeof book.currentPage === 'number' || (book.lastProgressUpdatedAt ?? '').trim().length > 0;
+    const progressOn = hasProgressData ? Boolean(settings?.progressTrackingEnabled) : false;
+    setProgressEnabled(progressOn);
+    savedSnapshotRef.current = {
+      title: book.title,
+      author: book.author ?? '',
+      pageCount: book.pageCount != null ? String(book.pageCount) : '',
+      currentPage: typeof book.currentPage === 'number' ? String(book.currentPage) : '',
+      thumbnailUrl: book.thumbnailUrl ?? '',
+      coverSource: book.coverSource ?? (book.thumbnailUrl ? 'google_books' : 'placeholder'),
+      progressEnabled: progressOn,
+    };
   }, [bookId]);
 
   useAsyncFocusEffect(async (signal) => {
@@ -71,23 +128,7 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
 
     const guard = validateProgressToggleInputs(pageCount, currentPage);
     if (!guard.ok) {
-      const message = (() => {
-        switch (guard.reason) {
-          case 'missing_page_count':
-            return copy.bookDetail.progressGuardMissingPageCount;
-          case 'invalid_page_count':
-            return copy.bookDetail.progressGuardInvalidPageCount;
-          case 'missing_current_page':
-            return copy.bookDetail.progressGuardMissingCurrentPage;
-          case 'invalid_current_page':
-            return copy.bookDetail.progressGuardInvalidCurrentPage;
-          case 'current_exceeds_page_count':
-            return copy.bookDetail.progressGuardCurrentExceedsPageCount;
-          default:
-            return copy.bookDetail.progressGuardMissingPageCount;
-        }
-      })();
-      Alert.alert(copy.bookDetail.progressGuardTitle, message);
+      Alert.alert(copy.bookDetail.progressGuardTitle, resolveProgressGuardMessage(guard.reason));
       return;
     }
 
@@ -111,11 +152,21 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
           ? Math.floor(parsedCurrentPage)
           : undefined;
 
+      if (progressEnabled) {
+        const guard = validateProgressToggleInputs(pageCount, currentPage);
+        if (!guard.ok) {
+          Alert.alert(copy.bookDetail.progressGuardTitle, resolveProgressGuardMessage(guard.reason));
+          return;
+        }
+      }
+
       await persistenceBridge.saveBook({
         id: bookId,
         title: trimmedTitle,
         author: author.trim() || undefined,
         pageCount: normalizedPageCount,
+        currentPage: normalizedCurrentPage,
+        lastProgressUpdatedAt: normalizedCurrentPage !== undefined ? new Date().toISOString() : undefined,
         thumbnailUrl: thumbnailUrl.trim() || undefined,
         coverSource: thumbnailUrl.trim().length > 0 ? coverSource : 'placeholder',
       });
@@ -129,6 +180,15 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
         });
       }
 
+      savedSnapshotRef.current = {
+        title: trimmedTitle,
+        author: author.trim(),
+        pageCount: normalizedPageCount != null ? String(normalizedPageCount) : '',
+        currentPage: normalizedCurrentPage != null ? String(normalizedCurrentPage) : '',
+        thumbnailUrl: thumbnailUrl.trim(),
+        coverSource: thumbnailUrl.trim().length > 0 ? coverSource : 'placeholder',
+        progressEnabled,
+      };
       Alert.alert(copy.bookDetail.saved);
     } catch (error) {
       showErrorAlert(copy.bookDetail.saveError, error);
@@ -141,7 +201,7 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
     if (saving) return;
     try {
       const imagePicker = await resolveImagePickerModule();
-      if (!imagePicker) {
+      if (!imagePicker || typeof imagePicker.requestMediaLibraryPermissionsAsync !== 'function') {
         Alert.alert('画像機能を利用できません', 'このビルドでは画像選択機能が無効です。');
         return;
       }
@@ -169,7 +229,7 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
     if (saving) return;
     try {
       const imagePicker = await resolveImagePickerModule();
-      if (!imagePicker) {
+      if (!imagePicker || typeof imagePicker.requestCameraPermissionsAsync !== 'function') {
         Alert.alert('画像機能を利用できません', 'このビルドではカメラ機能が無効です。');
         return;
       }
@@ -192,7 +252,7 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
     }
   };
 
-  const onSetFocusBook = async () => {
+  const doSetFocusBook = async () => {
     if (saving) return;
     setSaving(true);
     try {
@@ -204,6 +264,24 @@ export function BookDetailScreen({ route, navigation }: ScreenProps<'BookDetail'
     } finally {
       setSaving(false);
     }
+  };
+
+  const onSetFocusBook = () => {
+    if (saving) return;
+    if (!isDirty()) {
+      void doSetFocusBook();
+      return;
+    }
+    Alert.alert(copy.bookDetail.unsavedConfirmTitle, '', [
+      { text: copy.bookDetail.unsavedConfirmNo, onPress: () => void doSetFocusBook() },
+      {
+        text: copy.bookDetail.unsavedConfirmYes,
+        onPress: async () => {
+          await onSave();
+          await doSetFocusBook();
+        },
+      },
+    ]);
   };
 
   return (

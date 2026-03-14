@@ -3,6 +3,7 @@ import type { SessionMode } from '../useCases/StartSessionUseCase';
 export const copy = {
   focusCore: {
     headerMessage: 'さあ始めましょう。\n今日の15分が明日の知性になります。',
+    headerMessageCompleted: '今日のセッションは完了しています。未来のあなたがきっと今日のあなたに感謝することでしょう。',
     todaySessionLabel: '今日のセッション',
     coverFallbackTitle: 'Today',
     changeBookLink: '本を変える',
@@ -10,6 +11,12 @@ export const copy = {
     noBookSelected: '読む本が未設定です。本を選んでから開始してください。',
     supportCopyForIgnition: 'まずは1分。再点火だけで、流れは戻せます。',
     supportCopyForNormal: '今日の15分が、思考の筋力になります。',
+    completedTitle: '今日のセッションは完了しています',
+    completedSubtitle: '追加で読む場合は、下のボタンから選んでください。',
+    sessionResumeDialogTitle: 'セッションの再開',
+    sessionResumeDialogMessage: 'すでに開始しているセッションがあります。再開しますか？',
+    sessionResumeResume: '再開する',
+    sessionResumeStartNew: '新規で開始する',
     loading: '準備中…',
     initError: '初期化に失敗しました。再起動してください。',
     performanceMentorQuotes: [
@@ -71,7 +78,7 @@ export const copy = {
     title: '今日のセッションを達成しましょう',
     subtitle: '毎日の積み重ねがあなたの力になります',
     ctaStart: '開始',
-    cta5m: '5分だけ',
+    cta5m: '今日は5分だけにする',
     ctaSnooze: '30分延期',
   },
   restartRecovery: {
@@ -89,18 +96,15 @@ export const copy = {
     labelMinute: '分',
     ctaSave: 'この時刻で保存',
   },
-  timeChange: {
-    title: 'いつ読むかを変える',
-    subtitle: '読書の時間を変更できます',
-    labelHour: '時',
-    labelMinute: '分',
-    hint: 'あとでまた変更できます',
-    ctaConfirm: 'この時間にする',
-    ctaOpenNotificationSettings: '設定を開く',
+  onboardingAddBook: {
+    title: 'まずは読む本を登録しましょう',
+    ctaManual: '本を登録する',
   },
   settings: {
     title: '設定',
     subtitle: '読書時間と通知をここで変更できます',
+    labelHour: '時',
+    labelMinute: '分',
     timeSectionTitle: '読書時間',
     notificationSectionTitle: '通知',
     notificationStatus: '現在の通知',
@@ -116,6 +120,7 @@ export const copy = {
     selectedMark: '選択中',
   },
   addBook: {
+    ctaManual: '本を登録する',
     labelTitle: 'タイトル',
     placeholderTitle: '本のタイトル',
     labelAuthorOptional: '著者（任意）',
@@ -124,7 +129,12 @@ export const copy = {
     placeholderPageCount: '例: 320',
     labelCoverUrlOptional: '表紙画像を追加（任意）',
     placeholderCoverUrl: 'https://...',
-    ctaAddAndBack: '追加して戻る',
+    ctaAddAndBack: 'この内容で追加する',
+  },
+  nextFocusNomination: {
+    ctaConfirm: 'この本を選ぶ',
+    ctaAddBook: 'ライブラリに本を追加する',
+    completedBadge: '読了済み',
   },
   library: {
     title: 'ライブラリ',
@@ -155,20 +165,9 @@ export const copy = {
     progressGuardCurrentExceedsPageCount: '現在ページは総ページ数以下にしてください。',
     saved: '保存しました',
     saveError: '保存に失敗しました',
-  },
-  reserve: {
-    emptyAddBookFirst: '本を先に追加してください',
-    back: '戻る',
-    labelTomorrowBook: '明日読む1冊',
-    labelTime: '時刻',
-    notifyAtSuffix: 'に通知',
-    ctaReserve: '予約する',
-    presets: [
-      { label: '7:00', h: 7, m: 0 },
-      { label: '12:00', h: 12, m: 0 },
-      { label: '21:00', h: 21, m: 0 },
-      { label: '22:00', h: 22, m: 0 },
-    ],
+    unsavedConfirmTitle: '変更内容を保存しますか？',
+    unsavedConfirmYes: 'はい',
+    unsavedConfirmNo: 'いいえ',
   },
   notifications: {
     readNowTitle: '今すぐ読む',
@@ -176,16 +175,14 @@ export const copy = {
   navigation: {
     focusCoreTitle: '今日のセッション',
     focusBookPickerTitle: '本を切り替える',
-    activeSessionTitle: '執行',
+    activeSessionTitle: '読書セッション',
     completionTitle: '完了',
     nextFocusNominationTitle: '次の1冊',
     dueActionTitle: '開始オプション',
     restartRecoveryTitle: '再開導線',
-    timeChangeTitle: '時刻変更',
     settingsTitle: '設定',
-    reserveTitle: '明日の予約',
-    notificationSettingsTitle: '通知設定',
     addBookTitle: '本を追加',
+    onboardingAddBookTitle: '読む本を登録',
     libraryTitle: 'ライブラリ',
     bookDetailTitle: '本詳細',
   },
@@ -216,7 +213,7 @@ export function sessionModeLabel(mode: SessionMode): string {
     case 'ignition_1m':
       return copy.focusCore.cta.ignition1m;
     case 'rescue_5m':
-      return '5分だけ読む';
+      return '今日は5分だけにする';
     case 'rehab_3m':
       return '3分再開';
     case 'normal_15m':

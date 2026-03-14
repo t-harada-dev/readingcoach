@@ -12,12 +12,14 @@ async function launchOnboarding(extra = {}) {
   });
 }
 
-async function completeOnboardingBookBySearch() {
-  await waitFor(element(by.id('onboarding-search-input'))).toExist().withTimeout(15000);
-  await element(by.id('onboarding-search-input')).typeText('DetoxBook');
-  await element(by.id('onboarding-search-input')).tapReturnKey();
-  await waitFor(element(by.id('add-book-candidate-screen'))).toExist().withTimeout(10000);
-  await element(by.id('add-book-candidate-save')).tap();
+async function goToOnboardingManualAndComplete() {
+  await waitFor(element(by.id('onboarding-add-book-landing'))).toExist().withTimeout(15000);
+  await element(by.id('onboarding-add-book-cta-manual')).tap();
+  await waitFor(element(by.id('onboarding-manual-title-input'))).toExist().withTimeout(10000);
+  await element(by.id('onboarding-manual-title-input')).typeText('DetoxBook');
+  await element(by.id('onboarding-manual-title-input')).tapReturnKey();
+  await waitFor(element(by.id('onboarding-manual-save'))).toExist().withTimeout(10000);
+  await element(by.id('onboarding-manual-save')).tap();
   await waitFor(element(by.id('onboarding-time-save'))).toExist().withTimeout(10000);
 }
 
@@ -54,19 +56,29 @@ async function tapOnboardingManualSave() {
 }
 
 describe('Onboarding Flow', () => {
+  // Full onboarding flow via e2e_onboarding: AddBook → Time → Notification → Home (all three screens operated once)
+  it('operates OnboardingAddBook, OnboardingTime, OnboardingNotification via e2e_onboarding', async () => {
+    await launchOnboarding();
+    await goToOnboardingManualAndComplete();
+    await waitFor(element(by.id('onboarding-time-save'))).toBeVisible().withTimeout(5000);
+    await element(by.id('onboarding-time-save')).tap();
+    await waitFor(element(by.id('onboarding-notification-screen'))).toExist().withTimeout(10000);
+    await waitFor(element(by.id('onboarding-notification-later'))).toBeVisible().withTimeout(5000);
+    await element(by.id('onboarding-notification-later')).tap();
+    await waitForReadyHome();
+  });
+
   // TC-ONB-01
-  it('ONB-01: search success and candidate save moves to time screen', async () => {
-    await launchOnboarding({ e2e_book_search_mode: 'success' });
-    await completeOnboardingBookBySearch();
+  it('ONB-01: manual entry moves to time screen', async () => {
+    await launchOnboarding();
+    await goToOnboardingManualAndComplete();
   });
 
   // TC-ONB-02
-  it('ONB-02: search empty falls back to manual and continues', async () => {
-    await launchOnboarding({ e2e_book_search_mode: 'empty' });
-
-    await waitFor(element(by.id('onboarding-search-input'))).toExist().withTimeout(15000);
-    await element(by.id('onboarding-search-input')).typeText('NoResult');
-    await element(by.id('onboarding-search-input')).tapReturnKey();
+  it('ONB-02: manual entry continues to time screen', async () => {
+    await launchOnboarding();
+    await waitFor(element(by.id('onboarding-add-book-landing'))).toExist().withTimeout(15000);
+    await element(by.id('onboarding-add-book-cta-manual')).tap();
     await waitFor(element(by.id('onboarding-manual-screen'))).toExist().withTimeout(10000);
     await element(by.id('onboarding-manual-title-input')).typeText('Manual Onboarding');
     await element(by.id('onboarding-manual-title-input')).tapReturnKey();
@@ -76,11 +88,10 @@ describe('Onboarding Flow', () => {
   });
 
   // TC-ONB-03
-  it('ONB-03: offline path can continue via manual entry', async () => {
-    await launchOnboarding({ e2e_book_search_mode: 'offline' });
-
-    await waitFor(element(by.id('onboarding-search-input'))).toExist().withTimeout(15000);
-    await element(by.id('onboarding-search-empty-fallback')).tap();
+  it('ONB-03: manual entry from landing continues to time screen', async () => {
+    await launchOnboarding();
+    await waitFor(element(by.id('onboarding-add-book-landing'))).toExist().withTimeout(15000);
+    await element(by.id('onboarding-add-book-cta-manual')).tap();
     await waitFor(element(by.id('onboarding-manual-screen'))).toExist().withTimeout(10000);
     await element(by.id('onboarding-manual-title-input')).typeText('Offline Manual');
     await element(by.id('onboarding-manual-title-input')).tapReturnKey();

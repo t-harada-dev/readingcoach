@@ -26,17 +26,22 @@ export type FocusCoreViewProps = {
     loading: boolean;
     initStatus: 'booting' | 'ready' | 'error';
     canManualChange: boolean;
-    progressRatio: number;
+    progressRatio: number | null;
+    showCompletedActions: boolean;
     mainMode: SessionMode;
     subMode: SessionMode | null;
     rehabMode: SessionMode | null;
     intentCopy: string;
+    headerMessage: string;
+    dailyQuote: { text: string; author: string } | null;
     startingMode: SessionMode | null;
     onPressChangeBook: () => void;
     onPressResolveBook: () => void;
     onPressPrimaryCTA: () => void;
     onPressSecondaryCTA: () => void;
     onPressRehabCTA: () => void;
+    onPressCompletedExtra5m: () => void;
+    onPressCompletedExtra15m: () => void;
 };
 
 export function FocusCoreView({
@@ -47,72 +52,78 @@ export function FocusCoreView({
     initStatus,
     canManualChange,
     progressRatio,
+    showCompletedActions,
     mainMode,
     subMode,
     rehabMode,
     intentCopy,
+    headerMessage,
+    dailyQuote,
     startingMode,
     onPressChangeBook,
     onPressResolveBook,
     onPressPrimaryCTA,
     onPressSecondaryCTA,
     onPressRehabCTA,
+    onPressCompletedExtra5m,
+    onPressCompletedExtra15m,
 }: FocusCoreViewProps) {
     return (
-        <ScrollView
-            testID="focus-core-scroll"
-            style={styles.scroll}
-            contentContainerStyle={styles.container}
-            keyboardShouldPersistTaps="handled"
-        >
-            <View testID="focus-core-screen" style={styles.screenBody}>
-                <View>
-                    <Text style={styles.headerMessage}>{copy.focusCore.headerMessage}</Text>
+        <View testID="focus-core-screen" style={styles.screenWrap}>
+            <ScrollView
+                testID="focus-core-scroll"
+                style={styles.scroll}
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
+                <Text style={styles.headerMessage}>{headerMessage}</Text>
 
-                    <View style={styles.card}>
-                        <View style={styles.coverWrap}>
-                            {book?.thumbnailUrl ? (
-                                <Image
-                                    source={{ uri: book.thumbnailUrl }}
-                                    style={styles.cover}
-                                    resizeMode="cover"
-                                />
-                            ) : (
-                                <View style={styles.coverPlaceholder}>
-                                    <Text style={styles.coverPlaceholderText} numberOfLines={3}>
-                                        {book?.title ?? copy.focusCore.coverFallbackTitle}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
+                <View style={styles.card}>
+                    <View style={styles.coverWrap}>
+                        {book?.thumbnailUrl ? (
+                            <Image
+                                source={{ uri: book.thumbnailUrl }}
+                                style={styles.cover}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View style={styles.coverPlaceholder}>
+                                <Text style={styles.coverPlaceholderText} numberOfLines={3}>
+                                    {book?.title ?? copy.focusCore.coverFallbackTitle}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
 
-                        <View style={styles.progressTrack}>
+                    {progressRatio !== null ? (
+                        <View testID="focus-core-progress-track" style={styles.progressTrack}>
                             <View style={[styles.progressFill, { width: `${Math.round(progressRatio * 100)}%` }]} />
                         </View>
+                    ) : null}
 
-                        {book?.title ? (
-                            <>
-                                <Text testID="focus-core-book-title" style={styles.bookTitle} numberOfLines={2}>
-                                    {book.title}
+                    {book?.title ? (
+                        <>
+                            <Text testID="focus-core-book-title" style={styles.bookTitle} numberOfLines={2}>
+                                {book.title}
+                            </Text>
+                            {book.author ? (
+                                <Text style={styles.bookAuthor} numberOfLines={1}>
+                                    {book.author}
                                 </Text>
-                                {book.author ? (
-                                    <Text style={styles.bookAuthor} numberOfLines={1}>
-                                        {book.author}
-                                    </Text>
-                                ) : null}
-                            </>
-                        ) : null}
+                            ) : null}
+                        </>
+                    ) : null}
 
-                        {hasSelectedBook && plan && canManualChange ? (
-                            <TouchableOpacity testID="focus-core-change-book" style={styles.ghostLink} onPress={onPressChangeBook}>
-                                <Text style={styles.ghostLinkText}>{copy.focusCore.changeBookLink}</Text>
-                            </TouchableOpacity>
-                        ) : null}
-                    </View>
+                    {hasSelectedBook && plan && canManualChange ? (
+                        <TouchableOpacity testID="focus-core-change-book" style={styles.ghostLink} onPress={onPressChangeBook}>
+                            <Text style={styles.ghostLinkText}>{copy.focusCore.changeBookLink}</Text>
+                        </TouchableOpacity>
+                    ) : null}
                 </View>
+            </ScrollView>
 
-                <View style={styles.menu}>
-                    <Text style={styles.intentCopy}>{intentCopy}</Text>
+            <View style={styles.menu}>
+                    {!showCompletedActions ? <Text style={styles.intentCopy}>{intentCopy}</Text> : null}
                     {!hasSelectedBook ? (
                         <>
                             <Text testID="focus-core-no-book-warning" style={styles.warningText}>
@@ -128,7 +139,31 @@ export function FocusCoreView({
                         </>
                     ) : null}
 
-                    {hasSelectedBook ? (
+                    {showCompletedActions ? (
+                        <>
+                            <Text style={styles.completedTitle}>{copy.focusCore.completedTitle}</Text>
+                            <Text style={styles.completedSubtitle}>{copy.focusCore.completedSubtitle}</Text>
+                            {dailyQuote ? (
+                                <Text style={styles.quoteText}>「{dailyQuote.text}」{'\n'}— {dailyQuote.author}</Text>
+                            ) : null}
+                            <TouchableOpacity
+                                testID="focus-core-completed-extra-5m"
+                                style={[styles.mainBtn, startingMode ? styles.btnDisabled : null]}
+                                onPress={onPressCompletedExtra5m}
+                                disabled={startingMode !== null || loading || !plan || !hasSelectedBook}
+                            >
+                                <Text style={styles.mainBtnText}>{copy.completion.ctaExtra5m}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                testID="focus-core-completed-extra-15m"
+                                style={[styles.subBtn, startingMode ? styles.btnDisabled : null]}
+                                onPress={onPressCompletedExtra15m}
+                                disabled={startingMode !== null || loading || !plan || !hasSelectedBook}
+                            >
+                                <Text style={styles.subBtnText}>{copy.completion.ctaExtra15m}</Text>
+                            </TouchableOpacity>
+                        </>
+                    ) : hasSelectedBook ? (
                         <>
                             <TouchableOpacity
                                 testID="focus-core-primary-cta"
@@ -174,26 +209,23 @@ export function FocusCoreView({
                             {copy.focusCore.initError}
                         </Text>
                     ) : null}
-                </View>
             </View>
-        </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    scroll: {
+    screenWrap: {
         flex: 1,
         backgroundColor: BG,
     },
-    container: {
-        flexGrow: 1,
+    scroll: {
+        flex: 1,
+    },
+    scrollContent: {
         paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
         paddingTop: 18,
-        paddingBottom: 24,
-    },
-    screenBody: {
-        flex: 1,
-        justifyContent: 'space-between',
+        paddingBottom: 12,
     },
     headerMessage: {
         color: '#6B7280',
@@ -213,8 +245,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     coverWrap: {
-        width: 240,
-        height: 320,
+        width: 200,
+        height: 267,
         borderRadius: 20,
         overflow: 'hidden',
         backgroundColor: '#F3F4F6',
@@ -250,8 +282,34 @@ const styles = StyleSheet.create({
     bookAuthor: { color: '#6B7280', fontSize: 13, marginTop: 6 },
     ghostLink: { marginTop: 12, paddingVertical: 6, paddingHorizontal: 10 },
     ghostLinkText: { color: '#6B7280', fontSize: 13, textDecorationLine: 'underline' },
-    menu: { marginTop: 18 },
+    menu: {
+        paddingHorizontal: appTheme.spacing.screenPaddingHorizontal,
+        paddingTop: 16,
+        paddingBottom: 24,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(44,44,44,0.06)',
+        backgroundColor: BG,
+    },
     intentCopy: { color: TEXT, fontSize: 14, lineHeight: 22, marginBottom: 14 },
+    completedTitle: {
+        color: TEXT,
+        fontSize: 16,
+        fontWeight: '700',
+        marginBottom: 6,
+    },
+    completedSubtitle: {
+        color: '#6B7280',
+        fontSize: 13,
+        lineHeight: 19,
+        marginBottom: 10,
+    },
+    quoteText: {
+        color: '#6B7280',
+        fontSize: 13,
+        lineHeight: 20,
+        fontStyle: 'italic',
+        marginBottom: 14,
+    },
     warningText: { color: '#B91C1C', fontSize: 13, lineHeight: 20, marginBottom: 8 },
     resolveLink: { alignSelf: 'flex-start', paddingVertical: 4, marginBottom: 8 },
     resolveLinkText: { color: '#6B7280', fontSize: 13, textDecorationLine: 'underline' },

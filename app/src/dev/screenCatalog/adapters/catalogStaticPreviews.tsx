@@ -18,7 +18,7 @@ export function SC01CatalogPreview({ scenario }: { scenario: MockScenario }) {
                     <Text style={styles.fakeInputText}>深く考える技術</Text>
                 </View>
                 <SessionCTAButton label="候補を見る" onPress={() => {}} />
-                <SessionCTAButton tone="ghost" label="見つからないので手入力する" onPress={() => {}} />
+                <SessionCTAButton tone="ghost" label="本を登録する" onPress={() => {}} />
             </View>
         </View>
     );
@@ -39,7 +39,7 @@ export function SC09CatalogPreview({ scenario }: { scenario: MockScenario }) {
                     <Text style={styles.fakeInputText}>{noResult ? '存在しない本' : '深く考える技術'}</Text>
                 </View>
                 <SessionCTAButton label="検索する" onPress={() => {}} />
-                <SessionCTAButton tone="secondary" label="見つからないので手入力する" onPress={() => {}} />
+                <SessionCTAButton tone="secondary" label="本を登録する" onPress={() => {}} />
             </View>
         </View>
     );
@@ -161,7 +161,7 @@ export function SC19CatalogPreview({ scenario: _scenario }: { scenario: MockScen
                 </View>
             </View>
             <View style={styles.previewBottomActions}>
-                <SessionCTAButton label="次の本を選ぶ" onPress={() => {}} />
+                <SessionCTAButton label="この本を選ぶ" onPress={() => {}} />
                 <SessionCTAButton tone="secondary" label="本を追加する" onPress={() => {}} />
             </View>
         </View>
@@ -183,27 +183,27 @@ const surfaceMeta: Record<
     'SF-01': {
         title: 'ホーム Widget（通常）',
         conditionNormal: '通常時',
-        ctas: ['開始', '5分だけ'],
+        ctas: ['開始', '今日は5分だけにする'],
         destinations: ['SC-12', 'SC-24'],
     },
     'SF-02': {
         title: 'ホーム Widget（Rehab）',
         conditionNormal: '3日以上未達',
         conditionRehab: '3日以上未達（rehab）',
-        ctas: ['開始', '5分だけ'],
+        ctas: ['開始', '今日は5分だけにする'],
         destinations: ['SC-14', 'SC-24'],
     },
     'SF-03': {
         title: '予定時刻通知（通常）',
         conditionNormal: '通常時の通知タップ',
-        ctas: ['開始', '5分だけ', '30分延期'],
+        ctas: ['開始', '今日は5分だけにする', '30分延期'],
         destinations: ['SC-12', 'SC-24'],
     },
     'SF-04': {
         title: '予定時刻通知（Rehab）',
         conditionNormal: '3日以上未達時の通知タップ',
         conditionRehab: 'rehab 通知タップ',
-        ctas: ['開始', '5分だけ', '30分延期'],
+        ctas: ['開始', '今日は5分だけにする', '30分延期'],
         destinations: ['SC-14', 'SC-24'],
     },
     'SF-05': {
@@ -230,7 +230,7 @@ const surfaceMeta: Record<
         title: 'App Intents 起点',
         conditionNormal: 'Shortcut/Siri 起動',
         conditionRehab: 'rehab 時の Shortcut/Siri 起動',
-        ctas: ['読書開始', '5分だけ読む', '今日の本確認'],
+        ctas: ['読書開始', '今日は5分だけにする', '今日の本確認'],
         destinations: ['SC-12', 'SC-14', 'SC-24'],
     },
     'SF-09': {

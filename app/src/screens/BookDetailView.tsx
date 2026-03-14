@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { BookCoverImage } from '../components/BookCoverImage';
+import { BookFormFields } from '../components/BookFormFields';
+import { BookCoverSection } from '../components/BookCoverSection';
 import { copy } from '../config/copy';
 import { appTheme } from '../theme/layout';
 
@@ -51,35 +52,27 @@ export function BookDetailView({
     <ScrollView testID="book-detail-screen" contentContainerStyle={styles.container}>
       {copy.bookDetail.subtitle ? <Text style={styles.subtitle}>{copy.bookDetail.subtitle}</Text> : null}
 
-      <Text style={styles.label}>{copy.bookDetail.labelTitle}</Text>
-      <TextInput testID="book-detail-title" style={styles.input} value={title} onChangeText={onChangeTitle} placeholder="本のタイトル" />
-
-      <Text style={styles.label}>{copy.bookDetail.labelAuthor}</Text>
-      <TextInput testID="book-detail-author" style={styles.input} value={author} onChangeText={onChangeAuthor} placeholder="著者名" />
-
-      <Text style={styles.label}>{copy.bookDetail.labelPageCount}</Text>
-      <TextInput
-        testID="book-detail-page-count"
-        style={styles.input}
-        value={pageCount}
-        onChangeText={onChangePageCount}
-        keyboardType="numeric"
-        placeholder="例: 320"
+      <BookFormFields
+        title={title}
+        author={author}
+        pageCount={pageCount}
+        onChangeTitle={onChangeTitle}
+        onChangeAuthor={onChangeAuthor}
+        onChangePageCount={onChangePageCount}
+        testIDPrefix="book-detail"
+        testIDSuffix=""
       />
 
       <Text style={styles.label}>{copy.bookDetail.labelCurrentPage}</Text>
-      {progressEnabled ? (
-        <TextInput
-          testID="book-detail-current-page"
-          style={styles.input}
-          value={currentPage}
-          onChangeText={onChangeCurrentPage}
-          keyboardType="numeric"
-          placeholder="例: 120"
-        />
-      ) : (
-        <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text>
-      )}
+      <TextInput
+        testID="book-detail-current-page"
+        style={styles.input}
+        value={currentPage}
+        onChangeText={onChangeCurrentPage}
+        keyboardType="numeric"
+        placeholder="例: 120"
+      />
+      {!progressEnabled ? <Text style={styles.helpText}>{copy.bookDetail.progressDisabled}</Text> : null}
 
       <Text style={styles.label}>進捗バー設定</Text>
       <View style={styles.settingValueRow}>
@@ -101,41 +94,16 @@ export function BookDetailView({
         />
       </View>
 
-      <Text style={styles.label}>{copy.bookDetail.labelCoverImage}</Text>
-      <View style={styles.coverSectionCard}>
-        <BookCoverImage
-          testID="book-detail-cover-image"
-          placeholderTestID="book-detail-cover-placeholder"
-          thumbnailUrl={thumbnailUrl}
-          coverSource={coverSource}
-          title={title}
-          style={styles.cover}
-        />
-        <TouchableOpacity
-          testID="book-detail-cover-camera"
-          style={styles.secondaryButton}
-          onPress={onPressTakePhoto}
-          disabled={saving}
-        >
-          <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaTakePhoto}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          testID="book-detail-cover-library"
-          style={styles.secondaryButton}
-          onPress={onPressPickFromLibrary}
-          disabled={saving}
-        >
-          <Text style={styles.secondaryButtonText}>{copy.bookDetail.ctaPickImage}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          testID="book-detail-cover-remove"
-          style={styles.secondaryButton}
-          onPress={onPressRemoveCover}
-          disabled={saving || thumbnailUrl.trim().length === 0}
-        >
-          <Text style={styles.secondaryButtonText}>表紙画像を削除</Text>
-        </TouchableOpacity>
-      </View>
+      <BookCoverSection
+        thumbnailUrl={thumbnailUrl}
+        coverSource={coverSource}
+        title={title}
+        onTakePhoto={onPressTakePhoto}
+        onPickFromLibrary={onPressPickFromLibrary}
+        onRemoveCover={onPressRemoveCover}
+        saving={saving}
+        testIDPrefix="book-detail-cover"
+      />
 
       <TouchableOpacity testID="book-detail-save" style={[styles.primaryButton, !canSave && styles.disabled]} onPress={onPressSave} disabled={!canSave}>
         <Text style={styles.primaryButtonText}>{copy.bookDetail.ctaSave}</Text>
@@ -163,13 +131,6 @@ const styles = StyleSheet.create({
     color: appTheme.colors.textMuted,
     fontSize: 13,
     marginBottom: 12,
-  },
-  cover: {
-    width: 140,
-    height: 190,
-    borderRadius: appTheme.borderRadius.md,
-    marginBottom: 12,
-    backgroundColor: appTheme.colors.surfaceMuted,
   },
   label: {
     color: appTheme.colors.textSecondary,
@@ -218,14 +179,6 @@ const styles = StyleSheet.create({
   settingValueButton: {
     paddingVertical: 4,
     paddingRight: 8,
-  },
-  coverSectionCard: {
-    marginTop: 2,
-    borderRadius: appTheme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: appTheme.colors.border,
-    backgroundColor: appTheme.colors.surface,
-    padding: 12,
   },
   primaryButton: {
     marginTop: 16,

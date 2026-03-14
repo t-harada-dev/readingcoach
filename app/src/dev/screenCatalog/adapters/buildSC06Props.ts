@@ -1,3 +1,4 @@
+import { copy } from '../../../config/copy';
 import type { FocusCoreViewProps } from '../../../screens/FocusCoreView';
 import { fixtureBooks } from '../fixtures/books';
 import { scenarioFixtures, type CoreMockScenario } from '../fixtures/scenarios';
@@ -17,15 +18,20 @@ export function buildSC06Props(_scenario: MockScenario): FocusCoreViewProps {
         initStatus: 'ready',
         canManualChange: false,
         progressRatio: 0.12,
+        showCompletedActions: false,
+        headerMessage: copy.focusCore.headerMessage,
         mainMode: 'ignition_1m',
         subMode: 'rescue_5m',
         rehabMode: null,
         intentCopy,
+        dailyQuote: null,
         startingMode: null,
         onPressChangeBook: () => {},
         onPressResolveBook: () => {},
         onPressPrimaryCTA: () => {},
         onPressSecondaryCTA: () => {},
         onPressRehabCTA: () => {},
+        onPressCompletedExtra5m: () => {},
+        onPressCompletedExtra15m: () => {},
     };
 }
