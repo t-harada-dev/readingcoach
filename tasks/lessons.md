@@ -84,6 +84,15 @@
 1. **モーダル表示中でも親画面を `null` で潰さない**: `presentation: 'modal'` を使う画面で親を空描画にすると、戻る操作で空画面に落ちる経路が発生する。
 2. **導線変更時は副作用契約を追従確認する**: 画面遷移先を差し替えるときは、旧導線で実行されていたカウンタ更新（例: manual focus change count）を失っていないかを必ず確認する。
 
+## Expo modulemap ビルドエラー（Xcode GUI クリーンビルド時）
+
+1. **症状**: Xcode GUI からのクリーンビルドで `No such module 'Expo'` / `module map file ... not found` が発生する。`xcodebuild` CLI からは同一 workspace/scheme で **BUILD SUCCEEDED** になる。
+2. **根本原因**: Xcode GUI の DerivedData が壊れた状態（Pod 出力ゼロ、app.app のみ存在）になると、暗黙的依存検出が機能せず Pod ターゲットがビルドされない。CLI は別の DerivedData を新規生成するため成功する。
+3. **正しい復旧手順**: `rm -rf ~/Library/Developer/Xcode/DerivedData/app-*` → Xcode で Clean Build Folder (⌘⇧K) → Build (⌘B)。
+4. **予防策**: Podfile `post_install` で `SWIFT_ENABLE_EXPLICIT_MODULES = NO` を xcconfig に追記済み。Xcode 16 デフォルトの `YES` だと `PrecompileSwiftBridgingHeader` が Pod 完了前に走り警告が出る。
+5. **誤ったアプローチ（やってはいけない）**: `OTHER_SWIFT_FLAGS` の `-fmodule-map-file` パスを `${PODS_CONFIGURATION_BUILD_DIR}` から `${PODS_ROOT}/Headers/Public/` に置換する。ObjC modulemap は見つかるが Swift 型（`.swiftmodule`）は静的パスに存在しないため `ExpoAppDelegate` 等が "Cannot find type" になり悪化する。
+6. **CLI フォールバック**: Xcode GUI が復旧しない場合、`xcodebuild -workspace app.xcworkspace -scheme app -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build` → `xcrun simctl install/launch` で開発継続可能。
+
 ## SF Native キャプチャ（xcodebuild）
 
 1. **CocoaPods 構成では `xcodebuild` を `-workspace` 優先で実行する**: `-project` で app 単体ビルドすると Expo/Pods の modulemap 不足で失敗しやすい。
