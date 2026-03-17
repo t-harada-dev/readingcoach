@@ -1,38 +1,43 @@
 # lessons
 
-- （初回作成。教訓は随時追記）
+## 通知システム
 
-## 通知再整合（NotificationBridge / NotificationScheduler）
+1. **非同期の順序**: Reconcile 完了後に `ready()` を呼ぶ（`runReconcileThenNotifyReady`）。古い状態に対して「開始」を出さない。
+2. **cancelForPlan 優先**: レスポンス処理の最初の一手はネイティブ側で `cancelForPlan(planId)` を打つ。
+3. **`__DEFAULT__` は開始最大化**: 通知体タップ時の既定は 15 分開始。`continuousMissedDays >= 3` では `ignition_1m` に切り替える。
+4. **カテゴリ登録ずれ**: `UNNotificationCategory` 登録と `categoryIdentifier` が一致しないと、通知は届くがボタンが効かない。
 
-1. **非同期の順序**: SwiftData の `context.save()` が完了した後にのみ通知再整合を走らせる。Reconcile の流れでは「RN が reconcilePlans を呼ぶ → ネイティブで save 完了 → 戻る → RN が resyncAfterReconcile を呼ぶ」なので、データは保存済み。
-2. **カテゴリとアクション**: 本通知の「開始」「5分だけ」「30分延期」は `UNNotificationCategory` で登録し、`UNNotificationContent.categoryIdentifier` で紐づける。ずれると通知は届くがボタンが効かない。
-3. **prep_success 後の取消**: 準備だけ完了した計画は `.finalized` のため期待集合に含めない。結果、当該 plan の pending は削除され、追い打ち通知が届かなくなる。
+## SwiftData Bridge
 
-## 通知レスポンス（NotificationResponse）
+1. **日付の主語は `planDate` 文字列 (`yyyy-MM-dd`)**: ISO8601 `Date` への過剰変換は「今日判定」のズレを生む。
+2. **障害は `resolve(nil)` で隠蔽しない**: Fetch/Save 失敗は Promise `reject` で JS 側へ伝播させる。`try!` の singleton 初期化は禁止。
+3. **NSDictionary の手作業マッピングを避ける**: `Decodable` 変換ユーティリティを共通化し、型ずれ・欠落を防ぐ。
 
-1. **二重処理の禁止**: 必ず Reconcile 完了後に ready() を呼ぶ。`runReconcileThenNotifyReady` で順序を保証する。古い状態に対して「開始」を出さない。
-2. **通知の消去**: レスポンス処理の最初の一手はネイティブ側で `cancelForPlan(planId)`。同一 plan の再通知などが通知センターに残らないようにする。
-3. **__DEFAULT__（通知体タップ）**: 「何しに来たんだっけ？」と選ばせない。DueActionSheet は開始ボタン最大化で、既定は 15 分開始。
+## テスト実行・報告
 
-## SwiftData Bridge（PersistenceBridge）
+1. **PASS の条件を固定**: 「exit code 0」かつ「失敗スイート/失敗ケース 0」を確認できない限り PASS と断定しない。
+2. **`vitest` の `environment: node` で画面コンポーネントを直接読むと Flow 構文で失敗する**: テストは `.test.ts` で作成し、`src/**/*.test.ts` の include を事前確認する。
+3. **`tee` 付き debug script では `set -o pipefail` を必須化**: `cmd | tee` だけだと実コマンド失敗が `exit 0` に見える。
 
-1. **日付の主語は `planDate` 文字列**: `yyyy-MM-dd` を永続化の正本にし、日付比較は文字列または `Calendar` 補助で扱う。ISO8601 `Date` への過剰変換は「今日判定」のズレを生む。
-2. **障害は `resolve(nil)` で隠蔽しない**: Fetch/Save/初期化失敗は Promise `reject` で JS 側へ伝播させる。`try!` の singleton 初期化は禁止。
-3. **NSDictionary の手作業マッピングを避ける**: `Decodable` 変換ユーティリティを共通化し、`saveBook` / `upsertPlan` の欠落・型ずれを防ぐ。
+## Detox / E2E
 
-## Vitest + React Native
+1. **synced/unsynced は suite ごとに選ぶ**: `due-action-sheet` / `home.session-start` ではタップ不可・モーダル不安定が再現するため、起動 helper は共通化しつつ suite 単位で切り替える。
+2. **JS変更後の挙動差分は `e2e:build:ios` で再バンドル確認**: 既存バンドルを参照して古い挙動が残るケースがある。
+3. **`toBeVisible()` + `scroll()` をセットで使う**: `toExist()` だけだと ScrollView 外の要素が `View is not hittable` になる。
+4. **E2E 入力データは `.json` を直接 `require`**: TS モジュールは Detox/Jest 実行系で読み込み差異が出やすい。正本は1つに固定。
+5. **`expo-*` の top-level import は起動クラッシュのリスクあり**: 未組込ビルドでも起動可能なよう、遅延 import + unavailable fallback を入れる。
 
-1. **`vitest` の `environment: node` で画面コンポーネントを直接読むと Flow 構文で失敗する**: `react-native` 本体の parse error（`Expected 'from', got 'typeOf'`）が出る。画面テストは runner を分離（jsdom + rn 対応設定 or jest）してから入れる。
-2. **`vitest.config.ts` の `include` パターンを先に確認する**: このリポジトリは `src/**/*.test.ts` 固定のため、`.test.tsx` を追加しても実行対象に入らない。新規テストは `.test.ts` で作成するか、include を更新する。
+## Screen Catalog / スクリーンショット
 
-## 通知アクションの開始モード
+1. **Screen Catalog は手動レビュー専用に保つ**: 自動スクショ基盤の正本に使うと保守が難しくなる。
+2. **自動スクショは flow 別 Detox + 補完 `launchArgs` で管理**: `snapshotTargets` でカバレッジを固定し、スコープ外への拡張は明示依頼ベースで行う。
 
-1. **`START` を固定で 15 分にしない**: 通知・Widget・App Intents の user-facing `開始` は状態依存で第一導線にマップする。少なくとも `continuousMissedDays >= 3` では `ignition_1m` に切り替える。
+## iOS ビルド（XCUITest / CocoaPods）
 
-## ローカル同梱 Node（サンドボックス実行）
+1. **CocoaPods 構成は `-workspace` 優先で `xcodebuild` を実行**: `-project` 単体ビルドは Pods の modulemap 不足で失敗しやすい。
+2. **XCUI `denied` ケース前に設定状態を正規化**: 前ケースの値が残ると同じ引数でも UI が別分岐になる。失敗理由は `.xcresult` の行番号から特定する。
 
-1. **`npm` を絶対パスで叩く時も `PATH` に node を入れる**: `npm` の shebang は `#!/usr/bin/env node`。`node` を PATH に通さないと `env: node: No such file or directory` で失敗する。
-2. **React Native の最低 Node 要件を満たすバージョンを既定にする**: `20.19.4` 未満だと `EBADENGINE` 警告が大量に出る。`.nvmrc` / bootstrap 既定値 / `engines.node` を揃える。
+## アプリ導線
 
 ## テスト結果報告の整合性
 
